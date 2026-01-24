@@ -378,7 +378,7 @@ export const POST = requireAuth(async (req, userId) => {
       duration: (jobData as any).duration || null,
       experience_level: (jobData as any).experienceLevel || null,
       project_type: (jobData as any).projectType || null,
-      status: jobData.status || 'DRAFT',
+      status: 'DRAFT',
       recruiter_id: userId,
       company_id: jobData.companyId || null,
       category: (jobData as any).category || 'Development & IT',
