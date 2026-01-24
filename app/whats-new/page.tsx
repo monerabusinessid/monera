@@ -4,7 +4,7 @@ import { Footer } from '@/components/footer'
 
 export default function WhatsNewPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-brand-purple via-purple-900 to-indigo-950 text-white pt-40 sm:pt-36 pb-12 md:pb-16 overflow-hidden -mt-20 sm:-mt-24">
         {/* Animated Background - Enhanced Stars/Particles */}
