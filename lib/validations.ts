@@ -104,6 +104,8 @@ export const createApplicationSchema = z.object({
 
 export const updateApplicationSchema = z.object({
   status: z.enum(['PENDING', 'REVIEWING', 'SHORTLISTED', 'REJECTED', 'ACCEPTED']).optional(),
+  coverLetter: z.string().max(2000, 'Cover letter must be less than 2000 characters').optional(),
+  resumeUrl: z.string().url('Invalid URL').optional().or(z.literal('')),
   notes: z.string().max(1000, 'Notes must be less than 1000 characters').optional(),
 })
 
