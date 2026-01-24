@@ -7,14 +7,12 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const key = searchParams.get('key')
 
-    // OPTIMIZATION: Select only needed fields
-    let query = supabase
-      .from('landing_page_settings')
-      .select('key, value')
-
     if (key) {
-      query = query.eq('key', key).single()
-      const { data, error } = await query
+      const { data, error } = await supabase
+        .from('landing_page_settings')
+        .select('key, value')
+        .eq('key', key)
+        .single()
       if (error) {
         console.error('Error fetching setting:', error)
         return NextResponse.json({ success: false, error: error.message }, { status: 500 })
@@ -26,7 +24,9 @@ export async function GET(request: NextRequest) {
         }
       })
     } else {
-      const { data, error } = await query
+      const { data, error } = await supabase
+        .from('landing_page_settings')
+        .select('key, value')
       if (error) {
         console.error('Error fetching settings:', error)
         return NextResponse.json({ success: false, error: error.message }, { status: 500 })
