@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, Suspense } from 'react'
+import { useEffect, useState, Suspense, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import Link from 'next/link'
@@ -51,18 +51,7 @@ function TalentJobsForm() {
   const [loadingData, setLoadingData] = useState(true)
   const [showFilters, setShowFilters] = useState(false)
 
-  useEffect(() => {
-    if (!loading && (!user || user.role !== 'TALENT')) {
-      router.push('/login')
-      return
-    }
-    if (user && user.role === 'TALENT') {
-      fetchSkills()
-      fetchJobs()
-    }
-  }, [user, loading, router, currentPage, filters])
-
-  const fetchSkills = async () => {
+  const fetchSkills = useCallback(async () => {
     try {
       const response = await fetch('/api/skills')
       const data = await response.json()
@@ -72,9 +61,9 @@ function TalentJobsForm() {
     } catch (error) {
       console.error('Failed to fetch skills:', error)
     }
-  }
+  }, [])
 
-  const fetchJobs = async () => {
+  const fetchJobs = useCallback(async () => {
     setLoadingData(true)
     try {
       const params = new URLSearchParams({
@@ -100,7 +89,18 @@ function TalentJobsForm() {
     } finally {
       setLoadingData(false)
     }
-  }
+  }, [currentPage, filters])
+
+  useEffect(() => {
+    if (!loading && (!user || user.role !== 'TALENT')) {
+      router.push('/login')
+      return
+    }
+    if (user && user.role === 'TALENT') {
+      fetchSkills()
+      fetchJobs()
+    }
+  }, [user, loading, router, fetchSkills, fetchJobs])
 
   const handleFilterChange = (name: string, value: any) => {
     setFilters((prev) => ({ ...prev, [name]: value }))

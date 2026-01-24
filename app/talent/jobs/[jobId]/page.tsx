@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import Link from 'next/link'
@@ -67,19 +67,7 @@ export default function JobDetailPage() {
   const [loadingData, setLoadingData] = useState(true)
   const [profileStatus, setProfileStatus] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (!loading && (!user || user.role !== 'TALENT')) {
-      router.push('/login')
-      return
-    }
-    if (user && user.role === 'TALENT' && jobId) {
-      fetchJob()
-      checkApplication()
-      fetchProfileStatus()
-    }
-  }, [user, loading, router, jobId])
-
-  const fetchProfileStatus = async () => {
+  const fetchProfileStatus = useCallback(async () => {
     try {
       const res = await fetch('/api/user/profile', { credentials: 'include', cache: 'no-store' })
       const data = await res.json()
@@ -89,9 +77,9 @@ export default function JobDetailPage() {
     } catch (e) {
       console.warn('[JobDetail] Failed to fetch profile status:', e)
     }
-  }
+  }, [])
 
-  const fetchJob = async () => {
+  const fetchJob = useCallback(async () => {
     try {
       const response = await fetch(`/api/jobs/${jobId}`)
       const data = await response.json()
@@ -107,9 +95,9 @@ export default function JobDetailPage() {
     } finally {
       setLoadingData(false)
     }
-  }
+  }, [jobId])
 
-  const checkApplication = async () => {
+  const checkApplication = useCallback(async () => {
     try {
       const response = await fetch(`/api/applications?jobId=${jobId}&candidateId=me`, {
         credentials: 'include',
@@ -122,7 +110,19 @@ export default function JobDetailPage() {
     } catch (error) {
       console.error('Failed to check application:', error)
     }
-  }
+  }, [jobId])
+
+  useEffect(() => {
+    if (!loading && (!user || user.role !== 'TALENT')) {
+      router.push('/login')
+      return
+    }
+    if (user && user.role === 'TALENT' && jobId) {
+      fetchJob()
+      checkApplication()
+      fetchProfileStatus()
+    }
+  }, [user, loading, router, jobId, fetchJob, checkApplication, fetchProfileStatus])
 
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString)

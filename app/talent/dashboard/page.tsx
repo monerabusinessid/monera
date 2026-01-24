@@ -50,6 +50,60 @@ interface Profile {
   skills: Array<{ name: string }>
 }
 
+type OnboardingStatusProps = {
+  completion: number
+}
+
+function OnboardingStatusWidget({ completion }: OnboardingStatusProps) {
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-gray-600">Finish your profile to unlock more opportunities.</p>
+      <div className="w-full bg-gray-200 rounded-full h-2">
+        <div
+          className="bg-brand-purple h-2 rounded-full transition-all"
+          style={{ width: `${completion}%` }}
+        ></div>
+      </div>
+      <p className="text-xs text-gray-500">{completion}% complete</p>
+      <Link href="/talent/onboarding">
+        <Button size="sm" className="w-full">
+          Continue onboarding
+        </Button>
+      </Link>
+    </div>
+  )
+}
+
+function OnboardingStatusCard({ completion }: OnboardingStatusProps) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg">Next Steps</CardTitle>
+        <CardDescription>Complete these to improve your profile</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="flex items-center justify-between text-sm">
+          <span>Profile basics</span>
+          <span className="text-gray-500">{completion >= 40 ? 'Done' : 'Pending'}</span>
+        </div>
+        <div className="flex items-center justify-between text-sm">
+          <span>Skills and rates</span>
+          <span className="text-gray-500">{completion >= 70 ? 'Done' : 'Pending'}</span>
+        </div>
+        <div className="flex items-center justify-between text-sm">
+          <span>Portfolio and bio</span>
+          <span className="text-gray-500">{completion >= 100 ? 'Done' : 'Pending'}</span>
+        </div>
+        <Link href="/talent/onboarding">
+          <Button variant="outline" size="sm" className="w-full">
+            Update profile
+          </Button>
+        </Link>
+      </CardContent>
+    </Card>
+  )
+}
+
 export default function TalentDashboardPage() {
   const { user, loading } = useAuth()
   const router = useRouter()
@@ -90,7 +144,7 @@ export default function TalentDashboardPage() {
       setLoadingData(false)
       setLastFetch(Date.now())
     }
-  }, [activeTab])
+  }, [])
 
   // Initial fetch and auto-refresh
   useEffect(() => {
@@ -480,12 +534,12 @@ export default function TalentDashboardPage() {
                 <CardTitle className="text-lg">Onboarding Status</CardTitle>
               </CardHeader>
               <CardContent>
-                <OnboardingStatusWidget />
+                <OnboardingStatusWidget completion={profileCompletion} />
               </CardContent>
             </Card>
 
             {/* Onboarding Status Card */}
-            <OnboardingStatusCard />
+            <OnboardingStatusCard completion={profileCompletion} />
           </div>
         </div>
       </div>

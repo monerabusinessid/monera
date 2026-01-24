@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -37,13 +37,7 @@ export default function JobDetailPage() {
     expectedRate: '',
   })
 
-  useEffect(() => {
-    if (jobId) {
-      fetchJob()
-    }
-  }, [jobId])
-
-  const fetchJob = async () => {
+  const fetchJob = useCallback(async () => {
     try {
       const response = await fetch(`/api/jobs/${jobId}`, {
         credentials: 'include',
@@ -57,7 +51,13 @@ export default function JobDetailPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [jobId])
+
+  useEffect(() => {
+    if (jobId) {
+      fetchJob()
+    }
+  }, [jobId, fetchJob])
 
   const handleApply = async () => {
     setApplying(true)

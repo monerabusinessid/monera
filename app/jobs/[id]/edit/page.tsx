@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { Button } from '@/components/ui/button'
@@ -52,19 +52,7 @@ export default function EditJobPage() {
   })
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
-  useEffect(() => {
-    if (!user) {
-      router.push('/login?redirect=/jobs/' + params.id + '/edit')
-      return
-    }
-    if (user.role !== 'CLIENT' && user.role !== 'RECRUITER' && user.role !== 'ADMIN') {
-      router.push('/jobs/' + params.id)
-      return
-    }
-    fetchData()
-  }, [user, router, params.id])
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [jobRes, companiesRes, skillsRes] = await Promise.all([
         fetch(`/api/jobs/${params.id}`, {
@@ -125,7 +113,19 @@ export default function EditJobPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [params.id, user])
+
+  useEffect(() => {
+    if (!user) {
+      router.push('/login?redirect=/jobs/' + params.id + '/edit')
+      return
+    }
+    if (user.role !== 'CLIENT' && user.role !== 'RECRUITER' && user.role !== 'ADMIN') {
+      router.push('/jobs/' + params.id)
+      return
+    }
+    fetchData()
+  }, [user, router, params.id, fetchData])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -66,22 +66,7 @@ export function JobModal({ job, isOpen, onClose, mode }: JobModalProps) {
   })
 
   // Fetch skills on mount
-  useEffect(() => {
-    if (isOpen) {
-      fetchSkills()
-    }
-  }, [isOpen])
-
-  // Fetch job skills when editing
-  useEffect(() => {
-    if (isOpen && job && mode === 'edit') {
-      fetchJobSkills()
-    } else if (mode === 'create') {
-      setSelectedSkillIds([])
-    }
-  }, [isOpen, job, mode])
-
-  const fetchSkills = async () => {
+  const fetchSkills = useCallback(async () => {
     try {
       const response = await fetch('/api/skills')
       const data = await response.json()
@@ -91,9 +76,9 @@ export function JobModal({ job, isOpen, onClose, mode }: JobModalProps) {
     } catch (error) {
       console.error('Failed to fetch skills:', error)
     }
-  }
+  }, [])
 
-  const fetchJobSkills = async () => {
+  const fetchJobSkills = useCallback(async () => {
     if (!job) return
     try {
       const response = await fetch(`/api/jobs/${job.id}`)
@@ -104,7 +89,22 @@ export function JobModal({ job, isOpen, onClose, mode }: JobModalProps) {
     } catch (error) {
       console.error('Failed to fetch job skills:', error)
     }
-  }
+  }, [job])
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchSkills()
+    }
+  }, [isOpen, fetchSkills])
+
+  // Fetch job skills when editing
+  useEffect(() => {
+    if (isOpen && job && mode === 'edit') {
+      fetchJobSkills()
+    } else if (mode === 'create') {
+      setSelectedSkillIds([])
+    }
+  }, [isOpen, job, mode, fetchJobSkills])
 
   useEffect(() => {
     if (job) {

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { useParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Footer } from '@/components/footer'
@@ -122,10 +123,13 @@ export default function TalentPublicProfilePage() {
             <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
               <div className="relative">
                 {profile.avatarUrl ? (
-                  <img
+                  <Image
                     src={profile.avatarUrl}
                     alt={fullName}
+                    width={128}
+                    height={128}
                     className="w-32 h-32 rounded-full object-cover border-4 border-purple-200"
+                    unoptimized
                   />
                 ) : (
                   <div className="w-32 h-32 rounded-full bg-gradient-to-br from-brand-purple to-purple-700 flex items-center justify-center text-white text-4xl font-semibold">

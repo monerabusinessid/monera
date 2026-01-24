@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import Link from 'next/link'
@@ -99,17 +100,48 @@ export default function TalentProfilePage() {
   const [editingLanguage, setEditingLanguage] = useState<any>(null)
   const [editingCertification, setEditingCertification] = useState<any>(null)
 
-  useEffect(() => {
-    if (!loading && (!user || user.role !== 'TALENT')) {
-      router.push('/login')
-      return
-    }
-    if (user && user.role === 'TALENT') {
-      fetchData()
-    }
-  }, [user, loading, router])
+  const updateProfileCompletion = useCallback((p: any) => {
+    const fields = [
+      p.firstName, p.lastName, p.headline, p.bio, p.location,
+      p.hourlyRate, p.portfolioUrl, p.skills?.length > 0,
+      p.workHistory?.length > 0, p.education?.length > 0,
+      p.languages?.length > 0
+    ]
+    const completed = fields.filter(Boolean).length
+    const completion = Math.round((completed / fields.length) * 100)
+    setProfileCompletion(completion)
 
-  const fetchData = async () => {
+    // Update section completion
+    setSections(prev => prev.map(section => {
+      let completed = false
+      switch (section.id) {
+        case 'overview':
+          completed = !!(p.firstName && p.lastName && p.headline && p.bio)
+          break
+        case 'skills':
+          completed = !!(p.skills?.length > 0)
+          break
+        case 'portfolio':
+          completed = !!(p.portfolioUrl)
+          break
+        case 'work-history':
+          completed = !!(p.workHistory?.length > 0)
+          break
+        case 'education':
+          completed = !!(p.education?.length > 0)
+          break
+        case 'languages':
+          completed = !!(p.languages?.length > 0)
+          break
+        case 'certifications':
+          completed = !!(p.certifications?.length > 0)
+          break
+      }
+      return { ...section, completed }
+    }))
+  }, [])
+
+  const fetchData = useCallback(async () => {
     try {
       console.log('[Profile] Fetching profile data...')
       const [profileRes, skillsRes, experienceRes] = await Promise.all([
@@ -332,48 +364,17 @@ export default function TalentProfilePage() {
     } finally {
       setLoadingData(false)
     }
-  }
+  }, [updateProfileCompletion])
 
-  const updateProfileCompletion = (p: any) => {
-    const fields = [
-      p.firstName, p.lastName, p.headline, p.bio, p.location,
-      p.hourlyRate, p.portfolioUrl, p.skills?.length > 0,
-      p.workHistory?.length > 0, p.education?.length > 0,
-      p.languages?.length > 0
-    ]
-    const completed = fields.filter(Boolean).length
-    const completion = Math.round((completed / fields.length) * 100)
-    setProfileCompletion(completion)
-
-    // Update section completion
-    setSections(prev => prev.map(section => {
-      let completed = false
-      switch (section.id) {
-        case 'overview':
-          completed = !!(p.firstName && p.lastName && p.headline && p.bio)
-          break
-        case 'skills':
-          completed = !!(p.skills?.length > 0)
-          break
-        case 'portfolio':
-          completed = !!(p.portfolioUrl)
-          break
-        case 'work-history':
-          completed = !!(p.workHistory?.length > 0)
-          break
-        case 'education':
-          completed = !!(p.education?.length > 0)
-          break
-        case 'languages':
-          completed = !!(p.languages?.length > 0)
-          break
-        case 'certifications':
-          completed = !!(p.certifications?.length > 0)
-          break
-      }
-      return { ...section, completed }
-    }))
-  }
+  useEffect(() => {
+    if (!loading && (!user || user.role !== 'TALENT')) {
+      router.push('/login')
+      return
+    }
+    if (user && user.role === 'TALENT') {
+      fetchData()
+    }
+  }, [user, loading, router, fetchData])
 
   const toggleSection = (sectionId: string) => {
     setSections(prev => prev.map(s => 
@@ -641,10 +642,13 @@ export default function TalentProfilePage() {
             <div className="flex items-center gap-4">
               <div className="relative">
                 {avatarUrl ? (
-                  <img
+                  <Image
                     src={avatarUrl}
                     alt={fullName}
+                    width={80}
+                    height={80}
                     className="w-20 h-20 rounded-full object-cover border-2 border-purple-200"
+                    unoptimized
                   />
                 ) : (
                   <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-400 to-brand-purple flex items-center justify-center text-white text-2xl font-bold">

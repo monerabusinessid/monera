@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -37,14 +38,7 @@ export default function LandingPageAdmin() {
   const [editing, setEditing] = useState<string | null>(null)
   const [formData, setFormData] = useState<any>({})
 
-  useEffect(() => {
-    fetchData()
-    if (activeTab === 'header') {
-      fetchHeaderSettings()
-    }
-  }, [activeTab])
-
-  const fetchHeaderSettings = async () => {
+  const fetchHeaderSettings = useCallback(async () => {
     try {
       const res = await fetch('/api/landing/settings?t=' + Date.now(), {
         cache: 'no-store'
@@ -59,9 +53,9 @@ export default function LandingPageAdmin() {
     } catch (error) {
       console.error('Error fetching header settings:', error)
     }
-  }
+  }, [])
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true)
     try {
       if (activeTab === 'testimonials') {
@@ -86,7 +80,14 @@ export default function LandingPageAdmin() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [activeTab])
+
+  useEffect(() => {
+    fetchData()
+    if (activeTab === 'header') {
+      fetchHeaderSettings()
+    }
+  }, [activeTab, fetchData, fetchHeaderSettings])
 
   const handleEdit = (item: any) => {
     setEditing(item.id)
@@ -278,9 +279,11 @@ export default function LandingPageAdmin() {
                 <div className="mt-4 space-y-2">
                   <Label className="text-sm font-semibold">Preview Hero Image</Label>
                   <div className="relative bg-gray-100 rounded-lg p-4 border-2 border-dashed border-gray-300">
-                    <img 
-                      src={headerSettings.hero_image_url} 
-                      alt="Hero preview" 
+                    <Image
+                      src={headerSettings.hero_image_url}
+                      alt="Hero preview"
+                      width={640}
+                      height={360}
                       className="w-full max-w-md mx-auto h-auto object-contain rounded-lg shadow-lg"
                       style={{
                         width: headerSettings.hero_image_width || '100%',
@@ -291,6 +294,7 @@ export default function LandingPageAdmin() {
                         objectPosition: headerSettings.hero_image_position || 'center',
                         maxHeight: '400px'
                       }}
+                      unoptimized
                       onError={(e) => {
                         (e.target as HTMLImageElement).style.display = 'none'
                       }}
@@ -561,10 +565,13 @@ export default function LandingPageAdmin() {
                   </div>
                   {formData.avatar && (formData.avatar.startsWith('http') || formData.avatar.startsWith('/')) && (
                     <div className="mt-4">
-                      <img 
-                        src={formData.avatar} 
-                        alt="Avatar preview" 
+                      <Image
+                        src={formData.avatar}
+                        alt="Avatar preview"
+                        width={96}
+                        height={96}
                         className="w-24 h-24 object-cover rounded-full border-2 border-gray-200"
+                        unoptimized
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = 'none'
                         }}
@@ -663,10 +670,13 @@ export default function LandingPageAdmin() {
                   </div>
                   {formData.logo && (
                     <div className="mt-4">
-                      <img 
-                        src={formData.logo} 
-                        alt="Logo preview" 
+                      <Image
+                        src={formData.logo}
+                        alt="Logo preview"
+                        width={240}
+                        height={96}
                         className="max-w-xs h-24 object-contain rounded-lg border"
+                        unoptimized
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = 'none'
                         }}
@@ -775,10 +785,13 @@ export default function LandingPageAdmin() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         {isAvatarImage ? (
-                          <img
+                          <Image
                             src={item.avatar}
                             alt={item.name || 'Avatar'}
+                            width={40}
+                            height={40}
                             className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
+                            unoptimized
                             onError={(e) => {
                               (e.target as HTMLImageElement).style.display = 'none'
                             }}
@@ -814,10 +827,13 @@ export default function LandingPageAdmin() {
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-4">
                     {item.logo && (item.logo.startsWith('http') || item.logo.startsWith('/')) ? (
-                      <img 
-                        src={item.logo} 
+                      <Image
+                        src={item.logo}
                         alt={item.name}
+                        width={64}
+                        height={64}
                         className="w-16 h-16 object-contain rounded-lg border"
+                        unoptimized
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = 'none'
                         }}

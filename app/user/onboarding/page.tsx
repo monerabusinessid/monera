@@ -107,7 +107,7 @@ export default function OnboardingPage() {
         }
       })
       .catch(err => console.error('Failed to fetch skills:', err))
-  }, [])
+  }, [router])
 
   const handleNext = () => {
     if (currentStep < STEPS.length) {

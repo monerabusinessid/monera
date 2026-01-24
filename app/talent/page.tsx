@@ -107,9 +107,9 @@ export default function TalentPage() {
     } finally {
       setLoadingProfile(false)
     }
-  }, [router])
+  }, [fetchJobMatches])
 
-  const fetchJobMatches = async () => {
+  const fetchJobMatches = useCallback(async () => {
     setLoadingJobs(true)
     try {
       const response = await fetch('/api/jobs/matched', {
@@ -129,7 +129,7 @@ export default function TalentPage() {
     } finally {
       setLoadingJobs(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     if (loading) return

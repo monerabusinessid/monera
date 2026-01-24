@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -43,11 +43,7 @@ export default function JobsPage() {
     }
   }, [])
 
-  useEffect(() => {
-    fetchJobs()
-  }, [filters.page, filters.query, filters.location, filters.remote, filters.workType])
-
-  const fetchJobs = async () => {
+  const fetchJobs = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams({
@@ -70,7 +66,11 @@ export default function JobsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [filters])
+
+  useEffect(() => {
+    fetchJobs()
+  }, [fetchJobs])
 
   const workTypes = [
     { label: 'Any type of work', value: 'any' },

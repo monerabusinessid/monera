@@ -62,7 +62,7 @@ export default function ClientTalentRequestsPage() {
       clearInterval(interval)
       window.removeEventListener('focus', handleFocus)
     }
-  }, [user, router, fetchRequests])
+  }, [fetchRequests])
 
   const refreshData = useCallback(() => {
     setLoading(true)

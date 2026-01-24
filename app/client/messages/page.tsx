@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -37,32 +37,7 @@ export default function ClientMessagesPage() {
   const [loadingData, setLoadingData] = useState(true)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
-  useEffect(() => {
-    // Fetch user ID from API
-    fetch('/api/auth/me', {
-      credentials: 'include',
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          setCurrentUserId(data.data.id)
-        }
-      })
-      .catch(err => {
-        console.error('Failed to fetch user:', err)
-      })
-
-    // Fetch conversations (layout already handles auth, so we can fetch directly)
-    fetchConversations()
-  }, [])
-
-  useEffect(() => {
-    if (selectedConversation) {
-      fetchMessages(selectedConversation.id)
-    }
-  }, [selectedConversation])
-
-  const fetchConversations = async () => {
+  const fetchConversations = useCallback(async () => {
     try {
       const response = await fetch('/api/messages?role=client', {
         credentials: 'include',
@@ -85,9 +60,9 @@ export default function ClientMessagesPage() {
     } finally {
       setLoadingData(false)
     }
-  }
+  }, [selectedConversation])
 
-  const fetchMessages = async (conversationId: string) => {
+  const fetchMessages = useCallback(async (conversationId: string) => {
     try {
       const response = await fetch(`/api/messages?conversationId=${conversationId}`, {
         credentials: 'include',
@@ -104,7 +79,32 @@ export default function ClientMessagesPage() {
       console.error('Failed to fetch messages:', error)
       setMessages([])
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    // Fetch user ID from API
+    fetch('/api/auth/me', {
+      credentials: 'include',
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setCurrentUserId(data.data.id)
+        }
+      })
+      .catch(err => {
+        console.error('Failed to fetch user:', err)
+      })
+
+    // Fetch conversations (layout already handles auth, so we can fetch directly)
+    fetchConversations()
+  }, [fetchConversations])
+
+  useEffect(() => {
+    if (selectedConversation) {
+      fetchMessages(selectedConversation.id)
+    }
+  }, [selectedConversation, fetchMessages])
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedConversation || sending) return

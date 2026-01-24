@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -47,23 +47,7 @@ export default function TalentMessagesPage() {
   const [sending, setSending] = useState(false)
   const [loadingData, setLoadingData] = useState(true)
 
-  useEffect(() => {
-    if (!loading && (!user || user.role !== 'TALENT')) {
-      router.push('/login')
-      return
-    }
-    if (user && user.role === 'TALENT') {
-      fetchConversations()
-    }
-  }, [user, loading, router])
-
-  useEffect(() => {
-    if (selectedConversation) {
-      fetchMessages(selectedConversation.id)
-    }
-  }, [selectedConversation])
-
-  const fetchConversations = async () => {
+  const fetchConversations = useCallback(async () => {
     try {
       const token = localStorage.getItem('token')
       const response = await fetch('/api/messages', {
@@ -82,9 +66,9 @@ export default function TalentMessagesPage() {
     } finally {
       setLoadingData(false)
     }
-  }
+  }, [selectedConversation])
 
-  const fetchMessages = async (conversationId: string) => {
+  const fetchMessages = useCallback(async (conversationId: string) => {
     try {
       const token = localStorage.getItem('token')
       const response = await fetch(`/api/messages?conversationId=${conversationId}`, {
@@ -98,7 +82,23 @@ export default function TalentMessagesPage() {
     } catch (error) {
       console.error('Failed to fetch messages:', error)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    if (!loading && (!user || user.role !== 'TALENT')) {
+      router.push('/login')
+      return
+    }
+    if (user && user.role === 'TALENT') {
+      fetchConversations()
+    }
+  }, [user, loading, router, fetchConversations])
+
+  useEffect(() => {
+    if (selectedConversation) {
+      fetchMessages(selectedConversation.id)
+    }
+  }, [selectedConversation, fetchMessages])
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()

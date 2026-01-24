@@ -604,13 +604,12 @@ export default function HomePage() {
                       {/* Gradient border effect */}
                       <div className="absolute inset-0 bg-gradient-to-br from-brand-yellow/20 via-purple-400/20 to-indigo-400/20 rounded-3xl -z-10 animate-gradient"></div>
                       
-                      <img 
-                        src={headerSettings.hero_image_url} 
-                        alt="Monera premium talent marketplace - Connect with vetted remote professionals and quality talent" 
+                      <Image
+                        src={headerSettings.hero_image_url}
+                        alt="Monera premium talent marketplace - Connect with vetted remote professionals and quality talent"
                         width={800}
                         height={600}
                         className="relative z-10 w-full h-auto object-cover animate-fade-in"
-                        loading="eager"
                         style={{ 
                           objectFit: headerSettings.hero_image_object_fit || 'cover',
                           opacity: parseFloat(headerSettings.hero_image_opacity || '1'),
@@ -618,6 +617,8 @@ export default function HomePage() {
                           maxHeight: '600px',
                           display: 'block'
                         }}
+                        priority
+                        unoptimized
                         onError={(e) => {
                           console.error('Error loading hero image:', headerSettings.hero_image_url)
                           console.error('Image element:', e.target)
@@ -732,12 +733,13 @@ export default function HomePage() {
                         className="flex items-center justify-center group w-full h-full animate-fade-in"
                       >
                         {isImageUrl ? (
-                      <img
+                      <Image
                         src={company.logo}
                         alt={`${company.name || 'Company'} logo - Trusted partner of Monera talent marketplace`}
                         width={180}
                         height={96}
                           className="h-10 sm:h-12 md:h-16 lg:h-20 w-auto max-w-[120px] sm:max-w-[140px] md:max-w-[160px] lg:max-w-[180px] object-contain group-hover:scale-110 transition-transform duration-300 filter grayscale hover:grayscale-0"
+                          unoptimized
                           loading="lazy"
                           onError={(e) => {
                             // Fallback ke emoji jika gambar error
@@ -807,12 +809,13 @@ export default function HomePage() {
                     <CardHeader className="pb-4">
                       <div className="flex items-center gap-4 mb-3">
                         {isAvatarImage ? (
-                          <img
+                          <Image
                             src={testimonial.avatar}
                             alt={`${testimonial.name || 'User'} profile picture`}
                             width={48}
                             height={48}
                             className="w-12 h-12 rounded-full object-cover border-2 border-brand-purple/20"
+                            unoptimized
                             loading="lazy"
                             onError={(e) => {
                               // Fallback ke gradient circle dengan initial
@@ -852,12 +855,13 @@ export default function HomePage() {
                     <CardHeader className="pb-4">
                       <div className="flex items-center gap-4 mb-3">
                         {isAvatarImage ? (
-                          <img
+                          <Image
                             src={testimonial.avatar}
                             alt={`${testimonial.name || 'User'} profile picture`}
                             width={48}
                             height={48}
                             className="w-12 h-12 rounded-full object-cover border-2 border-brand-purple/20"
+                            unoptimized
                             loading="lazy"
                             onError={(e) => {
                               // Fallback ke gradient circle dengan initial

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import Link from 'next/link'
@@ -39,17 +39,7 @@ export default function BestMatchJobsPage() {
   const [loadingData, setLoadingData] = useState(true)
   const [applying, setApplying] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (!loading && (!user || user.role !== 'CANDIDATE')) {
-      router.push('/login')
-      return
-    }
-    if (user && user.role === 'CANDIDATE') {
-      checkProfileAndFetchJobs()
-    }
-  }, [user, loading, router])
-
-  const checkProfileAndFetchJobs = async () => {
+  const checkProfileAndFetchJobs = useCallback(async () => {
     try {
       const token = localStorage.getItem('token')
       
@@ -82,7 +72,17 @@ export default function BestMatchJobsPage() {
     } finally {
       setLoadingData(false)
     }
-  }
+  }, [router])
+
+  useEffect(() => {
+    if (!loading && (!user || user.role !== 'CANDIDATE')) {
+      router.push('/login')
+      return
+    }
+    if (user && user.role === 'CANDIDATE') {
+      checkProfileAndFetchJobs()
+    }
+  }, [user, loading, router, checkProfileAndFetchJobs])
 
   const handleApply = async (jobId: string) => {
     if (applying) return
