@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
       const keywords = talentHeadline
         .toLowerCase()
         .split(/[\s\/-]+/)
-        .filter(k => k.length >= 3)
+        .filter((k: string) => k.length >= 3)
         .slice(0, 5) // Limit to 5 keywords to avoid query too long
 
       if (keywords.length > 0) {
