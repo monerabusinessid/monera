@@ -5,6 +5,8 @@ import { getStatusMessage } from '@/lib/talent-status'
 import Link from 'next/link'
 import { Logo } from '@/components/logo'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Talent Portal - Monera',
   description: 'Complete your profile and find your next opportunity',

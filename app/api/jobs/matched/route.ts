@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser, successResponse, errorResponse } from '@/lib/api-utils'
 import { getSupabaseClient, createAdminClient } from '@/lib/supabase/server-helper'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * GET /api/jobs/matched
  * Get jobs matched with talent's skills and job title
