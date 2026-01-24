@@ -52,7 +52,7 @@ export default function ClientFindTalentPage() {
     // Initial search with empty filters
     performSearch(1)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, router])
+  }, [router])
 
   const fetchSkills = async () => {
     try {
