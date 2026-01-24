@@ -4,6 +4,8 @@ import { requireAuth, successResponse, errorResponse, handleApiError, getAuthUse
 import { getSupabaseClient } from '@/lib/supabase/server-helper'
 import { createAdminClient } from '@/lib/supabase/server'
 
+export const dynamic = 'force-dynamic'
+
 
 export async function GET(
   request: NextRequest,
