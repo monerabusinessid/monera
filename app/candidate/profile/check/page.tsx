@@ -30,11 +30,11 @@ export default function ProfileCheckPage() {
   const [loadingData, setLoadingData] = useState(true)
 
   useEffect(() => {
-    if (!loading && (!user || user.role !== 'CANDIDATE')) {
+    if (!loading && (!user || user.role !== 'TALENT')) {
       router.push('/login')
       return
     }
-    if (user && user.role === 'CANDIDATE') {
+    if (user && user.role === 'TALENT') {
       fetchReadiness()
     }
   }, [user, loading, router])
@@ -65,7 +65,7 @@ export default function ProfileCheckPage() {
     )
   }
 
-  if (!user || user.role !== 'CANDIDATE') {
+  if (!user || user.role !== 'TALENT') {
     return null
   }
 
