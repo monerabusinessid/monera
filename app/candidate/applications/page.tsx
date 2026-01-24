@@ -33,11 +33,11 @@ export default function CandidateApplicationsPage() {
   const [loadingData, setLoadingData] = useState(true)
 
   useEffect(() => {
-    if (!loading && (!user || user.role !== 'CANDIDATE')) {
+    if (!loading && (!user || user.role !== 'TALENT')) {
       router.push('/login')
       return
     }
-    if (user && user.role === 'CANDIDATE') {
+    if (user && user.role === 'TALENT') {
       fetchApplications()
     }
   }, [user, loading, router])
@@ -83,7 +83,7 @@ export default function CandidateApplicationsPage() {
     )
   }
 
-  if (!user || user.role !== 'CANDIDATE') {
+  if (!user || user.role !== 'TALENT') {
     return null
   }
 
