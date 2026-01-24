@@ -240,7 +240,7 @@ export const POST = requireAuth(async (req, userId) => {
     }
 
     // Check availability - prevent apply if BUSY
-    if (talentProfile.availability === 'Busy') {
+    if (talentProfile?.availability === 'Busy') {
       return NextResponse.json(
         { success: false, error: 'You cannot apply while your availability is set to Busy. Please update your profile.' },
         { status: 400 }
