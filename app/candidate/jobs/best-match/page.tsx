@@ -75,11 +75,11 @@ export default function BestMatchJobsPage() {
   }, [router])
 
   useEffect(() => {
-    if (!loading && (!user || user.role !== 'CANDIDATE')) {
+    if (!loading && (!user || user.role !== 'TALENT')) {
       router.push('/login')
       return
     }
-    if (user && user.role === 'CANDIDATE') {
+    if (user && user.role === 'TALENT') {
       checkProfileAndFetchJobs()
     }
   }, [user, loading, router, checkProfileAndFetchJobs])
@@ -141,7 +141,7 @@ export default function BestMatchJobsPage() {
     )
   }
 
-  if (!user || user.role !== 'CANDIDATE') {
+  if (!user || user.role !== 'TALENT') {
     return null
   }
 
