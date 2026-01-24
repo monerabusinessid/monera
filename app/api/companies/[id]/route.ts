@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db'
 import { companySchema } from '@/lib/validations'
 import { requireAuth, successResponse, errorResponse, handleApiError, getAuthUser } from '@/lib/api-utils'
 
+export const dynamic = 'force-dynamic'
 
 export async function GET(
   request: NextRequest,
