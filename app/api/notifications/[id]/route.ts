@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { getAuthUser, successResponse, handleApiError } from '@/lib/api-utils'
+import { getAuthUser, successResponse, handleApiError, errorResponse } from '@/lib/api-utils'
 import { getSupabaseClient } from '@/lib/supabase/server-helper'
 
 export async function PUT(
@@ -9,7 +9,7 @@ export async function PUT(
   try {
     const user = await getAuthUser(request)
     if (!user) {
-      return handleApiError(new Error('Unauthorized'), 401)
+      return errorResponse('Unauthorized', 401)
     }
 
     const body = await request.json()
@@ -26,7 +26,7 @@ export async function PUT(
       .single()
 
     if (fetchError || !notification) {
-      return handleApiError(new Error('Notification not found'), 404)
+      return errorResponse('Notification not found', 404)
     }
 
     // Update notification
@@ -58,7 +58,7 @@ export async function DELETE(
   try {
     const user = await getAuthUser(request)
     if (!user) {
-      return handleApiError(new Error('Unauthorized'), 401)
+      return errorResponse('Unauthorized', 401)
     }
 
     const supabase = await getSupabaseClient()
@@ -72,7 +72,7 @@ export async function DELETE(
       .single()
 
     if (fetchError || !notification) {
-      return handleApiError(new Error('Notification not found'), 404)
+      return errorResponse('Notification not found', 404)
     }
 
     // Delete notification
