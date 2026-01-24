@@ -11,7 +11,7 @@ export default function AboutUsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-brand-purple via-purple-900 to-indigo-950 text-white pt-32 pb-8 md:pb-10 overflow-hidden" style={{ marginTop: '-80px' }}>
+      <section className="relative bg-gradient-to-br from-brand-purple via-purple-900 to-indigo-950 text-white pt-40 pb-8 md:pb-10 overflow-hidden" style={{ marginTop: '-80px' }}>
         {/* Animated Background - Enhanced Stars/Particles */}
         <div className="absolute inset-0 overflow-hidden -top-20 md:-top-24">
           {/* Enhanced animated stars/particles */}

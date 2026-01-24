@@ -57,7 +57,7 @@ export default function WhatsNewPage() {
         </div>
       </section>
 
-      <div className="bg-white rounded-t-3xl -mt-8 relative z-10">
+      <div className="bg-white rounded-t-3xl -mt-6 sm:-mt-8 relative z-10">
         <div className="container mx-auto px-4 py-16">
         <div className="max-w-6xl mx-auto">
           {/* Latest Updates */}
