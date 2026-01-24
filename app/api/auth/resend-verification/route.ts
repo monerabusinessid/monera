@@ -58,21 +58,10 @@ export async function POST(request: NextRequest) {
       return errorResponse('Email is already verified', 400)
     }
 
-    // Use admin API to resend confirmation email
-    const { error } = await adminSupabase.auth.admin.generateLink({
+    // Resend confirmation email using auth resend endpoint
+    const { error } = await supabase.auth.resend({
       type: 'signup',
-      email: email,
-    })
-
-    // Note: generateLink doesn't actually send email, we need to use resend
-    // For now, let's use the client-side resend which requires user session
-    // Alternative: Use Supabase's built-in email resend feature via admin API
-    // This is a limitation - we might need to implement custom email sending
-    
-    // For now, return success and let Supabase handle it
-    // In production, you should configure Supabase email templates and use their resend feature
-    return successResponse({ 
-      message: 'If this email is registered and not yet verified, a verification email will be sent.' 
+      email,
     })
 
     if (error) {
@@ -80,7 +69,9 @@ export async function POST(request: NextRequest) {
       return errorResponse(error.message || 'Failed to resend verification email', 400)
     }
 
-    return successResponse({ message: 'Verification email sent successfully' })
+    return successResponse({
+      message: 'If this email is registered and not yet verified, a verification email will be sent.',
+    })
   } catch (error) {
     console.error('Error in resend-verification route:', error)
     return errorResponse('Failed to resend verification email', 500)
