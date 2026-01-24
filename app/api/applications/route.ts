@@ -5,6 +5,8 @@ import { getSupabaseClient } from '@/lib/supabase/server-helper'
 import { createAdminClient } from '@/lib/supabase/server'
 import { createNotification } from '@/lib/notifications'
 
+export const runtime = 'edge'
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)

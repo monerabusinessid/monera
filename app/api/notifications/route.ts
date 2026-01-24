@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server'
 import { getAuthUser, successResponse, handleApiError, errorResponse } from '@/lib/api-utils'
 import { getSupabaseClient } from '@/lib/supabase/server-helper'
 
+export const runtime = 'edge'
+
 export async function GET(request: NextRequest) {
   try {
     const user = await getAuthUser(request)

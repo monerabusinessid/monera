@@ -3,6 +3,8 @@ import { Metadata } from 'next'
 import { ClientNav } from '@/components/client/client-nav'
 import { cookies } from 'next/headers'
 
+export const runtime = 'edge'
+
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {

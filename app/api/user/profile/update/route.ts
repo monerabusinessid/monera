@@ -3,6 +3,8 @@ import { getSupabaseClient, createAdminClient } from '@/lib/supabase/server-help
 import { getAuthUser, successResponse, errorResponse } from '@/lib/api-utils'
 import { z } from 'zod'
 
+export const runtime = 'edge'
+
 const updateProfileSchema = z.object({
   fullName: z.string().min(1).optional(),
   country: z.string().min(1).optional(),

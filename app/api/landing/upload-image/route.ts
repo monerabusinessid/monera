@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 
+export const runtime = 'edge'
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()

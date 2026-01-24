@@ -7,6 +7,8 @@ import { registrationRateLimiter } from '@/lib/security/rate-limit'
 import { generateOTP, getCodeExpirationTime } from '@/lib/utils/otp'
 import { sendEmail, emailTemplates } from '@/lib/email'
 
+export const runtime = 'edge'
+
 export async function POST(request: NextRequest) {
   try {
     // CSRF protection (skip for development, enable for production)
