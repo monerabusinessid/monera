@@ -226,12 +226,12 @@ export function Navbar() {
   }
 
   const isLoading = loading || authLoading;
-  const showNavbar = !isScrolled;
+  const showFullNavbar = scrollDirection === 'up' || !isScrolled;
 
   return (
     <>
       {/* Full Navbar - Shows when scrolling up or at top */}
-      <nav className={`hidden lg:block bg-white/80 backdrop-blur-lg sticky top-2 sm:top-4 z-50 transition-all duration-300 rounded-2xl shadow-lg mx-3 sm:mx-4 ${showNavbar ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'}`}>
+      <nav className={`hidden lg:block bg-white/80 backdrop-blur-lg sticky top-2 sm:top-4 z-50 transition-all duration-300 rounded-2xl shadow-lg mx-3 sm:mx-4 ${showFullNavbar ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'}`}>
         <div className="container mx-auto px-3 sm:px-4">
           <div className="flex items-center justify-between h-16">
             {/* Burger Menu for Mobile */}
@@ -617,7 +617,7 @@ export function Navbar() {
       {/* Mobile Menu Overlay */}
       {showMobileMenu && (
         <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setShowMobileMenu(false)}>
-          <div className={`fixed left-0 right-0 bg-white/95 backdrop-blur-lg border-b shadow-lg z-50 ${!showNavbar && isScrolled ? 'top-14' : 'top-16'}`} onClick={(e) => e.stopPropagation()}>
+          <div className={`fixed left-0 right-0 bg-white/95 backdrop-blur-lg border-b shadow-lg z-50 ${!showFullNavbar && isScrolled ? 'top-14' : 'top-16'}`} onClick={(e) => e.stopPropagation()}>
             <div className="mx-auto w-full max-w-none px-4 py-4 space-y-2">
               {/* Menu items - Same order as landing page navbar */}
               {/* Find Jobs - Show for non-users and TALENT users */}
