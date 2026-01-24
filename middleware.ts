@@ -67,7 +67,7 @@ export async function middleware(request: NextRequest) {
   let response = await updateSession(request)
 
   // Add security headers
-  const securityHeaders = {
+  const securityHeaders: Record<string, string> = {
     'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'DENY',
     'X-XSS-Protection': '1; mode=block',
