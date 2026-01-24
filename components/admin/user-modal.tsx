@@ -27,7 +27,13 @@ interface UserModalProps {
 export function UserModal({ user, isOpen, onClose, mode, defaultRole }: UserModalProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    fullName: string
+    email: string
+    password: string
+    role: 'TALENT' | 'CLIENT' | 'SUPER_ADMIN' | 'QUALITY_ADMIN' | 'SUPPORT_ADMIN' | 'ANALYST'
+    status: string
+  }>({
     fullName: '',
     email: '',
     password: '',
@@ -41,7 +47,7 @@ export function UserModal({ user, isOpen, onClose, mode, defaultRole }: UserModa
         fullName: user.full_name || '',
         email: user.email || '',
         password: '',
-        role: user.role || 'TALENT',
+        role: (user.role as any) || 'TALENT',
         status: user.status || 'ACTIVE',
       })
     } else if (mode === 'create') {
@@ -177,7 +183,7 @@ export function UserModal({ user, isOpen, onClose, mode, defaultRole }: UserModa
             <Select
               id="role"
               value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
               disabled={mode === 'view'}
               required
             >
