@@ -91,7 +91,7 @@ export default async function ClientLayout({
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('role, status, full_name')
-        .eq('id', user.id)
+        .eq('id', user!.id)
         .single()
 
       if (profileError || !profileData) {
