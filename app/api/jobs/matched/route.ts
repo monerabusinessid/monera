@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
 
       if (keywords.length > 0) {
         // Build OR query for title matching
-        const titleConditions = keywords.map(k => `title.ilike.%${k}%`).join(',')
+        const titleConditions = keywords.map((k: string) => `title.ilike.%${k}%`).join(',')
         
         const { data: headlineMatchedJobs, error: headlineError } = await adminSupabase
           .from('jobs')
