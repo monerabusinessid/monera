@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { candidateSearchSchema } from '@/lib/validations'
-import { getAuthUser, successResponse, handleApiError } from '@/lib/api-utils'
+import { getAuthUser, successResponse, handleApiError, errorResponse } from '@/lib/api-utils'
 import { getSupabaseClient } from '@/lib/supabase/server-helper'
 
 export async function GET(request: NextRequest) {
@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     // Check authentication
     const user = await getAuthUser(request)
     if (!user) {
-      return handleApiError(new Error('Unauthorized'), 401)
+      return errorResponse('Unauthorized', 401)
     }
 
     const { searchParams } = new URL(request.url)
