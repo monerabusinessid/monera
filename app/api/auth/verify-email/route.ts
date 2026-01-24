@@ -4,7 +4,6 @@ import { successResponse, errorResponse } from '@/lib/api-utils'
 import { isValidOTPFormat, isCodeExpired } from '@/lib/utils/otp'
 import { createAdminClient } from '@/lib/supabase/server'
 
-export const runtime = 'edge'
 
 const MAX_VERIFICATION_ATTEMPTS = 3
 

@@ -4,7 +4,6 @@ import { successResponse, errorResponse, handleApiError, getAuthUser } from '@/l
 import { getSupabaseClient } from '@/lib/supabase/server-helper'
 import { createNotification } from '@/lib/notifications'
 
-export const runtime = 'edge'
 
 export async function GET(
   request: NextRequest,

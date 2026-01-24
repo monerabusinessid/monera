@@ -3,7 +3,6 @@ import { createTalentRequestSchema, talentRequestSearchSchema } from '@/lib/vali
 import { getAuthUser, successResponse, handleApiError } from '@/lib/api-utils'
 import { getSupabaseClient } from '@/lib/supabase/server-helper'
 
-export const runtime = 'edge'
 
 export async function GET(request: NextRequest) {
   try {

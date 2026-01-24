@@ -2,7 +2,6 @@ import { redirect } from 'next/navigation'
 import { isAdmin, hasRouteAccess } from '@/lib/admin/rbac'
 import { AdminNav } from '@/components/admin/admin-nav'
 
-export const runtime = 'edge'
 
 export const dynamic = 'force-dynamic'
 

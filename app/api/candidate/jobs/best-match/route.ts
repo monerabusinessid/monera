@@ -3,7 +3,6 @@ import { requireAuth, successResponse, handleApiError } from '@/lib/api-utils'
 import { getBestMatchJobs } from '@/lib/utils/profile-readiness'
 import { prisma } from '@/lib/db'
 
-export const runtime = 'edge'
 
 export const GET = requireAuth(async (req, userId) => {
   try {

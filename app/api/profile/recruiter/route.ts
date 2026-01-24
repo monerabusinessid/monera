@@ -3,7 +3,6 @@ import { prisma } from '@/lib/db'
 import { recruiterProfileSchema } from '@/lib/validations'
 import { requireAuth, successResponse, handleApiError } from '@/lib/api-utils'
 
-export const runtime = 'edge'
 
 export const GET = requireAuth(async (req, userId) => {
   try {

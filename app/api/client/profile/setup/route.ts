@@ -2,7 +2,6 @@ import { NextRequest } from 'next/server'
 import { getAuthUser, successResponse, errorResponse } from '@/lib/api-utils'
 import { createAdminClient } from '@/lib/supabase/server'
 
-export const runtime = 'edge'
 
 export async function POST(request: NextRequest) {
   try {

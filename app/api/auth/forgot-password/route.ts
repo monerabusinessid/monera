@@ -3,7 +3,6 @@ import { createServerClient } from '@supabase/ssr'
 import { forgotPasswordSchema } from '@/lib/validations'
 import { successResponse, errorResponse, handleApiError } from '@/lib/api-utils'
 
-export const runtime = 'edge'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!

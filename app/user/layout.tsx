@@ -5,7 +5,6 @@ import { getStatusMessage } from '@/lib/talent-status'
 import Link from 'next/link'
 import { Logo } from '@/components/logo'
 
-export const runtime = 'edge'
 
 export const dynamic = 'force-dynamic'
 
