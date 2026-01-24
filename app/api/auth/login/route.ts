@@ -4,7 +4,7 @@ import { loginSchema } from '@/lib/validations'
 import { successResponse, errorResponse, handleApiError } from '@/lib/api-utils'
 import { generateToken } from '@/lib/auth'
 import { validateCSRFTokenFromRequest } from '@/lib/security/csrf'
-
+export const dynamic = 'force-dynamic'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!

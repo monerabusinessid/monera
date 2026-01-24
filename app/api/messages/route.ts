@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { getAuthUser, successResponse, handleApiError, errorResponse } from '@/lib/api-utils'
 import { getSupabaseClient } from '@/lib/supabase/server-helper'
 import { z } from 'zod'
-
+export const dynamic = 'force-dynamic'
 
 const createMessageSchema = z.object({
   conversationId: z.string().optional(),

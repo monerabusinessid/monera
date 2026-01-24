@@ -6,7 +6,7 @@ import { validateCSRFTokenFromRequest } from '@/lib/security/csrf'
 import { registrationRateLimiter } from '@/lib/security/rate-limit'
 import { generateOTP, getCodeExpirationTime } from '@/lib/utils/otp'
 import { sendEmail, emailTemplates } from '@/lib/email'
-
+export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {

@@ -3,7 +3,7 @@ import { createJobSchema, jobSearchSchema } from '@/lib/validations'
 import { requireAuth, successResponse, handleApiError, getAuthUser, errorResponse } from '@/lib/api-utils'
 import { getSupabaseClient } from '@/lib/supabase/server-helper'
 import { createAdminClient } from '@/lib/supabase/server'
-
+export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {

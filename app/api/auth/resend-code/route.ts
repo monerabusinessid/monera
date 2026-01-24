@@ -4,7 +4,7 @@ import { successResponse, errorResponse } from '@/lib/api-utils'
 import { generateOTP, getCodeExpirationTime, canResendCode, getResendCooldownSeconds } from '@/lib/utils/otp'
 import { sendEmail, emailTemplates } from '@/lib/email'
 import { createAdminClient } from '@/lib/supabase/server'
-
+export const dynamic = 'force-dynamic'
 
 const MAX_RESEND_PER_10MIN = 3
 const RESEND_COOLDOWN_SECONDS = 60

@@ -3,7 +3,7 @@ import { prisma } from '@/lib/db'
 import { candidateProfileSchema } from '@/lib/validations'
 import { requireAuth, successResponse, handleApiError } from '@/lib/api-utils'
 import { calculateProfileReadiness } from '@/lib/utils/profile-readiness'
-
+export const dynamic = 'force-dynamic'
 
 export const GET = requireAuth(async (req, userId) => {
   try {

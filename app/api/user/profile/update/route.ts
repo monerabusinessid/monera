@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseClient, createAdminClient } from '@/lib/supabase/server-helper'
 import { getAuthUser, successResponse, errorResponse } from '@/lib/api-utils'
 import { z } from 'zod'
-
+export const dynamic = 'force-dynamic'
 
 const updateProfileSchema = z.object({
   fullName: z.string().min(1).optional(),

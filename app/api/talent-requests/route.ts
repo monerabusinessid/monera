@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { createTalentRequestSchema, talentRequestSearchSchema } from '@/lib/validations'
 import { getAuthUser, successResponse, handleApiError } from '@/lib/api-utils'
 import { getSupabaseClient } from '@/lib/supabase/server-helper'
-
+export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {

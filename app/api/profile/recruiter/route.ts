@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { recruiterProfileSchema } from '@/lib/validations'
 import { requireAuth, successResponse, handleApiError } from '@/lib/api-utils'
-
+export const dynamic = 'force-dynamic'
 
 export const GET = requireAuth(async (req, userId) => {
   try {

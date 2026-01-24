@@ -3,7 +3,7 @@ import { createTalentRequestSchema } from '@/lib/validations'
 import { sendEmail, emailTemplates } from '@/lib/email'
 import { successResponse, handleApiError } from '@/lib/api-utils'
 import { getSupabaseClient } from '@/lib/supabase/server-helper'
-
+export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {

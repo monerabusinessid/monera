@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
 import { Footer } from '@/components/footer'
-
+export const dynamic = 'force-dynamic'
 interface Job {
   id: string
   title: string
