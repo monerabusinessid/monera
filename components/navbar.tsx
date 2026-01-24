@@ -428,8 +428,8 @@ export function Navbar() {
       </nav>
 
       {/* Minimal Navbar - Shows when scrolling down */}
-      <nav className="lg:hidden fixed top-2 sm:top-4 left-3 right-3 sm:left-4 sm:right-4 bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg z-[55] transition-transform duration-300 translate-y-0 opacity-100">
-        <div className="container mx-auto px-3 sm:px-4">
+      <nav className="lg:hidden fixed top-2 sm:top-4 left-2 right-2 sm:left-4 sm:right-4 bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg z-[55] transition-transform duration-300 translate-y-0 opacity-100">
+        <div className="container mx-auto px-2 sm:px-4">
           <div className="flex items-center justify-between h-14 relative flex-nowrap">
             {/* Left spacer - untuk balance layout */}
             <div className="w-1/3 flex justify-start flex-shrink-0">
