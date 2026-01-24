@@ -54,7 +54,7 @@ export default function DashboardPage() {
     )
   }
 
-  if (user.role === 'CANDIDATE' || user.role === 'TALENT') {
+  if (user.role === 'TALENT') {
     return <CandidateDashboard />
   }
 

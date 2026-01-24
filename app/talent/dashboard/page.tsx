@@ -176,7 +176,8 @@ export default function TalentDashboardPage() {
         console.log('[TalentDashboard] User role is not TALENT, redirecting:', user.role)
       }
       // Redirect based on role
-      if (user.role === 'CLIENT' || user.role === 'RECRUITER') {
+      const clientRecruiterRoles = ['CLIENT', 'RECRUITER', 'SUPER_ADMIN', 'QUALITY_ADMIN', 'SUPPORT_ADMIN', 'ANALYST', 'ADMIN']
+      if (clientRecruiterRoles.includes(user.role)) {
         window.location.href = '/client'
       } else if (user.role === 'SUPER_ADMIN' || user.role === 'QUALITY_ADMIN' || user.role === 'SUPPORT_ADMIN' || user.role === 'ANALYST' || user.role === 'ADMIN') {
         window.location.href = '/admin/dashboard'

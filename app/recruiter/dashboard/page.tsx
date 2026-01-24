@@ -47,11 +47,12 @@ export default function RecruiterDashboardPage() {
   const [loadingData, setLoadingData] = useState(true)
 
   useEffect(() => {
-    if (!loading && (!user || user.role !== 'RECRUITER')) {
+    const allowedRoles = ['RECRUITER', 'SUPER_ADMIN', 'QUALITY_ADMIN', 'SUPPORT_ADMIN', 'ANALYST', 'ADMIN']
+    if (!loading && (!user || !allowedRoles.includes(user.role))) {
       router.push('/login')
       return
     }
-    if (user && user.role === 'RECRUITER') {
+    if (user && allowedRoles.includes(user.role)) {
       fetchData()
     }
   }, [user, loading, router])
@@ -105,7 +106,8 @@ export default function RecruiterDashboardPage() {
     )
   }
 
-  if (!user || user.role !== 'RECRUITER') {
+  const allowedRoles = ['RECRUITER', 'SUPER_ADMIN', 'QUALITY_ADMIN', 'SUPPORT_ADMIN', 'ANALYST', 'ADMIN']
+  if (!user || !allowedRoles.includes(user.role)) {
     return null
   }
 

@@ -28,11 +28,12 @@ export default function ProfilePage() {
     return null
   }
 
-  if (user.role === 'CANDIDATE') {
+  if (user.role === 'TALENT') {
     return <CandidateProfilePage />
   }
 
-  if (user.role === 'RECRUITER' || user.role === 'ADMIN') {
+  const allowedRecruiterRoles = ['RECRUITER', 'SUPER_ADMIN', 'QUALITY_ADMIN', 'SUPPORT_ADMIN', 'ANALYST', 'ADMIN']
+  if (allowedRecruiterRoles.includes(user.role)) {
     return <RecruiterProfilePage />
   }
 

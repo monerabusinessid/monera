@@ -120,7 +120,9 @@ export default function EditJobPage() {
       router.push('/login?redirect=/jobs/' + params.id + '/edit')
       return
     }
-    if (user.role !== 'CLIENT' && user.role !== 'RECRUITER' && user.role !== 'ADMIN') {
+    // Only allow CLIENT, RECRUITER, and admin roles
+    const allowedRoles = ['CLIENT', 'RECRUITER', 'SUPER_ADMIN', 'QUALITY_ADMIN', 'SUPPORT_ADMIN', 'ANALYST', 'ADMIN']
+    if (!allowedRoles.includes(user.role)) {
       router.push('/jobs/' + params.id)
       return
     }

@@ -36,8 +36,9 @@ export default function PostJobPage() {
       router.push('/login')
       return
     }
-    // Allow CLIENT, RECRUITER, and ADMIN roles
-    if (user.role !== 'CLIENT' && user.role !== 'RECRUITER' && user.role !== 'ADMIN') {
+    // Allow CLIENT, RECRUITER, and admin roles
+    const allowedRoles = ['CLIENT', 'RECRUITER', 'SUPER_ADMIN', 'QUALITY_ADMIN', 'SUPPORT_ADMIN', 'ANALYST', 'ADMIN']
+    if (!allowedRoles.includes(user.role)) {
       router.push('/dashboard')
       return
     }

@@ -129,7 +129,7 @@ export default function JobDetailPage() {
       return
     }
 
-    if (user.role !== 'TALENT' && user.role !== 'CANDIDATE') {
+    if (user.role !== 'TALENT') {
       setMessage({ type: 'error', text: 'Only talent can apply for jobs' })
       return
     }
@@ -366,7 +366,7 @@ export default function JobDetailPage() {
                     </Button>
                   </div>
                 </div>
-              ) : user.role !== 'TALENT' && user.role !== 'CANDIDATE' ? (
+              ) : user.role !== 'TALENT' ? (
                 <div className="text-center py-4">
                   <p className="text-sm text-gray-600 mb-4">
                     Only talent can apply for jobs

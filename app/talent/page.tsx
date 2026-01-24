@@ -48,11 +48,32 @@ export default function TalentPage() {
   const hasFetchedProfile = useRef(false)
   const redirectAttempted = useRef(false)
 
+  const fetchJobMatches = useCallback(async () => {
+    setLoadingJobs(true)
+    try {
+      const response = await fetch('/api/jobs/matched', {
+        credentials: 'include',
+        cache: 'no-store',
+      })
+      const data = await response.json()
+
+      if (data.success) {
+        setJobMatches(data.data.jobs || [])
+        console.log('Job matches fetched:', data.data.jobs?.length || 0, 'jobs')
+      } else {
+        console.error('Failed to fetch job matches:', data.error)
+      }
+    } catch (error) {
+      console.error('Failed to fetch job matches:', error)
+    } finally {
+      setLoadingJobs(false)
+    }
+  }, [])
+
   const fetchProfileStatus = useCallback(async () => {
     setLoadingProfile(true)
     
     try {
-      // Add cache busting to ensure fresh data
       const profileResponse = await fetch('/api/user/profile?' + new Date().getTime(), {
         credentials: 'include',
         cache: 'no-store',
@@ -81,11 +102,6 @@ export default function TalentPage() {
             skills: profile.skills || [],
           })
 
-          // Note: Redirect to onboarding is handled by useEffect below
-          // Don't redirect here to avoid race conditions
-
-          // Fetch matched jobs if status is SUBMITTED or APPROVED
-          // (user has completed onboarding and submitted profile)
           if (status === 'SUBMITTED' || status === 'APPROVED') {
             fetchJobMatches()
           }
@@ -103,33 +119,10 @@ export default function TalentPage() {
         isProfileReady: false,
         skills: [],
       })
-      // If profile fetch fails, set status to DRAFT which will trigger redirect
     } finally {
       setLoadingProfile(false)
     }
   }, [fetchJobMatches])
-
-  const fetchJobMatches = useCallback(async () => {
-    setLoadingJobs(true)
-    try {
-      const response = await fetch('/api/jobs/matched', {
-        credentials: 'include',
-        cache: 'no-store', // Always fetch fresh data
-      })
-      const data = await response.json()
-
-      if (data.success) {
-        setJobMatches(data.data.jobs || [])
-        console.log('Job matches fetched:', data.data.jobs?.length || 0, 'jobs')
-      } else {
-        console.error('Failed to fetch job matches:', data.error)
-      }
-    } catch (error) {
-      console.error('Failed to fetch job matches:', error)
-    } finally {
-      setLoadingJobs(false)
-    }
-  }, [])
 
   useEffect(() => {
     if (loading) return
