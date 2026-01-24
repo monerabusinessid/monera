@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { getAuthUser, successResponse, handleApiError } from '@/lib/api-utils'
+import { getAuthUser, successResponse, handleApiError, errorResponse } from '@/lib/api-utils'
 import { getSupabaseClient } from '@/lib/supabase/server-helper'
 import { z } from 'zod'
 
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getAuthUser(request)
     if (!user) {
-      return handleApiError(new Error('Unauthorized'), 401)
+      return errorResponse('Unauthorized', 401)
     }
 
     const { searchParams } = new URL(request.url)
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
       .single()
 
     if (!profile) {
-      return handleApiError(new Error('Profile not found'), 404)
+      return errorResponse('Profile not found', 404)
     }
 
     if (conversationId) {
@@ -49,10 +49,10 @@ export async function GET(request: NextRequest) {
 
       // Check access: user must be either talent or recruiter in this conversation
       if (profile.role === 'TALENT' && conversation.talent_id !== user.id) {
-        return handleApiError(new Error('Forbidden'), 403)
+        return errorResponse('Forbidden', 403)
       }
       if ((profile.role === 'CLIENT' || profile.role === 'RECRUITER') && conversation.recruiter_id !== user.id) {
-        return handleApiError(new Error('Forbidden'), 403)
+        return errorResponse('Forbidden', 403)
       }
 
       // Fetch messages
@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getAuthUser(request)
     if (!user) {
-      return handleApiError(new Error('Unauthorized'), 401)
+      return errorResponse('Unauthorized', 401)
     }
 
     const body = await request.json()
@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (!profile) {
-      return handleApiError(new Error('Profile not found'), 404)
+      return errorResponse('Profile not found', 404)
     }
 
     let conversation
@@ -185,26 +185,26 @@ export async function POST(request: NextRequest) {
         .single()
 
       if (convError || !conv) {
-        return handleApiError(new Error('Conversation not found'), 404)
+        return errorResponse('Conversation not found', 404)
       }
 
       // Check access
       if (profile.role === 'TALENT' && conv.talent_id !== user.id) {
-        return handleApiError(new Error('Forbidden'), 403)
+        return errorResponse('Forbidden', 403)
       }
       if ((profile.role === 'CLIENT' || profile.role === 'RECRUITER') && conv.recruiter_id !== user.id) {
-        return handleApiError(new Error('Forbidden'), 403)
+        return errorResponse('Forbidden', 403)
       }
 
       conversation = conv
     } else {
       // Create new conversation (for client/recruiter to start conversation with talent)
       if (profile.role !== 'CLIENT' && profile.role !== 'RECRUITER') {
-        return handleApiError(new Error('Only clients/recruiters can start conversations'), 403)
+        return errorResponse('Only clients/recruiters can start conversations', 403)
       }
 
       if (!validatedData.talentId) {
-        return handleApiError(new Error('talentId is required to start a conversation'), 400)
+        return errorResponse('talentId is required to start a conversation', 400)
       }
 
       // Check if conversation already exists
