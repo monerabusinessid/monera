@@ -42,11 +42,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Get profile
-    let { data: profile, error: profileError } = await supabase
+    const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .select('id, full_name, country, timezone, avatar_url, revision_notes, created_at, bio, phone, location, linked_in_url, github_url')
       .eq('id', user.id)
       .single()
+    let profile: any = profileData
 
     console.log('📊 Profile query result:', {
       found: !!profile,
