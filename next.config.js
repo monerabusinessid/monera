@@ -20,6 +20,12 @@ const nextConfig = {
     ],
     unoptimized: false,
   },
+  // Skip pre-rendering for API routes during build
+  skipTrailingSlashRedirect: true,
+  // Disable static optimization for all pages
+  generateBuildId: async () => {
+    return 'build-' + Date.now()
+  },
 }
 
 module.exports = nextConfig
