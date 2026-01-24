@@ -34,11 +34,11 @@ export default function AllJobsPage() {
   const [loadingData, setLoadingData] = useState(true)
 
   useEffect(() => {
-    if (!loading && (!user || user.role !== 'CANDIDATE')) {
+    if (!loading && (!user || user.role !== 'TALENT')) {
       router.push('/login')
       return
     }
-    if (user && user.role === 'CANDIDATE') {
+    if (user && user.role === 'TALENT') {
       fetchJobs()
     }
   }, [user, loading, router])
@@ -69,7 +69,7 @@ export default function AllJobsPage() {
     )
   }
 
-  if (!user || user.role !== 'CANDIDATE') {
+  if (!user || user.role !== 'TALENT') {
     return null
   }
 
