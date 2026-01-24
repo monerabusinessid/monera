@@ -1,12 +1,12 @@
 import { NextRequest } from 'next/server'
-import { getAuthUser, successResponse, handleApiError } from '@/lib/api-utils'
+import { getAuthUser, successResponse, handleApiError, errorResponse } from '@/lib/api-utils'
 import { getSupabaseClient } from '@/lib/supabase/server-helper'
 
 export async function GET(request: NextRequest) {
   try {
     const user = await getAuthUser(request)
     if (!user) {
-      return handleApiError(new Error('Unauthorized'), 401)
+      return errorResponse('Unauthorized', 401)
     }
 
     const { searchParams } = new URL(request.url)
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getAuthUser(request)
     if (!user) {
-      return handleApiError(new Error('Unauthorized'), 401)
+      return errorResponse('Unauthorized', 401)
     }
 
     const body = await request.json()
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
 
     // Only admins can create notifications for other users
     if (userId && userId !== user.id && user.role !== 'ADMIN' && !user.role?.includes('ADMIN')) {
-      return handleApiError(new Error('Forbidden'), 403)
+      return errorResponse('Forbidden', 403)
     }
 
     const supabase = await getSupabaseClient()
