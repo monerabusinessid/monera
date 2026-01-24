@@ -1,0 +1,294 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CANDIDATE
+  RECRUITER
+  SUPER_ADMIN
+  QUALITY_ADMIN
+  SUPPORT_ADMIN
+  ANALYST
+}
+
+enum ApplicationStatus {
+  PENDING
+  REVIEWING
+  SHORTLISTED
+  REJECTED
+  ACCEPTED
+}
+
+enum JobStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+  ARCHIVED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String
+  role          UserRole  @default(CANDIDATE)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  candidateProfile CandidateProfile?
+  recruiterProfile RecruiterProfile?
+  jobs             Job[]           @relation("JobRecruiter")
+  sentMessages     Message[]
+
+  @@map("users")
+}
+
+model CandidateProfile {
+  id                String    @id @default(cuid())
+  userId            String    @unique
+  firstName         String?
+  lastName          String?
+  headline          String?   // e.g. "Senior Frontend Developer"
+  bio               String?
+  location          String?
+  phone             String?
+  hourlyRate        Float?    // Hourly rate in USD
+  availability      String?   // "Open" or "Busy"
+  resumeUrl         String?
+  portfolioUrl      String?
+  linkedInUrl       String?
+  githubUrl         String?
+  videoIntroUrl     String?   // Video introduction URL
+  hoursPerWeek      String?    // "More than 30 hrs/week", "Less than 30 hrs/week"
+  profileCompletion Float?    @default(0) // 0-100
+  isProfileReady    Boolean   @default(false)
+  lastValidatedAt   DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skills      Skill[]  @relation("CandidateSkills")
+  applications Application[]
+  conversationsAsTalent Conversation[]
+  workHistory WorkHistory[]
+  education   Education[]
+  languages   Language[]
+  certifications Certification[]
+
+  @@map("candidate_profiles")
+}
+
+model WorkHistory {
+  id          String   @id @default(cuid())
+  candidateId String
+  title       String
+  company     String
+  startDate   String   // "March 2022"
+  endDate     String?  // "Present" or "March 2024"
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  candidate   CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@map("work_history")
+}
+
+model Education {
+  id          String   @id @default(cuid())
+  candidateId String
+  institution String
+  degree      String
+  field       String?
+  startYear   Int?
+  endYear     Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  candidate   CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@map("education")
+}
+
+model Language {
+  id          String   @id @default(cuid())
+  candidateId String
+  name        String   // "English", "Indonesian"
+  proficiency String   // "Fluent", "Conversational", "Basic", "Native"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  candidate   CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@map("languages")
+}
+
+model Certification {
+  id          String   @id @default(cuid())
+  candidateId String
+  name        String
+  issuer      String?
+  issueDate   String?
+  expiryDate  String?
+  credentialUrl String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  candidate   CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@map("certifications")
+}
+
+model RecruiterProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  firstName String?
+  lastName  String?
+  phone     String?
+  companyId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company   Company? @relation(fields: [companyId], references: [id])
+  conversationsAsRecruiter Conversation[]
+
+  @@map("recruiter_profiles")
+}
+
+model Company {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  website     String?
+  logoUrl     String?
+  industry    String?
+  size        String?
+  location    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  members     RecruiterProfile[]
+  jobs        Job[]
+
+  @@map("companies")
+}
+
+model Job {
+  id          String      @id @default(cuid())
+  title       String
+  description String
+  requirements String?
+  location    String?
+  remote      Boolean     @default(false)
+  salaryMin   Int?
+  salaryMax   Int?
+  currency    String?     @default("USD")
+  status      JobStatus   @default(DRAFT)
+  recruiterId String
+  companyId   String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  publishedAt DateTime?
+
+  // Relations
+  recruiter   User        @relation("JobRecruiter", fields: [recruiterId], references: [id])
+  company     Company?    @relation(fields: [companyId], references: [id])
+  skills      Skill[]     @relation("JobSkills")
+  applications Application[]
+  conversations Conversation[]
+
+  @@map("jobs")
+}
+
+model Skill {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  category  String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  candidateProfiles CandidateProfile[] @relation("CandidateSkills")
+  jobs              Job[]              @relation("JobSkills")
+
+  @@map("skills")
+}
+
+model Application {
+  id          String            @id @default(cuid())
+  jobId       String
+  candidateId String
+  status      ApplicationStatus @default(PENDING)
+  coverLetter String?
+  expectedRate Float?           // Expected hourly rate for this application
+  resumeUrl   String?
+  notes       String?           // Internal notes for recruiters
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  // Relations
+  job         Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  candidate   CandidateProfile  @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, candidateId])
+  @@map("applications")
+}
+
+model TalentRequest {
+  id          String   @id @default(cuid())
+  clientName  String
+  email       String
+  company     String?
+  talentType  String
+  budget      String
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("talent_requests")
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  conversationId String
+  senderId    String   // User ID
+  content     String
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  sender      User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+model Conversation {
+  id          String   @id @default(cuid())
+  talentId     String   // CandidateProfile ID
+  recruiterId  String   // RecruiterProfile ID
+  jobId        String?  // Optional: related job
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  talent      CandidateProfile @relation(fields: [talentId], references: [id], onDelete: Cascade)
+  recruiter   RecruiterProfile @relation(fields: [recruiterId], references: [id], onDelete: Cascade)
+  job         Job?             @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  messages    Message[]
+
+  @@unique([talentId, recruiterId])
+  @@map("conversations")
+}

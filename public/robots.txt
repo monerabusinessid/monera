@@ -1,0 +1,21 @@
+# robots.txt for Monera
+User-agent: *
+Allow: /
+
+# Disallow admin and private routes
+Disallow: /admin/
+Disallow: /api/
+Disallow: /client/
+Disallow: /talent/
+Disallow: /auth/
+
+# Allow public pages
+Allow: /
+Allow: /jobs
+Allow: /hire-talent
+Allow: /why-monera
+Allow: /about-us
+Allow: /whats-new
+
+# Sitemap location
+Sitemap: https://monera.com/sitemap.xml
