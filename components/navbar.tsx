@@ -283,13 +283,6 @@ export function Navbar() {
                       </Link>
                     )}
 
-                    {/* What's New Link - Show for non-users and admins */}
-                    {(!user || (user.role && ['SUPER_ADMIN', 'QUALITY_ADMIN', 'SUPPORT_ADMIN', 'ANALYST'].includes(user.role))) && (
-                      <Link href="/whats-new" className="text-base text-gray-900 hover:text-brand-purple transition-colors font-medium">
-                        What's new
-                      </Link>
-                    )}
-
                     {/* Authenticated User Menus */}
                     {user?.role === 'TALENT' && (
                       <>
@@ -473,10 +466,6 @@ export function Navbar() {
                   <Link href="/about-us" className="text-base text-gray-900 hover:text-brand-purple transition-colors font-medium whitespace-nowrap" onClick={() => setShowMobileMenu(false)}>
                     About Us
                   </Link>
-                  {/* What's new - Show for all */}
-                  <Link href="/whats-new" className="text-base text-gray-900 hover:text-brand-purple transition-colors font-medium whitespace-nowrap" onClick={() => setShowMobileMenu(false)}>
-                    What's new
-                  </Link>
                 </div>
               </div>
             </div>
@@ -649,15 +638,6 @@ export function Navbar() {
                 onClick={() => setShowMobileMenu(false)}
               >
                 About Us
-              </Link>
-              
-              {/* What's new - Show for all */}
-              <Link 
-                href="/whats-new" 
-                className="block py-2 text-base text-gray-900 hover:text-brand-purple font-medium" 
-                onClick={() => setShowMobileMenu(false)}
-              >
-                What's new
               </Link>
               
               {/* Login and Try for free - Only for non-authenticated users */}
