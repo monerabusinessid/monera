@@ -249,82 +249,18 @@ export default function HomePage() {
     return () => clearInterval(interval)
   }, [trustedCompanies.length])
 
-  // Redirect logged-in users to their dashboard - check immediately and prevent landing page render
-  useEffect(() => {
-    // Wait for auth to finish loading first
-    if (loading) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[HomePage] Auth still loading, waiting...')
-      }
-      return
-    }
-    
-    // If user is logged in, redirect immediately to dashboard
-    if (user) {
-      const role = user.role
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[HomePage] User logged in, redirecting to dashboard:', { role, userId: user.id })
-      }
-      
-      // Use window.location.replace for immediate redirect (no back button history)
-      if (role === 'SUPER_ADMIN' || role === 'QUALITY_ADMIN' || role === 'SUPPORT_ADMIN' || role === 'ANALYST' || role === 'ADMIN') {
-        window.location.replace('/admin/dashboard')
-      } else if (role === 'CLIENT') {
-        window.location.replace('/client')
-      } else if (role === 'TALENT') {
-        // Redirect to /talent page (which will handle onboarding/dashboard logic)
-        window.location.replace('/talent')
-      }
-      return
-    } else {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[HomePage] No user found, showing landing page')
-      }
-    }
-  }, [user, loading])
 
-  // Show loading state while checking auth OR while fetching landing page data
-  // This prevents flash of default content before API data is loaded
-  if (loading || (loadingData && !headerSettingsLoaded)) {
+
+  // Show loading state while fetching landing page data
+  if (loadingData && !headerSettingsLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-purple"></div>
-          <p className="mt-4 text-gray-600">
-            {loading ? 'Loading...' : 'Loading content...'}
-          </p>
+          <p className="mt-4 text-gray-600">Loading content...</p>
         </div>
       </div>
     )
-  }
-  
-  // If user is logged in, redirect to dashboard (but only after data is loaded to prevent flash)
-  if (user) {
-    const role = user.role
-    // Small delay to prevent flash, then redirect
-    setTimeout(() => {
-      if (role === 'SUPER_ADMIN' || role === 'QUALITY_ADMIN' || role === 'SUPPORT_ADMIN' || role === 'ANALYST' || role === 'ADMIN') {
-        window.location.replace('/admin/dashboard')
-      } else if (role === 'CLIENT') {
-        window.location.replace('/client')
-      } else if (role === 'TALENT') {
-        window.location.replace('/talent')
-      }
-    }, 100)
-    
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-purple"></div>
-          <p className="mt-4 text-gray-600">Redirecting to your dashboard...</p>
-        </div>
-      </div>
-    )
-  }
-
-  // Debug: log that we're rendering the landing page
-  if (process.env.NODE_ENV === 'development' && !user) {
-    console.log('[HomePage] Rendering landing page content', { loading, user: 'null' })
   }
   // talentCategories now comes from database via state
 

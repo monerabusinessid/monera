@@ -40,6 +40,14 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl
   
+  // Public routes that don't need authentication
+  const publicRoutes = ['/', '/login', '/register', '/auth/callback', '/api/auth/login', '/api/auth/register']
+  const isPublicRoute = publicRoutes.some(route => pathname === route || pathname.startsWith('/api/auth/'))
+  
+  if (isPublicRoute) {
+    return supabaseResponse
+  }
+  
   // Try to get user from Supabase session first
   const {
     data: { user: supabaseUser },
