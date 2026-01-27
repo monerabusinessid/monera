@@ -295,6 +295,15 @@
   }
 }
 
+@keyframes stars-drift {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 360px 240px;
+  }
+}
+
 @keyframes gradient-shift {
   0%, 100% {
     background-position: 0% 50%;
@@ -368,6 +377,10 @@
 
 .animate-twinkle {
   animation: twinkle 3s ease-in-out infinite;
+}
+
+.animate-stars {
+  animation: stars-drift 60s linear infinite;
 }
 
 .animate-gradient {

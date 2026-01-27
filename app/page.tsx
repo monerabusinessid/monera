@@ -21,6 +21,28 @@ export default function HomePage() {
   const [currentCompanyIndex, setCurrentCompanyIndex] = useState(0)
   const [talentCategories, setTalentCategories] = useState<any[]>([])
   const [faqs, setFaqs] = useState<any[]>([])
+  const calendarUrl = process.env.NEXT_PUBLIC_CALENDAR_URL || 'https://calendar.google.com/calendar/u/0/r/eventedit?add=monerabusiness.id@gmail.com&text=Monera%20Intro%20Call&details=Intro%20call%20with%20Monera%20team'
+  const isCalendarExternal = calendarUrl.startsWith('http')
+  const flaticonIcons = {
+    check: 'https://cdn-icons-png.flaticon.com/512/190/190411.png',
+    bolt: 'https://cdn-icons-png.flaticon.com/512/1827/1827392.png',
+    star: 'https://cdn-icons-png.flaticon.com/512/1828/1828884.png',
+    user: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
+    target: 'https://cdn-icons-png.flaticon.com/512/846/846449.png',
+    globe: 'https://cdn-icons-png.flaticon.com/512/535/535239.png',
+    brain: 'https://cdn-icons-png.flaticon.com/512/2103/2103658.png',
+    search: 'https://cdn-icons-png.flaticon.com/512/751/751463.png',
+    growth: 'https://cdn-icons-png.flaticon.com/512/3135/3135692.png',
+    code: 'https://cdn-icons-png.flaticon.com/512/1055/1055687.png',
+    design: 'https://cdn-icons-png.flaticon.com/512/1055/1055644.png',
+    office: 'https://cdn-icons-png.flaticon.com/512/684/684908.png'
+  }
+  const howItWorksIcons = {
+    profile: 'https://cdn-icons-png.flaticon.com/512/1077/1077063.png',
+    vetted: 'https://cdn-icons-png.flaticon.com/512/190/190411.png',
+    matched: 'https://cdn-icons-png.flaticon.com/512/833/833472.png',
+    remote: 'https://cdn-icons-png.flaticon.com/512/1534/1534938.png'
+  }
   // Initialize headerSettings with default values
   // These will be used until API data is fetched
   const [headerSettings, setHeaderSettings] = useState<any>({
@@ -207,26 +229,25 @@ export default function HomePage() {
         setHeaderSettingsLoaded(true)
         // Fallback to default data if API fails
         setClientTestimonials([
-          { name: 'Sarah Chen', role: 'CEO, TechStart', content: 'Found the perfect developer in 2 days. Quality-first approach saved us weeks of screening.', avatar: '👩' },
-          { name: 'Emily Watson', role: 'HR Director, ScaleUp', content: 'Pre-vetted talent means less time interviewing, more time building.', avatar: '👩' },
+          { name: 'Sarah Chen', role: 'CEO, TechStart', content: 'Found the perfect developer in 2 days. Quality-first approach saved us weeks of screening.', avatar: '' },
+          { name: 'Emily Watson', role: 'HR Director, ScaleUp', content: 'Pre-vetted talent means less time interviewing, more time building.', avatar: '' },
         ])
         setTalentTestimonials([
-          { name: 'Michael Rodriguez', role: 'Freelance Designer', content: 'Best match jobs are game-changing. Only see opportunities that actually fit my skills.', avatar: '👨' },
-          { name: 'Alex Johnson', role: 'Full-Stack Developer', content: 'Profile readiness unlocked best matches. No more spam applying to irrelevant jobs.', avatar: '👨' },
+          { name: 'Michael Rodriguez', role: 'Freelance Designer', content: 'Best match jobs are game-changing. Only see opportunities that actually fit my skills.', avatar: '' },
+          { name: 'Alex Johnson', role: 'Full-Stack Developer', content: 'Profile readiness unlocked best matches. No more spam applying to irrelevant jobs.', avatar: '' },
         ])
         setTrustedCompanies([
-          { name: 'Microsoft', logo: '🪟' },
-          { name: 'Google', logo: '🔍' },
-          { name: 'Amazon', logo: '📦' },
+          { name: 'Microsoft', logo: flaticonIcons.office },
+          { name: 'Google', logo: flaticonIcons.office },
+          { name: 'Amazon', logo: flaticonIcons.office },
         ])
         setTalentCategories([
-          { name: 'Developers', icon: '💻', count: '500+' },
-          { name: 'Designers', icon: '🎨', count: '300+' },
+          { name: 'Developers', icon: flaticonIcons.code, count: '500+' },
+          { name: 'Designers', icon: flaticonIcons.design, count: '300+' },
         ])
         setFaqs([
           { question: 'How does Monera ensure quality?', answer: 'We have a rigorous vetting process that validates every profile before they can apply to jobs.' },
-        ])
-      } finally {
+        ])      } finally {
         setLoadingData(false)
       }
     }
@@ -269,25 +290,29 @@ export default function HomePage() {
       step: 1,
       title: 'Create Profile',
       description: 'Build your professional profile with skills, experience, and portfolio.',
-      icon: '👤',
+      icon: howItWorksIcons.profile,
+      iconAlt: 'Profile setup',
     },
     {
       step: 2,
       title: 'Get Vetted',
       description: 'Our system validates your profile to ensure quality matches.',
-      icon: '✅',
+      icon: howItWorksIcons.vetted,
+      iconAlt: 'Verification',
     },
     {
       step: 3,
       title: 'Get Matched',
       description: 'Receive job recommendations that match your skills and preferences.',
-      icon: '🎯',
+      icon: howItWorksIcons.matched,
+      iconAlt: 'Targeted matches',
     },
     {
       step: 4,
       title: 'Work Remotely',
       description: 'Start working with vetted clients on quality projects.',
-      icon: '🌍',
+      icon: howItWorksIcons.remote,
+      iconAlt: 'Remote work',
     },
   ]
 
@@ -295,24 +320,32 @@ export default function HomePage() {
     {
       title: 'Quality First',
       description: 'Only ready profiles can apply. No spam, no noise.',
-      icon: '⭐',
+      icon: flaticonIcons.star,
+      iconAlt: 'Quality focus',
     },
     {
       title: 'Smart Matching',
       description: 'AI-powered matching based on skills, rate, and availability.',
-      icon: '🧠',
+      icon: flaticonIcons.brain,
+      iconAlt: 'Smart matching',
     },
     {
       title: 'Vetted Talent',
       description: 'Every profile is validated before work begins.',
-      icon: '🔍',
+      icon: flaticonIcons.search,
+      iconAlt: 'Vetted talent',
     },
     {
       title: 'Better Outcomes',
       description: 'Higher success rate with quality-focused approach.',
-      icon: '📈',
+      icon: flaticonIcons.growth,
+      iconAlt: 'Better outcomes',
     },
   ]
+  const categoryIconMap: Record<string, string> = {
+    Developers: flaticonIcons.code,
+    Designers: flaticonIcons.design,
+  }
 
   // clientTestimonials, talentTestimonials, trustedCompanies now come from database via state
 
@@ -431,14 +464,23 @@ export default function HomePage() {
 
       <main className="min-h-screen" role="main">
       {/* Hero Section */}
-      <section ref={heroRef} className="relative bg-gradient-to-br from-brand-purple via-purple-900 to-indigo-950 text-white pt-36 sm:pt-30 md:pt-28 pb-12 md:pb-16 overflow-hidden -mt-20 sm:-mt-24" aria-label="Hero section">
-        {/* Animated Background - Enhanced Stars/Particles */}
+      <section
+        ref={heroRef}
+        className="relative min-h-[100svh] text-white -mt-20 sm:-mt-24 pt-44 sm:pt-40 md:pt-40 pb-16 md:pb-20 overflow-hidden flex items-center bg-gradient-to-br from-brand-purple via-purple-900 to-indigo-950"
+        style={{
+          backgroundImage: headerSettings.hero_image_url
+            ? `linear-gradient(135deg, rgba(111, 3, 205, 0.97) 0%, rgba(60, 16, 120, 0.88) 55%, rgba(20, 14, 60, 0.18) 80%, rgba(20, 14, 60, 0.02) 100%), url('${headerSettings.hero_image_url}')`
+            : undefined,
+          backgroundSize: headerSettings.hero_image_url ? 'cover' : undefined,
+          backgroundPosition: headerSettings.hero_image_url ? '75% center' : undefined
+        }}
+        aria-label="Hero section"
+      >
         <div className="absolute inset-0 overflow-hidden -top-20 md:-top-24">
-          {/* Enhanced animated stars/particles - more visible */}
           <div className="absolute inset-0">
             {[...Array(80)].map((_, i) => (
               <div
-                key={i}
+                key={`hero-star-${i}`}
                 className="absolute rounded-full bg-white animate-twinkle"
                 style={{
                   left: `${Math.random() * 100}%`,
@@ -453,33 +495,25 @@ export default function HomePage() {
               />
             ))}
           </div>
-          
-          {/* Enhanced Large animated bubbles - more visible and dynamic */}
           <div className="absolute -bottom-40 -right-40 w-[700px] h-[700px] bg-gradient-to-br from-brand-yellow/40 via-purple-400/30 to-indigo-400/30 rounded-full blur-3xl animate-float-slow opacity-80"></div>
           <div className="absolute -top-40 -left-40 w-[600px] h-[600px] bg-gradient-to-br from-purple-500/30 via-indigo-500/30 to-brand-yellow/30 rounded-full blur-3xl animate-float-reverse opacity-70"></div>
-          
-          {/* Enhanced Medium floating bubbles - brighter */}
           <div className="absolute top-1/4 right-1/4 w-80 h-80 bg-gradient-to-br from-purple-400/25 to-indigo-400/25 rounded-full blur-2xl animate-float-medium opacity-60"></div>
           <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-gradient-to-br from-brand-yellow/25 to-purple-400/25 rounded-full blur-2xl animate-float-slow opacity-50"></div>
-          
-          {/* Enhanced Small floating particles - more visible */}
           <div className="absolute top-1/2 left-1/3 w-40 h-40 bg-purple-400/20 rounded-full blur-xl animate-float-fast opacity-70"></div>
           <div className="absolute bottom-1/3 right-1/3 w-48 h-48 bg-indigo-400/20 rounded-full blur-xl animate-float-medium opacity-60"></div>
-          
-          {/* Additional pulsing glow effects */}
           <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-brand-yellow/10 rounded-full blur-3xl animate-pulse-slow transform -translate-x-1/2 -translate-y-1/2"></div>
         </div>
         
-        <div className="container mx-auto px-4 relative z-10 pt-2">
+        <div className="container mx-auto px-4 relative z-10 w-full">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 items-center max-w-7xl mx-auto">
             {/* Left Side - Headline & Buttons */}
             <div className="text-left scroll-reveal-left">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-3 md:mb-4 font-headline leading-[1.1] tracking-tight animate-fade-in">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-3 md:mb-4 font-headline leading-[1.1] tracking-tight animate-fade-in text-white">
                 {headerSettings.hero_title && headerSettings.hero_title.trim() !== '' ? headerSettings.hero_title : 'Hire Vetted Remote Talent | Premium Talent Marketplace'}
                 {headerSettings.hero_subtitle && headerSettings.hero_subtitle.trim() !== '' && (
                   <>
                     <br />
-                    <span className="text-brand-yellow bg-gradient-to-r from-brand-yellow to-yellow-300 bg-clip-text text-transparent animate-gradient">
+                    <span className="text-brand-yellow">
                       {headerSettings.hero_subtitle}
                     </span>
                   </>
@@ -491,143 +525,37 @@ export default function HomePage() {
               </p>
             )}
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center mb-8 md:mb-10">
-              <Link href="/hire-talent" className="group">
-                <Button size="lg" className="bg-brand-yellow text-gray-900 hover:bg-yellow-400 font-bold text-lg px-12 py-8 whitespace-nowrap shadow-2xl hover:shadow-yellow-500/50 hover:scale-105 active:scale-95 transition-all duration-300 rounded-2xl group-hover:shadow-3xl">
-                  Find Talent →
-                </Button>
+              {isCalendarExternal ? (
+                <a href={calendarUrl} target="_blank" rel="noopener noreferrer" className="group">
+                  <Button size="lg" className="bg-brand-yellow text-gray-900 hover:bg-yellow-400 font-bold text-lg px-12 py-8 whitespace-nowrap shadow-2xl hover:shadow-yellow-500/40 hover:scale-105 active:scale-95 transition-all duration-300 rounded-2xl">
+                    Find Talent →
+                  </Button>
+                </a>
+              ) : (
+                <Link href={calendarUrl} className="group">
+                  <Button size="lg" className="bg-brand-yellow text-gray-900 hover:bg-yellow-400 font-bold text-lg px-12 py-8 whitespace-nowrap shadow-2xl hover:shadow-yellow-500/40 hover:scale-105 active:scale-95 transition-all duration-300 rounded-2xl">
+                    Find Talent →
+                  </Button>
                 </Link>
+              )}
                 <Link href="/jobs" className="group">
-                  <Button size="lg" variant="outline" className="!border-2 !border-white/50 !text-white !bg-white/10 backdrop-blur-md hover:!bg-white/20 hover:!border-white hover:!text-white font-semibold text-lg px-12 py-8 whitespace-nowrap hover:scale-105 active:scale-95 transition-all duration-300 rounded-2xl">
+                  <Button size="lg" variant="outline" className="!border-2 !border-white/40 !text-white !bg-white/10 backdrop-blur-md hover:!bg-white/20 hover:!border-white font-semibold text-lg px-12 py-8 whitespace-nowrap hover:scale-105 active:scale-95 transition-all duration-300 rounded-2xl">
                     Join as Talent
                   </Button>
                 </Link>
               </div>
               <div className="flex flex-wrap items-center gap-6 text-sm text-purple-200">
                 <div className="flex items-center gap-2 group cursor-default">
-                  <span className="text-2xl">✓</span>
+                  <img src={flaticonIcons.check} alt="" className="w-6 h-6" loading="lazy" decoding="async" />
                   <span className="font-semibold">Vetted Profiles</span>
                 </div>
                 <div className="flex items-center gap-2 group cursor-default">
-                  <span className="text-2xl">⚡</span>
-                  <span className="font-semibold">Fast Matching</span>
-                </div>
-                <div className="flex items-center gap-2 group cursor-default">
-                  <span className="text-2xl">⭐</span>
+                  <img src={flaticonIcons.star} alt="" className="w-6 h-6" loading="lazy" decoding="async" />
                   <span className="font-semibold">Quality First</span>
                 </div>
-              </div>
-            </div>
-            {/* Right Side - Hero Image or 3D Visual Element with Glassmorphism (Dora-inspired) */}
-              <div className="lg:block scroll-reveal-right mt-8 lg:mt-0 mb-6 lg:mb-0">
-              {headerSettings.hero_image_url && headerSettings.hero_image_url.trim() !== '' ? (
-                <div 
-                  className="relative perspective-1000"
-                  style={{ 
-                    textAlign: headerSettings.hero_image_alignment || 'center',
-                    display: 'flex',
-                    justifyContent: headerSettings.hero_image_alignment === 'left' ? 'flex-start' : 
-                                  headerSettings.hero_image_alignment === 'right' ? 'flex-end' : 'center'
-                  }}
-                >
-                  {/* Main image with rounded frame and animations */}
-                  <div className="relative w-full max-w-lg group">
-                    {/* Animated glow effect behind image */}
-                    <div className="absolute -inset-4 bg-gradient-to-br from-brand-yellow/40 via-purple-400/30 to-indigo-400/30 rounded-3xl blur-2xl opacity-60 group-hover:opacity-80 transition-opacity duration-500 animate-pulse-slow"></div>
-                    <div className="absolute -inset-2 bg-gradient-to-tl from-purple-500/20 to-indigo-500/20 rounded-3xl blur-xl opacity-40 group-hover:opacity-60 transition-opacity duration-500"></div>
-                    
-                    {/* Rounded frame container */}
-                    <div className="relative overflow-hidden rounded-3xl border-4 border-white/20 shadow-2xl transform group-hover:scale-105 transition-all duration-500">
-                      {/* Gradient border effect */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-brand-yellow/20 via-purple-400/20 to-indigo-400/20 rounded-3xl -z-10 animate-gradient"></div>
-                      
-                      <Image
-                        src={headerSettings.hero_image_url}
-                        alt="Monera premium talent marketplace - Connect with vetted remote professionals and quality talent"
-                        width={800}
-                        height={600}
-                        className="relative z-10 w-full h-auto object-cover animate-fade-in"
-                        style={{ 
-                          objectFit: headerSettings.hero_image_object_fit || 'cover',
-                          opacity: parseFloat(headerSettings.hero_image_opacity || '1'),
-                          objectPosition: headerSettings.hero_image_position || 'center',
-                          maxHeight: '600px',
-                          display: 'block'
-                        }}
-                        priority
-                        unoptimized
-                        onError={(e) => {
-                          console.error('Error loading hero image:', headerSettings.hero_image_url)
-                          console.error('Image element:', e.target)
-                          // Fallback jika gambar error - tampilkan 3D visual
-                          const imgElement = e.target as HTMLImageElement
-                          const parent = imgElement.parentElement?.parentElement
-                          if (parent) {
-                            imgElement.style.display = 'none'
-                            // Show fallback visual
-                            const fallback = document.createElement('div')
-                            fallback.className = 'relative perspective-1000'
-                            fallback.innerHTML = `
-                              <div class="absolute inset-0 bg-gradient-to-br from-brand-yellow/30 via-purple-500/30 to-indigo-500/30 rounded-3xl blur-3xl transform rotate-6 animate-float-slow opacity-60"></div>
-                              <div class="relative bg-white/10 backdrop-blur-2xl rounded-3xl p-10 border border-white/20 shadow-2xl">
-                                <p class="text-white text-center">Image failed to load</p>
-                              </div>
-                            `
-                            parent.appendChild(fallback)
-                          }
-                        }}
-                        onLoad={() => {
-                          console.log('Hero image loaded successfully:', headerSettings.hero_image_url)
-                        }}
-                      />
-                      
-                      {/* Shine effect overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out rounded-3xl"></div>
-                    </div>
-                    
-                    {/* Floating particles around image */}
-                    <div className="absolute -top-2 -right-2 w-4 h-4 bg-brand-yellow/60 rounded-full blur-sm animate-float-fast opacity-70"></div>
-                    <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-purple-400/50 rounded-full blur-sm animate-float-medium opacity-60"></div>
-                    <div className="absolute top-1/2 -left-3 w-3 h-3 bg-indigo-400/40 rounded-full blur-sm animate-float-slow opacity-50"></div>
-                  </div>
-                </div>
-              ) : (
-                <div className="relative perspective-1000">
-                  {/* Animated background glow - more dynamic */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-brand-yellow/30 via-purple-500/30 to-indigo-500/30 rounded-3xl blur-3xl transform rotate-6 animate-float-slow opacity-60"></div>
-                  <div className="absolute inset-0 bg-gradient-to-tl from-purple-400/20 to-indigo-400/20 rounded-3xl blur-2xl transform -rotate-6 animate-float-reverse opacity-40"></div>
-                  
-                  {/* Main Glassmorphism card with 3D effect */}
-                  <div className="relative bg-white/10 backdrop-blur-2xl rounded-3xl p-10 border border-white/20 shadow-2xl transform hover:scale-105 transition-all duration-500 hover:rotate-1">
-                    {/* Grid pattern overlay */}
-                    <div className="absolute inset-0 rounded-3xl opacity-10" style={{
-                      backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
-                      backgroundSize: '20px 20px'
-                    }}></div>
-                    
-                    <div className="relative grid grid-cols-2 gap-5">
-                      {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="bg-white/10 rounded-2xl p-5 backdrop-blur-md border border-white/20 hover:bg-white/15 hover:scale-105 transition-all duration-300 group cursor-pointer">
-                          <div className="h-24 bg-gradient-to-br from-purple-400/40 via-indigo-400/40 to-brand-yellow/30 rounded-xl mb-3 animate-gradient group-hover:shadow-lg transition-shadow"></div>
-                          <div className="h-2 bg-white/30 rounded-full w-3/4 group-hover:w-full transition-all duration-300"></div>
-                        </div>
-                      ))}
-                    </div>
-                    
-                    {/* Stats overlay */}
-                    <div className="mt-6 text-center">
-                      <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
-                        <span className="text-lg">✨</span>
-                        <span className="text-sm font-semibold text-white">1000+ Vetted Talents</span>
-                      </div>
-                    </div>
-                    
-                    {/* Floating elements */}
-                    <div className="absolute -top-4 -right-4 w-16 h-16 bg-brand-yellow/20 rounded-full blur-xl animate-float-fast"></div>
-                    <div className="absolute -bottom-4 -left-4 w-20 h-20 bg-purple-400/20 rounded-full blur-xl animate-float-medium"></div>
-                  </div>
-                </div>
-              )}
-            </div>
+              </div></div>
+            {/* Right Side - Background image only */}
+            <div className="lg:block scroll-reveal-right mt-8 lg:mt-0 mb-6 lg:mb-0" aria-hidden="true"></div>
           </div>
         </div>
       </section>
@@ -663,33 +591,22 @@ export default function HomePage() {
                   }
                   return getCurrentBatch().map((company, idx) => {
                     const isImageUrl = company.logo && (company.logo.startsWith('http') || company.logo.startsWith('/'))
+                    const logoSrc = isImageUrl ? company.logo : flaticonIcons.office
                     return (
                       <div
                         key={`${company.id || idx}-${currentCompanyIndex}`}
                         className="flex items-center justify-center group w-full h-full animate-fade-in"
                       >
-                        {isImageUrl ? (
-                      <Image
-                        src={company.logo}
-                        alt={`${company.name || 'Company'} logo - Trusted partner of Monera talent marketplace`}
-                        width={180}
-                        height={96}
+                        <img
+                          src={logoSrc}
+                          alt={`${company.name || 'Company'} logo - Trusted partner of Monera talent marketplace`}
                           className="h-10 sm:h-12 md:h-16 lg:h-20 w-auto max-w-[120px] sm:max-w-[140px] md:max-w-[160px] lg:max-w-[180px] object-contain group-hover:scale-110 transition-transform duration-300 filter grayscale hover:grayscale-0"
-                          unoptimized
                           loading="lazy"
+                          decoding="async"
                           onError={(e) => {
-                            // Fallback ke emoji jika gambar error
-                            const parent = (e.target as HTMLImageElement).parentElement
-                            if (parent) {
-                              parent.innerHTML = `<div class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl group-hover:scale-110 transition-transform duration-300 filter grayscale hover:grayscale-0">🏢</div>`
-                            }
+                            e.currentTarget.src = flaticonIcons.office
                           }}
                         />
-                      ) : (
-                        <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl group-hover:scale-110 transition-transform duration-300 filter grayscale hover:grayscale-0">
-                          {company.logo || '🏢'}
-                        </div>
-                      )}
                       </div>
                     )
                   })
@@ -707,7 +624,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 scroll-reveal">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 font-headline">
-              Real Talk 💬 from Real Users 🗣️
+              Real Talk from Real Users
             </h2>
           </div>
           
@@ -740,6 +657,7 @@ export default function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 scroll-reveal-scale">
               {clientTestimonials.map((testimonial, idx) => {
                 const isAvatarImage = testimonial.avatar && (testimonial.avatar.startsWith('http') || testimonial.avatar.startsWith('/'))
+                const avatarInitial = (testimonial.name || 'U')[0].toUpperCase()
                 return (
                   <Card key={idx} className={`border-0 hover:shadow-2xl transition-all duration-300 hover:-translate-y-3 bg-white rounded-2xl shadow-lg scroll-reveal-scale stagger-${idx + 1}`}>
                     <CardHeader className="pb-4">
@@ -763,7 +681,7 @@ export default function HomePage() {
                           />
                         ) : (
                           <div className="w-12 h-12 bg-gradient-to-br from-brand-purple to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                            {testimonial.avatar || (testimonial.name || 'U')[0].toUpperCase()}
+                            {avatarInitial}
                           </div>
                         )}
                         <div>
@@ -786,6 +704,7 @@ export default function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 scroll-reveal-scale">
               {talentTestimonials.map((testimonial, idx) => {
                 const isAvatarImage = testimonial.avatar && (testimonial.avatar.startsWith('http') || testimonial.avatar.startsWith('/'))
+                const avatarInitial = (testimonial.name || 'U')[0].toUpperCase()
                 return (
                   <Card key={idx} className={`border-0 hover:shadow-2xl transition-all duration-300 hover:-translate-y-3 bg-white rounded-2xl shadow-lg scroll-reveal-scale stagger-${idx + 1}`}>
                     <CardHeader className="pb-4">
@@ -809,7 +728,7 @@ export default function HomePage() {
                           />
                         ) : (
                           <div className="w-12 h-12 bg-gradient-to-br from-brand-purple to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                            {testimonial.avatar || (testimonial.name || 'U')[0].toUpperCase()}
+                            {avatarInitial}
                           </div>
                         )}
                         <div>
@@ -843,6 +762,10 @@ export default function HomePage() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 max-w-6xl mx-auto">
             {talentCategories.map((category, idx) => {
               const staggerClass = `stagger-${(idx % 6) + 1}`
+              const isCategoryIconUrl = typeof category.icon === 'string' && (category.icon.startsWith('http') || category.icon.startsWith('/'))
+              const categoryIconSrc = isCategoryIconUrl
+                ? category.icon
+                : (categoryIconMap[category.name] || flaticonIcons.user)
               return (
               <div
                 key={category.name}
@@ -850,7 +773,7 @@ export default function HomePage() {
               >
                 <Card className={`text-center hover:shadow-2xl transition-all duration-300 border-2 border-gray-200 hover:border-brand-purple hover:bg-gradient-to-br hover:from-purple-50 hover:to-yellow-50/50 hover:-translate-y-3 hover:scale-105 scroll-reveal-scale ${staggerClass} rounded-2xl bg-white h-full flex flex-col`}>
                   <CardContent className="p-6 flex flex-col items-center justify-center flex-1">
-                    <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">{category.icon}</div>
+                    <img src={categoryIconSrc} alt={`${category.name} icon`} className="w-10 h-10 mb-3 group-hover:scale-110 transition-transform duration-300" loading="lazy" decoding="async" />
                     <h3 className="font-bold text-base text-gray-800 group-hover:text-brand-purple transition-colors duration-300 mb-1">
                       {category.name}
                     </h3>
@@ -886,7 +809,7 @@ export default function HomePage() {
                 <CardContent className="p-6">
                   <div className="flex items-start gap-6">
                     <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0 backdrop-blur-sm">
-                      <span className="text-3xl">{item.icon}</span>
+                      <img src={item.icon} alt={item.iconAlt} className="w-9 h-9" loading="lazy" decoding="async" />
                     </div>
                     <div className="flex-1">
                       <CardTitle className="text-xl font-bold text-white mb-2">{item.title}</CardTitle>
@@ -928,7 +851,14 @@ export default function HomePage() {
                   className={`scroll-reveal-scale stagger-${idx + 1} bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-300 hover:scale-105 hover:-translate-y-2`}
                 >
                   <div className="flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-6 backdrop-blur-sm">
-                    <span className="text-3xl">{step.icon}</span>
+                    <img
+                      src={step.icon}
+                      alt={step.iconAlt}
+                      className="w-9 h-9"
+                      style={{ filter: 'brightness(0) invert(1)' }}
+                      loading="lazy"
+                      decoding="async"
+                    />
                   </div>
                   <div className="text-brand-yellow text-sm font-semibold mb-2">STEP {step.step}</div>
                   <h3 className="text-xl font-bold mb-3">{step.title}</h3>
@@ -1011,7 +941,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4 text-center relative z-10">
           <div className="max-w-3xl mx-auto">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 font-headline scroll-reveal text-gray-900">
-              Ready to Own Your ⚡ Talent Search?
+              Ready to Own Your Talent Search?
             </h2>
             <p className="text-xl text-gray-600 mb-10 leading-relaxed scroll-reveal-scale stagger-1">
               Hop on the Monera wave. Start free and find quality talent with smart matching. No hassle. Secure your hiring like the pro you are.
@@ -1037,3 +967,10 @@ export default function HomePage() {
     </>
   )
 }
+
+
+
+
+
+
+

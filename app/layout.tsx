@@ -6,7 +6,7 @@ import { ConditionalNavbar } from "@/components/conditional-navbar";
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://monera.com'),
   title: {
-    default: "Monera - Premium Talent Marketplace | Hire Vetted Remote Talent & Professionals",
+    default: "Monera | Hire Vetted Remote Talent",
     template: "%s | Monera"
   },
   description: "Monera is a quality-first talent platform connecting businesses with pre-screened remote professionals. Find vetted talent, independent contractors, and remote professionals. AI-powered matching, pre-validated profiles, and smart hiring tools for quality-focused companies.",

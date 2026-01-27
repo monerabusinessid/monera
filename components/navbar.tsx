@@ -6,9 +6,11 @@ import { useAuth } from '@/lib/auth-context'
 import { Button } from '@/components/ui/button'
 import { Logo } from '@/components/logo'
 import { createClient } from '@/lib/supabase/client'
+import { usePathname } from 'next/navigation'
 
 export function Navbar() {
   const { user: authContextUser, logout, loading: authLoading } = useAuth()
+  const pathname = usePathname()
   const [supabaseUser, setSupabaseUser] = useState<any>(null)
   const [supabaseProfile, setSupabaseProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -226,41 +228,50 @@ export function Navbar() {
   }
 
   const isLoading = loading || authLoading;
-  const showFullNavbar = scrollDirection === 'up' || !isScrolled;
+  const showFullNavbar = true;
+  const desktopNavToneClass = 'bg-white/80'
+  const desktopNavPositionClass = 'sticky'
+  const desktopNavLayoutClass = 'top-4 sm:top-6 rounded-2xl mx-3 sm:mx-4'
+  const mobileNavLayoutClass = 'top-4 sm:top-6 left-2 right-2 sm:left-4 sm:right-4 rounded-2xl'
+  const navLinkClass = 'text-gray-900 hover:text-brand-purple'
+  const navMutedLinkClass = 'text-gray-900 hover:text-gray-700'
+  const navIconClass = 'text-gray-900'
+  const mobileNavToneClass = 'bg-white/80'
 
   return (
     <>
       {/* Full Navbar - Shows when scrolling up or at top */}
-      <nav className={`hidden lg:block bg-white/80 backdrop-blur-lg sticky top-2 sm:top-4 z-50 transition-all duration-300 rounded-2xl shadow-lg mx-3 sm:mx-4 ${showFullNavbar ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'}`}>
+      <nav className={`hidden lg:block ${desktopNavToneClass} backdrop-blur-lg ${desktopNavPositionClass} ${desktopNavLayoutClass} z-50 transition-all duration-300 shadow-lg`}>
         <div className="container mx-auto px-3 sm:px-4">
-          <div className="flex items-center justify-between h-16">
-            {/* Burger Menu for Mobile */}
-            <button
-              onClick={() => setShowMobileMenu(!showMobileMenu)}
-              className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors z-50 relative"
-              aria-label="Menu"
-            >
-              <svg className="w-6 h-6 text-gray-900" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
+          <div className="grid grid-cols-[auto,1fr,auto] items-center h-16">
+            <div className="flex items-center gap-3">
+              {/* Burger Menu for Mobile */}
+              <button
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors z-50 relative"
+                aria-label="Menu"
+              >
+                <svg className={`w-6 h-6 ${navIconClass}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
 
-            <div className="flex items-center flex-1 min-w-0">
               {/* Logo - Left */}
               <div className="flex-shrink-0">
                 <Logo />
               </div>
-              
-              {/* Menu - Center */}
-              <div className="hidden lg:flex items-center justify-center space-x-6 flex-1">
-                {/* Show menu only when not loading */}
-                {!isLoading && (
-                  <>
+            </div>
+
+            {/* Menu - Center */}
+            <div className="hidden lg:flex items-center justify-center space-x-6">
+              {/* Show menu only when not loading */}
+              {!isLoading && (
+                <>
                     {/* Find Jobs Link - Show for non-users and TALENT users */}
                     {(!user || user.role === 'TALENT') && (
                       <Link 
                         href={user?.role === 'TALENT' ? "/talent/jobs" : "/jobs"} 
-                        className="text-base text-gray-900 hover:text-brand-purple transition-colors font-medium"
+                        className={`text-base ${navLinkClass} transition-colors font-medium`}
                       >
                         Find Jobs
                       </Link>
@@ -270,7 +281,7 @@ export function Navbar() {
                     {(!user || user.role === 'CLIENT' || (user.role && ['SUPER_ADMIN', 'QUALITY_ADMIN', 'SUPPORT_ADMIN', 'ANALYST'].includes(user.role))) && (
                       <Link
                         href="/hire-talent"
-                        className="text-base text-gray-900 hover:text-brand-purple transition-colors font-medium"
+                        className={`text-base ${navLinkClass} transition-colors font-medium`}
                       >
                         Hire talent
                       </Link>
@@ -278,7 +289,7 @@ export function Navbar() {
 
                     {/* About Us Link - Show for non-users and admins */}
                     {(!user || (user.role && ['SUPER_ADMIN', 'QUALITY_ADMIN', 'SUPPORT_ADMIN', 'ANALYST'].includes(user.role))) && (
-                      <Link href="/about-us" className="text-base text-gray-900 hover:text-brand-purple transition-colors font-medium">
+                      <Link href="/about-us" className={`text-base ${navLinkClass} transition-colors font-medium`}>
                         About Us
                       </Link>
                     )}
@@ -286,13 +297,13 @@ export function Navbar() {
                     {/* Authenticated User Menus */}
                     {user?.role === 'TALENT' && (
                       <>
-                        <Link href="/talent/applications" className="text-gray-900 hover:text-brand-purple transition-colors font-medium">
+                        <Link href="/talent/applications" className={`text-base ${navLinkClass} transition-colors font-medium`}>
                           Applications
                         </Link>
-                        <Link href="/talent/messages" className="text-gray-900 hover:text-brand-purple transition-colors font-medium">
+                        <Link href="/talent/messages" className={`text-base ${navLinkClass} transition-colors font-medium`}>
                           Messages
                         </Link>
-                        <Link href="/talent/profile" className="text-gray-900 hover:text-brand-purple transition-colors font-medium">
+                        <Link href="/talent/profile" className={`text-base ${navLinkClass} transition-colors font-medium`}>
                           Profile
                         </Link>
                       </>
@@ -300,27 +311,26 @@ export function Navbar() {
 
                     {user?.role === 'CLIENT' && (
                       <>
-                        <Link href="/recruiter/dashboard" className="text-gray-900 hover:text-brand-purple transition-colors font-medium">
+                        <Link href="/recruiter/dashboard" className={`text-base ${navLinkClass} transition-colors font-medium`}>
                           Dashboard
                         </Link>
-                        <Link href="/recruiter/jobs/create" className="text-gray-900 hover:text-brand-purple transition-colors font-medium">
+                        <Link href="/recruiter/jobs/create" className={`text-base ${navLinkClass} transition-colors font-medium`}>
                           Post Job
                         </Link>
-                        <Link href="/recruiter/talent-search" className="text-gray-900 hover:text-brand-purple transition-colors font-medium">
+                        <Link href="/recruiter/talent-search" className={`text-base ${navLinkClass} transition-colors font-medium`}>
                           Talent Search
                         </Link>
-                        <Link href="/recruiter/applicants" className="text-gray-900 hover:text-brand-purple transition-colors font-medium">
+                        <Link href="/recruiter/applicants" className={`text-base ${navLinkClass} transition-colors font-medium`}>
                           Applicants
                         </Link>
                       </>
                     )}
-                  </>
-                )}
+                </>
+              )}
             </div>
-          </div>
 
-          {/* Right Side */}
-          <div className="flex items-center space-x-4">
+            {/* Right Side */}
+            <div className="flex items-center justify-end space-x-4">
             {isLoading ? (
               <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse"></div>
             ) : user ? (
@@ -405,7 +415,7 @@ export function Navbar() {
               </div>
             ) : (
               <div className="hidden sm:flex items-center space-x-4">
-                <Link href="/login" className="text-gray-900 hover:text-gray-700 font-medium transition-colors">
+                <Link href="/login" className={`${navMutedLinkClass} font-medium transition-colors`}>
                   Log in
                 </Link>
                 <Link href="/register">
@@ -415,13 +425,13 @@ export function Navbar() {
                 </Link>
               </div>
             )}
-          </div>
+            </div>
           </div>
         </div>
       </nav>
 
       {/* Minimal Navbar - Shows when scrolling down */}
-      <nav className="lg:hidden fixed top-2 sm:top-4 left-2 right-2 sm:left-4 sm:right-4 bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg z-[55] transition-transform duration-300 translate-y-0 opacity-100">
+      <nav className={`lg:hidden fixed ${mobileNavToneClass} backdrop-blur-lg ${mobileNavLayoutClass} shadow-lg z-[55] transition-transform duration-300 translate-y-0 opacity-100`}>
         <div className="container mx-auto px-2 sm:px-4">
           <div className="flex items-center justify-between h-14 relative flex-nowrap">
             {/* Left spacer - untuk balance layout */}
@@ -488,7 +498,7 @@ export function Navbar() {
                     className="p-2 rounded-lg hover:bg-gray-100 transition-colors z-50 relative"
                     aria-label="Menu"
                   >
-                    <svg className="w-6 h-6 text-gray-900" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <svg className={`w-6 h-6 ${navIconClass}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                   </button>
@@ -591,7 +601,7 @@ export function Navbar() {
                     className="p-2 rounded-lg hover:bg-gray-100 transition-colors z-50 relative"
                     aria-label="Menu"
                   >
-                    <svg className="w-6 h-6 text-gray-900" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <svg className={`w-6 h-6 ${navIconClass}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                   </button>

@@ -183,48 +183,53 @@ export default function JobsPage() {
                 </Button>
               </div>
             ) : (
-              <div className="space-y-6">
+              <div className="flex flex-col gap-8">
                 {jobs.map((job) => {
                   const jobUrl = `/jobs/${job.id}`
                   console.log('JobsPage: Rendering job card:', { id: job.id, title: job.title, url: jobUrl })
                   return (
-                  <Link key={job.id} href={jobUrl} onClick={() => console.log('JobsPage: Clicked job link:', jobUrl)}>
-                    <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                      <CardHeader>
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <CardTitle className="text-2xl">{job.title}</CardTitle>
-                            <CardDescription className="mt-1">
-                              {job.company?.name || 'Company'}
-                              {job.location && !job.remote && ` • ${job.location}`}
-                              {job.remote && ' • Remote'}
-                            </CardDescription>
-                          </div>
-                          {job.salaryMin && (
-                            <div className="text-right">
-                              <div className="text-lg font-semibold text-brand-purple">
-                                {job.currency || '$'}{job.salaryMin.toLocaleString()}
-                                {job.salaryMax && ` - ${job.currency || '$'}${job.salaryMax.toLocaleString()}`}
-                              </div>
+                    <Link
+                      key={job.id}
+                      href={jobUrl}
+                      className="block"
+                      onClick={() => console.log('JobsPage: Clicked job link:', jobUrl)}
+                    >
+                      <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                        <CardHeader>
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div className="flex-1">
+                              <CardTitle className="text-2xl">{job.title}</CardTitle>
+                              <CardDescription className="mt-1">
+                                {job.company?.name || 'Company'}
+                                {job.location && !job.remote && ` • ${job.location}`}
+                                {job.remote && ' • Remote'}
+                              </CardDescription>
                             </div>
-                          )}
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-gray-600 line-clamp-2 mb-4">{job.description}</p>
-                        <div className="flex flex-wrap gap-2">
-                          {job.skills.map((skill) => (
-                            <span
-                              key={skill.id}
-                              className="px-2 py-1 bg-gradient-to-r from-purple-50 to-yellow-50 text-purple-700 text-xs rounded border border-purple-200"
-                            >
-                              {skill.name}
-                            </span>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
+                            {job.salaryMin && (
+                              <div className="text-left sm:text-right">
+                                <div className="text-lg font-semibold text-brand-purple">
+                                  {job.currency || '$'}{job.salaryMin.toLocaleString()}
+                                  {job.salaryMax && ` - ${job.currency || '$'}${job.salaryMax.toLocaleString()}`}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-gray-600 line-clamp-2 mb-4">{job.description}</p>
+                          <div className="flex flex-wrap gap-2">
+                            {job.skills.map((skill) => (
+                              <span
+                                key={skill.id}
+                                className="px-2 py-1 bg-gradient-to-r from-purple-50 to-yellow-50 text-purple-700 text-xs rounded border border-purple-200"
+                              >
+                                {skill.name}
+                              </span>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </Link>
                   )
                 })}
               </div>
@@ -238,3 +243,4 @@ export default function JobsPage() {
     </div>
   )
 }
+

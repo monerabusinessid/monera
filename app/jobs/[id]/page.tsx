@@ -52,6 +52,7 @@ export default function JobDetailPage() {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' })
     // Get job ID from params - handle both string and array
     const jobId = Array.isArray(params.id) ? params.id[0] : params.id
     
@@ -167,10 +168,10 @@ export default function JobDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-brand-purple"></div>
-          <p className="mt-4 text-gray-600">Loading job details...</p>
+          <p className="mt-4 text-slate-600">Loading job details...</p>
         </div>
       </div>
     )
@@ -179,16 +180,16 @@ export default function JobDetailPage() {
   if (!job) {
     const jobId = Array.isArray(params.id) ? params.id[0] : (params.id as string)
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-slate-50">
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-2xl mx-auto text-center">
             <div className="text-6xl mb-4">🔍</div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">Job not found</h1>
-            <p className="text-gray-600 mb-4">
+            <h1 className="text-3xl font-bold text-slate-900 mb-4">Job not found</h1>
+            <p className="text-slate-600 mb-4">
               The job you're looking for doesn't exist or may have been removed.
             </p>
             {process.env.NODE_ENV === 'development' && jobId && (
-              <p className="text-sm text-gray-500 mb-8">
+              <p className="text-sm text-slate-500 mb-8">
                 Job ID: {jobId}
               </p>
             )}
@@ -216,138 +217,19 @@ export default function JobDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        {/* Breadcrumb */}
-        <div className="mb-6">
-          <button
-            onClick={() => router.push('/jobs')}
-            className="text-sm text-gray-600 hover:text-brand-purple flex items-center gap-2"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Back to Jobs
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Header Card */}
-          <Card className="border-2 border-brand-purple/20 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <h1 className="text-4xl font-bold mb-3 text-gray-900">{job.title}</h1>
-                  <div className="flex flex-wrap items-center gap-3 text-gray-600 mb-4">
-                    {job.company?.name && (
-                      <span className="flex items-center gap-1">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                        </svg>
-                        {job.company.name}
-                      </span>
-                    )}
-                    {job.location && !job.remote && (
-                      <span className="flex items-center gap-1">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        {job.location}
-                      </span>
-                    )}
-                    {job.remote && (
-                      <span className="flex items-center gap-1 text-brand-purple font-medium">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Remote
-                      </span>
-                    )}
-                    {(job as any).category && (
-                      <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
-                        {(job as any).category}
-                      </span>
-                    )}
-                  </div>
-                  {job.salaryMin && (
-                    <div className="text-3xl font-bold text-brand-purple mb-2">
-                      {job.currency || '$'}{job.salaryMin.toLocaleString()}
-                      {job.salaryMax && ` - ${job.currency || '$'}${job.salaryMax.toLocaleString()}`}
-                    </div>
-                  )}
-                  <div className="text-sm text-gray-500">
-                    Posted {new Date(job.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-md">
-            <CardHeader className="bg-gradient-to-r from-purple-50 to-indigo-50">
-              <CardTitle className="text-2xl flex items-center gap-2">
-                <span>📋</span>
-                Job Description
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="prose max-w-none whitespace-pre-wrap text-gray-700 leading-relaxed">{job.description}</div>
-            </CardContent>
-          </Card>
-
-          {job.requirements && (
-            <Card className="shadow-md">
-              <CardHeader className="bg-gradient-to-r from-purple-50 to-indigo-50">
-                <CardTitle className="text-2xl flex items-center gap-2">
-                  <span>✅</span>
-                  Requirements
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <div className="prose max-w-none whitespace-pre-wrap text-gray-700 leading-relaxed">{job.requirements}</div>
-              </CardContent>
-            </Card>
-          )}
-
-          <Card className="shadow-md">
-            <CardHeader className="bg-gradient-to-r from-purple-50 to-indigo-50">
-              <CardTitle className="text-2xl flex items-center gap-2">
-                <span>🔧</span>
-                Skills Required
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6">
-              {job.skills.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {job.skills.map((skill) => (
-                    <span
-                      key={skill.id}
-                      className="px-4 py-2 bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-800 rounded-lg text-sm font-medium border border-purple-200 hover:shadow-md transition-shadow"
-                    >
-                      {skill.name}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-500 italic">No specific skills listed</p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
+    <div className="min-h-screen bg-slate-50">
+      <div className="container mx-auto px-4 pt-16 pb-12 max-w-6xl">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10">
         {/* Sidebar */}
         <div className="space-y-6">
-          <Card className="sticky top-24 shadow-lg border-2 border-brand-purple/20">
-            <CardHeader className="bg-gradient-to-br from-brand-purple to-purple-700 text-white rounded-t-lg">
+          <Card className="sticky top-24 shadow-sm border border-slate-200 rounded-3xl bg-white">
+            <CardHeader className="bg-gradient-to-br from-brand-purple to-purple-700 text-white rounded-t-3xl">
               <CardTitle className="text-xl">Apply for this Job</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 pt-6">
               {!user ? (
                 <div className="space-y-4">
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-slate-600">
                     Login to apply for this job
                   </p>
                   <div className="space-y-2">
@@ -368,7 +250,7 @@ export default function JobDetailPage() {
                 </div>
               ) : user.role !== 'TALENT' ? (
                 <div className="text-center py-4">
-                  <p className="text-sm text-gray-600 mb-4">
+                  <p className="text-sm text-slate-600 mb-4">
                     Only talent can apply for jobs
                   </p>
                   <Button 
@@ -440,17 +322,15 @@ export default function JobDetailPage() {
           </Card>
 
           {job.company && (
-            <Card className="shadow-md">
-              <CardHeader className="bg-gradient-to-r from-purple-50 to-indigo-50">
-                <CardTitle className="text-xl flex items-center gap-2">
-                  <span>🏢</span>
-                  About the Company
-                </CardTitle>
+            <Card className="shadow-sm border border-slate-200 rounded-3xl bg-white">
+              <CardHeader className="border-b border-slate-100 pb-4">
+                <CardTitle className="text-lg text-slate-900">About the Company</CardTitle>
+                <CardDescription className="text-xs uppercase tracking-wide text-slate-500">Employer</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
-                <p className="font-bold text-lg mb-3 text-gray-900">{job.company.name}</p>
+                <p className="font-semibold text-lg mb-3 text-slate-900">{job.company.name}</p>
                 {job.company.description && (
-                  <p className="text-sm text-gray-600 mb-4 leading-relaxed">{job.company.description}</p>
+                  <p className="text-sm text-slate-600 mb-4 leading-relaxed">{job.company.description}</p>
                 )}
                 {job.company.website && (
                   <a
@@ -470,25 +350,26 @@ export default function JobDetailPage() {
           )}
 
           {/* Job Stats */}
-          <Card className="shadow-md">
-            <CardHeader className="bg-gradient-to-r from-purple-50 to-indigo-50">
-              <CardTitle className="text-xl">Job Information</CardTitle>
+          <Card className="shadow-sm border border-slate-200 rounded-3xl bg-white">
+            <CardHeader className="border-b border-slate-100 pb-4">
+              <CardTitle className="text-lg text-slate-900">Job Information</CardTitle>
+              <CardDescription className="text-xs uppercase tracking-wide text-slate-500">Status</CardDescription>
             </CardHeader>
             <CardContent className="pt-6 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Posted</span>
+                <span className="text-sm text-slate-600">Posted</span>
                 <span className="text-sm font-medium">
                   {new Date(job.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
                 </span>
               </div>
               {(job as any)._count?.applications !== undefined && (
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Applications</span>
+                  <span className="text-sm text-slate-600">Applications</span>
                   <span className="text-sm font-medium">{(job as any)._count.applications}</span>
                 </div>
               )}
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Status</span>
+                <span className="text-sm text-slate-600">Status</span>
                 <span className={`text-sm font-medium px-2 py-1 rounded ${
                   job.status === 'PUBLISHED' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
                 }`}>
@@ -498,6 +379,107 @@ export default function JobDetailPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Main Content */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Header Card */}
+          <Card className="border border-slate-200 shadow-sm rounded-3xl bg-white">
+            <CardContent className="p-6 md:p-8">
+              <div className="flex items-start justify-between mb-5">
+                <div className="flex-1">
+                  <h1 className="text-3xl md:text-4xl font-bold mb-4 text-slate-900">{job.title}</h1>
+                  <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600 mb-4">
+                    {job.company?.name && (
+                      <span className="flex items-center gap-1">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                        {job.company.name}
+                      </span>
+                    )}
+                    {job.location && !job.remote && (
+                      <span className="flex items-center gap-1">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        {job.location}
+                      </span>
+                    )}
+                    {job.remote && (
+                      <span className="flex items-center gap-1 text-brand-purple font-medium">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Remote
+                      </span>
+                    )}
+                    {(job as any).category && (
+                      <span className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-semibold uppercase tracking-wide">
+                        {(job as any).category}
+                      </span>
+                    )}
+                  </div>
+                  {job.salaryMin && (
+                    <div className="text-2xl md:text-3xl font-semibold text-brand-purple mb-2">
+                      {job.currency || '$'}{job.salaryMin.toLocaleString()}
+                      {job.salaryMax && ` - ${job.currency || '$'}${job.salaryMax.toLocaleString()}`}
+                    </div>
+                  )}
+                  <div className="text-sm text-slate-500">
+                    Posted {new Date(job.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-sm border border-slate-200 rounded-3xl bg-white">
+            <CardHeader className="border-b border-slate-100 pb-4">
+              <CardTitle className="text-lg text-slate-900">Job Description</CardTitle>
+              <CardDescription className="text-xs uppercase tracking-wide text-slate-500">Overview</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="prose max-w-none whitespace-pre-wrap text-slate-700 leading-relaxed">{job.description}</div>
+            </CardContent>
+          </Card>
+
+          {job.requirements && (
+            <Card className="shadow-sm border border-slate-200 rounded-3xl bg-white">
+              <CardHeader className="border-b border-slate-100 pb-4">
+                <CardTitle className="text-lg text-slate-900">Requirements</CardTitle>
+                <CardDescription className="text-xs uppercase tracking-wide text-slate-500">Essentials</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="prose max-w-none whitespace-pre-wrap text-slate-700 leading-relaxed">{job.requirements}</div>
+              </CardContent>
+            </Card>
+          )}
+
+          <Card className="shadow-sm border border-slate-200 rounded-3xl bg-white">
+            <CardHeader className="border-b border-slate-100 pb-4">
+              <CardTitle className="text-lg text-slate-900">Skills Required</CardTitle>
+              <CardDescription className="text-xs uppercase tracking-wide text-slate-500">Must-have</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6">
+              {job.skills.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {job.skills.map((skill) => (
+                    <span
+                      key={skill.id}
+                      className="px-4 py-2 bg-slate-100 text-slate-700 rounded-full text-sm font-medium border border-slate-200 hover:shadow-sm transition-shadow"
+                    >
+                      {skill.name}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-slate-500 italic">No specific skills listed</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
         </div>
       </div>
     </div>

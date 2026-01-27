@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Footer } from '@/components/footer'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -8,10 +9,24 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 
 export default function AboutUsPage() {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: '',
+  })
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const subject = `Message from ${formData.name || 'Website visitor'}`
+    const body = `Name: ${formData.name}\nEmail: ${formData.email}\n\n${formData.message}`
+    const mailto = `mailto:monerabusiness.id@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+    window.location.href = mailto
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-brand-purple via-purple-900 to-indigo-950 text-white pt-40 pb-8 md:pb-10 overflow-hidden" style={{ marginTop: '-80px' }}>
+      <section className="relative bg-gradient-to-br from-brand-purple via-purple-900 to-indigo-950 text-white pt-40 sm:pt-36 pb-12 md:pb-16 overflow-hidden -mt-20 sm:-mt-24">
         {/* Animated Background - Enhanced Stars/Particles */}
         <div className="absolute inset-0 overflow-hidden -top-20 md:-top-24">
           {/* Enhanced animated stars/particles */}
@@ -138,17 +153,25 @@ export default function AboutUsPage() {
             <CardContent>
               <div className="space-y-6">
                 <div>
-                  <h3 className="font-semibold mb-2">📍 Our Office</h3>
-                  <p className="text-gray-600">
-                    Dubai, United Arab Emirates
-                  </p>
+                  <h3 className="font-semibold mb-2">
+                    <span className="inline-flex items-center gap-2">
+                      <img src="https://cdn-icons-png.flaticon.com/512/684/684908.png" alt="" className="w-4 h-4" loading="lazy" decoding="async" />
+                      Our Office
+                    </span>
+                  </h3>
+                  <p className="text-gray-600">Jakarta, Indonesia</p>
                   <p className="text-sm text-gray-500 mt-1">
-                    We're based in Dubai, connecting talent and companies from around the world.
+                    We're based in Jakarta, Indonesia, connecting talent and companies from around the world.
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold mb-2">📧 Contact Email</h3>
+                  <h3 className="font-semibold mb-2">
+                    <span className="inline-flex items-center gap-2">
+                      <img src="https://cdn-icons-png.flaticon.com/512/561/561127.png" alt="" className="w-4 h-4" loading="lazy" decoding="async" />
+                      Contact Email
+                    </span>
+                  </h3>
                   <p className="text-gray-600">
                     <a href="mailto:monerabusiness.id@gmail.com" className="text-brand-purple hover:underline">
                       monerabusiness.id@gmail.com
@@ -158,18 +181,38 @@ export default function AboutUsPage() {
 
                 <div>
                   <h3 className="font-semibold mb-4">Send us a message</h3>
-                  <form className="space-y-4">
+                  <form className="space-y-4" onSubmit={handleSubmit}>
                     <div>
                       <Label htmlFor="name">Name</Label>
-                      <Input id="name" placeholder="Your name" />
+                      <Input
+                        id="name"
+                        placeholder="Your name"
+                        value={formData.name}
+                        onChange={(event) => setFormData((prev) => ({ ...prev, name: event.target.value }))}
+                        required
+                      />
                     </div>
                     <div>
                       <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" placeholder="your@email.com" />
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="your@email.com"
+                        value={formData.email}
+                        onChange={(event) => setFormData((prev) => ({ ...prev, email: event.target.value }))}
+                        required
+                      />
                     </div>
                     <div>
                       <Label htmlFor="message">Message</Label>
-                      <Textarea id="message" rows={4} placeholder="Your message..." />
+                      <Textarea
+                        id="message"
+                        rows={4}
+                        placeholder="Your message..."
+                        value={formData.message}
+                        onChange={(event) => setFormData((prev) => ({ ...prev, message: event.target.value }))}
+                        required
+                      />
                     </div>
                     <Button type="submit" className="bg-brand-purple hover:bg-purple-700">
                       Send Message
@@ -187,3 +230,4 @@ export default function AboutUsPage() {
     </div>
   )
 }
+
