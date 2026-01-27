@@ -221,7 +221,7 @@ export default function JobDetailPage() {
       <div className="container mx-auto px-4 pt-16 pb-12 max-w-6xl">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10">
         {/* Sidebar */}
-        <div className="space-y-6">
+        <div className="space-y-8">
           <Card className="sticky top-24 shadow-sm border border-slate-200 rounded-3xl bg-white">
             <CardHeader className="bg-gradient-to-br from-brand-purple to-purple-700 text-white rounded-t-3xl">
               <CardTitle className="text-xl">Apply for this Job</CardTitle>
