@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
@@ -143,7 +143,6 @@ export default function JobDetailPage() {
       const data = await response.json()
       if (data.success) {
         setIsSaved(!isSaved)
-        // Trigger dashboard refresh if we're on dashboard
         if (window.location.pathname === '/talent') {
           window.location.reload()
         }
@@ -154,6 +153,8 @@ export default function JobDetailPage() {
       setSaving(false)
     }
   }
+
+  const handleApply = async () => {
     if (!user) {
       router.push('/login?redirect=/jobs/' + params.id)
       return
@@ -487,8 +488,7 @@ export default function JobDetailPage() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
-    <Footer />
   )
 }
-
