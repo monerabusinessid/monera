@@ -42,7 +42,6 @@ export const candidateProfileSchema = z.object({
   phone: z.string().optional(),
   hourlyRate: z.number().positive('Hourly rate must be positive').optional(),
   availability: z.enum(['Open', 'Busy']).optional(),
-  hoursPerWeek: z.string().optional(),
   resumeUrl: z.string().url('Invalid URL').optional().or(z.literal('')),
   portfolioUrl: z.string().url('Invalid URL').optional().or(z.literal('')),
   linkedInUrl: z.string().url('Invalid URL').optional().or(z.literal('')),

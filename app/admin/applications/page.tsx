@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { ApplicationsTable } from '@/components/admin/applications-table'
 
 export default async function AdminApplicationsPage() {
@@ -87,17 +87,22 @@ export default async function AdminApplicationsPage() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">Applications Management</h1>
-        <p className="text-gray-600">Review and manage all job applications</p>
+      <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <p className="text-sm text-gray-500">
+            Home / Admin / <span className="text-brand-purple font-medium">Applications</span>
+          </p>
+          <h1 className="text-3xl font-semibold text-gray-900 mt-3">Applications Management</h1>
+          <p className="text-gray-500 mt-2">Review and manage all job applications.</p>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>All Applications ({totalApplications || 0})</CardTitle>
-          <CardDescription>Monitor application status and activity</CardDescription>
-        </CardHeader>
+      <Card className="border border-gray-100 shadow-sm">
         <CardContent>
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold text-gray-900">All Applications ({totalApplications || 0})</h2>
+            <p className="text-sm text-gray-500">Monitor application status and activity</p>
+          </div>
           <ApplicationsTable applications={finalApplications || []} />
         </CardContent>
       </Card>

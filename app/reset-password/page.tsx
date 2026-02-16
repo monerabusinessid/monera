@@ -1,9 +1,8 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -15,70 +14,25 @@ function ResetPasswordForm() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
-  const [sessionReady, setSessionReady] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const token = searchParams.get('token')
 
   useEffect(() => {
-    // Handle Supabase password reset callback
-    // Supabase redirects with hash fragment containing access_token and type=recovery
-    const supabase = createClient()
-    
-    const handleHash = async () => {
-      const hash = window.location.hash
-      if (hash) {
-        const params = new URLSearchParams(hash.substring(1))
-        const accessToken = params.get('access_token')
-        const type = params.get('type')
-        
-        if (type === 'recovery' && accessToken) {
-          try {
-            // Set the session using Supabase client
-            // This will automatically handle cookies
-            const { data, error: sessionError } = await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: params.get('refresh_token') || '',
-            })
-
-            if (sessionError) {
-              console.error('[ResetPassword] Error setting session:', sessionError)
-              setError('Invalid or expired reset link. Please request a new password reset.')
-              return
-            }
-
-            if (data.session) {
-              console.log('[ResetPassword] Session set successfully')
-              setSessionReady(true)
-              // Remove hash from URL for cleaner UX
-              window.history.replaceState(null, '', window.location.pathname)
-            }
-          } catch (err) {
-            console.error('[ResetPassword] Error:', err)
-            setError('Failed to process reset link. Please try again.')
-          }
-        } else {
-          setError('Invalid reset link. Please request a new password reset.')
-        }
-      } else {
-        // Check if we already have a session
-        const checkSession = async () => {
-          const { data: { session } } = await supabase.auth.getSession()
-          if (session) {
-            setSessionReady(true)
-          } else {
-            setError('No reset session found. Please request a new password reset.')
-          }
-        }
-        checkSession()
-      }
+    if (!token) {
+      setError('Invalid reset link. Please request a new password reset.')
     }
-
-    handleHash()
-  }, [])
+  }, [token])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setSuccess('')
+
+    if (!token) {
+      setError('Invalid reset link')
+      return
+    }
 
     if (password !== confirmPassword) {
       setError('Passwords do not match')
@@ -90,20 +44,13 @@ function ResetPasswordForm() {
       return
     }
 
-    if (!sessionReady) {
-      setError('Please wait for the reset link to be processed.')
-      return
-    }
-
     setLoading(true)
 
     try {
-      // Update the password using the API
-      // The session should already be set via Supabase client
       const response = await fetch('/api/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ token, password }),
         credentials: 'include',
       })
 
@@ -163,7 +110,7 @@ function ResetPasswordForm() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="At least 8 characters"
-                  disabled={loading || !!success}
+                  disabled={loading || !!success || !token}
                 />
               </div>
 
@@ -177,12 +124,12 @@ function ResetPasswordForm() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm your password"
-                  disabled={loading || !!success}
+                  disabled={loading || !!success || !token}
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading || !!success || !sessionReady}>
-                {loading ? 'Resetting...' : success ? 'Password Reset!' : !sessionReady ? 'Processing...' : 'Reset Password'}
+              <Button type="submit" className="w-full" disabled={loading || !!success || !token}>
+                {loading ? 'Resetting...' : success ? 'Password Reset!' : 'Reset Password'}
               </Button>
             </form>
 

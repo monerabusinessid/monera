@@ -109,7 +109,18 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    // Update avatar in talent_profiles table (where avatar_url should be stored)
+    // Update avatar in both profiles and talent_profiles tables
+    // Update profiles table
+    const { error: updateProfileError } = await supabase
+      .from('profiles')
+      .update({ avatar_url: urlData.publicUrl, updated_at: new Date().toISOString() })
+      .eq('id', userIdStr)
+    
+    if (updateProfileError) {
+      console.warn('Could not update profiles.avatar_url:', updateProfileError.message)
+    }
+    
+    // Update talent_profiles table (where avatar_url should be stored)
     // First check if talent_profile exists
     const { data: talentProfile } = await supabase
       .from('talent_profiles')
@@ -121,29 +132,11 @@ export async function POST(request: NextRequest) {
       // Update existing talent profile with avatar
       const { error: updateTalentError } = await supabase
         .from('talent_profiles')
-        .update({ avatar_url: urlData.publicUrl })
+        .update({ avatar_url: urlData.publicUrl, updated_at: new Date().toISOString() })
         .eq('id', talentProfile.id)
 
       if (updateTalentError) {
         console.error('Error updating talent profile avatar:', updateTalentError)
-        // If avatar_url doesn't exist in talent_profiles either, just return success
-        // The file is uploaded, we just can't store the URL reference
-        console.warn('avatar_url column may not exist in talent_profiles, but file uploaded successfully')
-      }
-    } else {
-      // Try to create talent_profile with avatar
-      const { error: createTalentError } = await supabase
-        .from('talent_profiles')
-        .insert({
-          user_id: userIdStr,
-          avatar_url: urlData.publicUrl,
-          status: 'DRAFT',
-          profile_completion: 0,
-        })
-
-      if (createTalentError) {
-        console.warn('Could not create/update talent_profile with avatar_url:', createTalentError)
-        // File is uploaded, just can't store reference - this is OK
       }
     }
 

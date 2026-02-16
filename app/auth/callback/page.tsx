@@ -173,7 +173,7 @@ function AuthCallback() {
             // Determine redirect path
             let redirectPath = '/'
             if (role === 'SUPER_ADMIN' || role === 'QUALITY_ADMIN' || role === 'SUPPORT_ADMIN' || role === 'ANALYST' || role === 'ADMIN') {
-              redirectPath = '/admin/dashboard'
+              redirectPath = '/admin'
             } else if (role === 'TALENT') {
                 // For TALENT users from signup, check if they need onboarding
                 // If status is DRAFT (or missing), redirect to onboarding
@@ -183,10 +183,13 @@ function AuthCallback() {
                 redirectPath = '/talent'
               }
             } else if (role === 'CLIENT') {
-              // CLIENT users go directly to dashboard
-              // Onboarding is optional and can be accessed from dashboard if needed
-              redirectPath = '/client'
-              console.log('[AuthCallback] CLIENT user detected, redirecting to /client dashboard')
+              if (isRegister) {
+                redirectPath = '/client/onboarding'
+                console.log('[AuthCallback] CLIENT signup detected, redirecting to /client/onboarding')
+              } else {
+                redirectPath = '/client'
+                console.log('[AuthCallback] CLIENT user detected, redirecting to /client dashboard')
+              }
             } else {
               console.error('[AuthCallback] Unknown role:', role)
               // Fallback: redirect to login if role is unknown

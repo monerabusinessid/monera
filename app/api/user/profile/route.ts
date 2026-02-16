@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSupabaseClient, createAdminClient } from '@/lib/supabase/server-helper'
+import { createAdminClient } from '@/lib/supabase/server-helper'
 import { getAuthUser, successResponse, errorResponse } from '@/lib/api-utils'
 
 export const dynamic = 'force-dynamic'
@@ -11,7 +11,12 @@ export async function GET(request: NextRequest) {
       return errorResponse('Unauthorized', 401)
     }
 
-    const supabase = await getSupabaseClient()
+    console.log('🔑 Authenticated user:', {
+      id: user.id,
+      email: user.email,
+      role: user.role
+    })
+
     const adminSupabase = await createAdminClient()
     const statusPriority: Record<string, number> = {
       APPROVED: 5,
@@ -43,31 +48,51 @@ export async function GET(request: NextRequest) {
         })[0]
     }
 
-    // Get profile
-    const { data: profileData, error: profileError } = await supabase
-      .from('profiles')
-      .select('id, full_name, country, timezone, avatar_url, revision_notes, created_at, bio, phone, location, linked_in_url, github_url')
-      .eq('id', user.id)
-      .single()
-    let profile: any = profileData
-
-    console.log('📊 Profile query result:', {
-      found: !!profile,
-      error: profileError?.message || null,
-      profileId: profile?.id || 'N/A',
-      fullName: profile?.full_name || 'N/A'
-    })
+    // Get profile - use raw SQL to bypass potential RLS issues
+    let profile: any = null
+    let profileError: any = null
+    
+    try {
+      const { data: profileData, error: error1 } = await adminSupabase
+        .rpc('get_profile_by_id', { profile_id: user.id })
+      
+      if (error1) {
+        // Fallback to direct query if RPC doesn't exist
+        const { data: directData, error: error2 } = await adminSupabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .maybeSingle()
+        
+        profile = directData
+        profileError = error2
+      } else {
+        profile = profileData?.[0] || profileData
+      }
+      
+      console.log('📊 Profile query result:', {
+        found: !!profile,
+        error: profileError?.message || null,
+        full_name: profile?.full_name || 'NULL',
+        country: profile?.country || 'NULL',
+        phone: profile?.phone || 'NULL',
+        location: profile?.location || 'NULL'
+      })
+    } catch (err) {
+      console.error('❌ Error fetching profile:', err)
+      profileError = err
+    }
 
     if (profileError || !profile) {
-      console.warn('⚠️ Profile not found, using fallback profile object:', profileError?.message)
-      // Build a fallback profile object so we can still return data (using talentProfile)
+      console.warn('⚠️ Profile not found or error:', profileError?.message)
+      console.log('⚠️ Will use talent_profiles data only')
+      // Build a minimal fallback profile
       profile = {
         id: user.id,
         full_name: null,
         country: null,
         timezone: null,
         avatar_url: null,
-        avatarUrl: null,
         revision_notes: null,
         created_at: null,
         bio: null,
@@ -77,7 +102,12 @@ export async function GET(request: NextRequest) {
         github_url: null,
       } as any
     } else {
-      console.log('✅ Profile found, continuing to fetch talent profile...')
+      console.log('✅ Profile found with data:', {
+        full_name: profile.full_name,
+        country: profile.country,
+        phone: profile.phone,
+        location: profile.location
+      })
     }
 
     // Get talent profile - handle both UUID and TEXT user.id
@@ -526,9 +556,18 @@ export async function GET(request: NextRequest) {
     // Basic profile fields
     responseData.id = profile.id
     responseData.fullName = profile.full_name || null
+    // Split full_name into firstName and lastName for frontend
+    if (profile.full_name) {
+      const nameParts = profile.full_name.trim().split(/\s+/)
+      responseData.firstName = nameParts[0] || null
+      responseData.lastName = nameParts.slice(1).join(' ') || null
+    } else {
+      responseData.firstName = null
+      responseData.lastName = null
+    }
     responseData.country = profile.country || null
     responseData.timezone = profile.timezone || null
-    responseData.bio = profile.bio || talentProfile?.bio || null
+    responseData.bio = talentProfile?.bio || profile.bio || null
     responseData.phone = profile.phone || null
     responseData.location = profile.location || null
     responseData.linkedInUrl = profile.linked_in_url || null

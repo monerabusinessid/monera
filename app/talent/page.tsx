@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { getStatusMessage } from '@/lib/talent-status'
+import { Footer } from '@/components/footer'
 
 interface ProfileStatus {
   status: string
@@ -38,6 +39,22 @@ interface Job {
   createdAt: string
 }
 
+interface Application {
+  id: string
+  status: string
+  createdAt: string
+  job: {
+    id: string
+    title: string
+    company: {
+      name: string
+    } | null
+    recruiter: {
+      email: string
+    }
+  }
+}
+
 export default function TalentPage() {
   const { user, loading } = useAuth()
   const router = useRouter()
@@ -45,8 +62,13 @@ export default function TalentPage() {
   const [loadingProfile, setLoadingProfile] = useState(false)
   const [jobMatches, setJobMatches] = useState<Job[]>([])
   const [loadingJobs, setLoadingJobs] = useState(false)
+  const [applications, setApplications] = useState<Application[]>([])
+  const [loadingApplications, setLoadingApplications] = useState(false)
+  const [savedCount, setSavedCount] = useState(0)
   const hasFetchedProfile = useRef(false)
   const redirectAttempted = useRef(false)
+  const authRecheckAttempted = useRef(false)
+  const authConfirmed = useRef(false)
 
   const fetchJobMatches = useCallback(async () => {
     setLoadingJobs(true)
@@ -72,7 +94,7 @@ export default function TalentPage() {
 
   const fetchProfileStatus = useCallback(async () => {
     setLoadingProfile(true)
-    
+
     try {
       const profileResponse = await fetch('/api/user/profile?' + new Date().getTime(), {
         credentials: 'include',
@@ -84,14 +106,29 @@ export default function TalentPage() {
 
         if (profileData.success && profileData.data) {
           const profile = profileData.data
-          const status = profile.status || 'DRAFT'
-          
-          console.log('📊 Profile status fetched:', {
+          let status = profile.status || 'DRAFT'
+
+          if (status === 'DRAFT') {
+            try {
+              const meRes = await fetch('/api/auth/me', { credentials: 'include' })
+              if (meRes.ok) {
+                const meData = await meRes.json()
+                const fallbackStatus = meData?.data?.talentProfile?.status
+                if (fallbackStatus) {
+                  status = fallbackStatus
+                }
+              }
+            } catch (err) {
+              console.warn('[Talent] Fallback status check failed:', err)
+            }
+          }
+
+          console.log('Profile status fetched:', {
             status,
             submittedAt: profile.submittedAt,
             skillsCount: profile.skills?.length || 0
           })
-          
+
           setProfileStatus({
             status: status,
             profileCompletion: profile.profileCompletion || 0,
@@ -106,13 +143,13 @@ export default function TalentPage() {
             fetchJobMatches()
           }
         } else {
-          console.warn('⚠️ Profile data not found or invalid:', profileData)
+          console.warn('Profile data not found or invalid:', profileData)
         }
       } else {
-        console.error('❌ Failed to fetch profile:', profileResponse.status, profileResponse.statusText)
+        console.error('Failed to fetch profile:', profileResponse.status, profileResponse.statusText)
       }
     } catch (error) {
-      console.error('❌ Error fetching profile status:', error)
+      console.error('Error fetching profile status:', error)
       setProfileStatus({
         status: 'DRAFT',
         profileCompletion: 0,
@@ -124,42 +161,138 @@ export default function TalentPage() {
     }
   }, [fetchJobMatches])
 
-  useEffect(() => {
-    if (loading) return
+  const fetchApplications = useCallback(async () => {
+    setLoadingApplications(true)
+    try {
+      const response = await fetch('/api/applications', {
+        credentials: 'include',
+      })
+      const data = await response.json()
+      console.log('Applications API response:', data)
 
-    if (user && user.role === 'TALENT') {
-      if (!hasFetchedProfile.current) {
-        hasFetchedProfile.current = true
-        fetchProfileStatus()
+      if (data.success) {
+        setApplications(data.data || [])
       }
-    } else if (!loading && user && user.role !== 'TALENT') {
-      if (!redirectAttempted.current) {
-        redirectAttempted.current = true
-        if (user.role === 'CLIENT') {
-          router.push('/client')
-        } else if (['SUPER_ADMIN', 'QUALITY_ADMIN', 'SUPPORT_ADMIN', 'ANALYST', 'ADMIN'].includes(user.role)) {
-          router.push('/admin/dashboard')
-        } else {
-          router.push('/login')
+    } catch (error) {
+      console.error('Failed to fetch applications:', error)
+    } finally {
+      setLoadingApplications(false)
+    }
+  }, [])
+
+  const fetchSavedJobsCount = useCallback(async () => {
+    try {
+      const response = await fetch('/api/saved-jobs', {
+        credentials: 'include',
+        cache: 'no-store',
+      })
+      const data = await response.json()
+      console.log('Saved jobs API response:', data)
+      if (data.success) {
+        setSavedCount(data.data?.count || 0)
+      }
+    } catch (error) {
+      console.error('Failed to fetch saved jobs count:', error)
+    }
+  }, [])
+
+  const getCardLink = (label: string) => {
+    switch (label) {
+      case 'Applications':
+        return '/talent/applications'
+      case 'Interviews':
+        return '/talent/applications?status=SHORTLISTED'
+      case 'Offers':
+        return '/talent/applications?status=ACCEPTED'
+      case 'Saved Jobs':
+        return '/talent/saved-jobs'
+      default:
+        return '/talent'
+    }
+  }
+
+  useEffect(() => {
+    let mounted = true
+
+    const checkAuth = async () => {
+      if (loading) {
+        return
+      }
+
+      if (user && user.role === 'TALENT') {
+        if (!hasFetchedProfile.current) {
+          hasFetchedProfile.current = true
+          fetchProfileStatus()
+        }
+        return
+      }
+
+      if (!loading && user && user.role !== 'TALENT') {
+        if (!redirectAttempted.current) {
+          redirectAttempted.current = true
+          if (user.role === 'CLIENT') {
+            router.push('/client')
+          } else if (['SUPER_ADMIN', 'QUALITY_ADMIN', 'SUPPORT_ADMIN', 'ANALYST', 'ADMIN'].includes(user.role)) {
+            router.push('/admin')
+          } else {
+            router.push('/login')
+          }
+        }
+        return
+      }
+
+      if (!loading && !user) {
+        if (!authRecheckAttempted.current) {
+          authRecheckAttempted.current = true
+          try {
+            const meRes = await fetch('/api/auth/me', { credentials: 'include' })
+            const meData = await meRes.json()
+            if (meData?.success && meData?.data?.role === 'TALENT') {
+              authConfirmed.current = true
+              return
+            }
+          } catch (err) {
+            console.warn('[Talent] Auth recheck failed:', err)
+          }
+        }
+
+        if (authConfirmed.current) {
+          return
+        }
+
+        if (!redirectAttempted.current) {
+          redirectAttempted.current = true
+          setTimeout(() => {
+            if (!mounted) return
+            router.push('/login?redirect=/talent')
+          }, 1500)
         }
       }
-    } else if (!loading && !user) {
-      if (!redirectAttempted.current) {
-        redirectAttempted.current = true
-        router.push('/login')
-      }
+    }
+
+    checkAuth()
+
+    return () => {
+      mounted = false
     }
   }, [user, loading, router, fetchProfileStatus])
+
+  useEffect(() => {
+    if (!loading && user?.role === 'TALENT') {
+      fetchApplications()
+      fetchSavedJobsCount()
+    }
+  }, [user, loading, fetchApplications, fetchSavedJobsCount])
 
   // Redirect to onboarding only if profile status is DRAFT
   useEffect(() => {
     if (profileStatus && profileStatus.status === 'DRAFT') {
-      console.log('📝 Redirecting to onboarding due to DRAFT status')
+      console.log('Redirecting to onboarding due to DRAFT status')
       router.push('/talent/onboarding')
     }
   }, [profileStatus, router])
 
-  if (loading || loadingProfile) {
+  if (loading || loadingProfile || (!user && authConfirmed.current)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 pt-24">
         <div className="text-center">
@@ -170,7 +303,6 @@ export default function TalentPage() {
     )
   }
 
-  // Don't render if redirecting to onboarding
   if (profileStatus && profileStatus.status === 'DRAFT') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 pt-24">
@@ -183,218 +315,252 @@ export default function TalentPage() {
   }
 
   const statusInfo = profileStatus ? getStatusMessage(profileStatus.status as any) : null
+  const interviewCount = Array.isArray(applications) ? applications.filter((app) => app.status === 'SHORTLISTED').length : 0
+  const offerCount = Array.isArray(applications) ? applications.filter((app) => app.status === 'ACCEPTED').length : 0
+  const todayLabel = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-12">
-      <div className="container mx-auto px-4 max-w-7xl">
-        {/* Welcome Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome{profileStatus?.fullName ? `, ${profileStatus.fullName}` : ''}!
+    <>
+      <div className="min-h-screen bg-[#f6f6f9] pt-24 pb-12">
+        <div className="container mx-auto px-4 max-w-7xl">
+        <div className="mb-8 flex flex-col gap-2">
+          <h1 className="text-3xl font-semibold text-gray-900">
+            Welcome back{profileStatus?.fullName ? `, ${profileStatus.fullName}` : ''}!
           </h1>
-          <p className="text-gray-600">Here are jobs matched with your skills</p>
+          <p className="text-sm text-gray-500">{todayLabel}</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left: Job Matches */}
-          <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-gray-900">Job Matches</h2>
-              <Link href="/talent/jobs">
-                <Button variant="outline" size="sm">View All Jobs</Button>
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-6">
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+              {[
+                {
+                  label: 'Applications',
+                  value: Array.isArray(applications) ? applications.length : 0,
+                  hint: loadingApplications ? 'Updating...' : `${Array.isArray(applications) ? applications.length : 0} total`,
+                  accent: 'bg-indigo-50 text-indigo-700',
+                  icon: (
+                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 7V6a2 2 0 012-2h8a2 2 0 012 2v1" />
+                      <rect x="4" y="7" width="16" height="13" rx="2" strokeWidth={2} />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 11h6" />
+                    </svg>
+                  ),
+                },
+                {
+                  label: 'Interviews',
+                  value: interviewCount,
+                  hint: interviewCount === 0 ? 'None' : 'Active',
+                  accent: 'bg-purple-50 text-purple-700',
+                  icon: (
+                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h6" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a8 8 0 11-3.3-6.5L21 5v7z" />
+                    </svg>
+                  ),
+                },
+                {
+                  label: 'Offers',
+                  value: offerCount,
+                  hint: offerCount === 0 ? 'None' : 'Pending',
+                  accent: 'bg-amber-50 text-amber-700',
+                  icon: (
+                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h10l2 5-7 7-7-7 2-5z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7l3 3 3-3" />
+                    </svg>
+                  ),
+                },
+                {
+                  label: 'Saved Jobs',
+                  value: savedCount,
+                  hint: savedCount === 0 ? 'None' : 'Saved',
+                  accent: 'bg-rose-50 text-rose-700',
+                  icon: (
+                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 4h12a1 1 0 011 1v15l-7-4-7 4V5a1 1 0 011-1z" />
+                    </svg>
+                  ),
+                },
+              ].map((item) => (
+                <Link key={item.label} href={getCardLink(item.label)}>
+                  <Card className="border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                    <CardContent className="p-4">
+                      <div className={`h-10 w-10 rounded-xl ${item.accent} flex items-center justify-center text-sm font-semibold`}>
+                        {item.icon}
+                      </div>
+                      <div className="mt-4 text-2xl font-semibold text-gray-900">{item.value}</div>
+                      <p className="text-sm text-gray-500">{item.label}</p>
+                      <span className="mt-2 inline-flex rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
+                        {item.hint}
+                      </span>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900">Recommended Jobs</h2>
+              <Link href="/talent/jobs" className="text-sm font-medium text-brand-purple hover:underline">
+                View all
               </Link>
             </div>
-            
+
             {loadingJobs ? (
-              <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-brand-purple"></div>
-                <p className="mt-2 text-gray-600">Loading job matches...</p>
-              </div>
-            ) : jobMatches.length > 0 ? (
+              <Card className="border border-gray-100 shadow-sm">
+                <CardContent className="py-8 text-center text-gray-500">Loading job matches...</CardContent>
+              </Card>
+            ) : jobMatches.length === 0 ? (
+              <Card className="border border-gray-100 shadow-sm">
+                <CardContent className="py-8 text-center text-gray-500">No job matches yet.</CardContent>
+              </Card>
+            ) : (
               <div className="space-y-4">
                 {jobMatches.map((job) => (
-                  <Card key={job.id} className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-transparent hover:border-l-brand-purple">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                          <Link href={`/talent/jobs/${job.id}`}>
-                            <h3 className="text-lg font-semibold text-gray-900 hover:text-brand-purple transition-colors mb-2">
-                              {job.title}
-                            </h3>
-                          </Link>
-                          <div className="flex items-center gap-3 text-sm text-gray-600 mb-3 flex-wrap">
-                            <span className="font-medium text-gray-900">
-                              {job.company?.name || job.recruiter?.name || job.recruiter?.email || 'No company'}
-                            </span>
-                            {job.location && job.location.toLowerCase() !== 'remote' && (
-                              <>
-                                <span className="text-gray-400">•</span>
-                                <span>{job.location}</span>
-                              </>
-                            )}
-                            {job.remote && (
-                              <>
-                                <span className="text-gray-400">•</span>
-                                <span className="text-green-600 font-medium">🌍 Remote</span>
-                              </>
-                            )}
+                  <Link key={job.id} href={`/talent/jobs/${job.id}`} className="block">
+                    <Card className="border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                      <CardContent className="p-5">
+                        <div className="flex items-start gap-4">
+                          <div className="h-12 w-12 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-semibold">
+                            {job.company?.name?.charAt(0) || 'M'}
                           </div>
-                          <p className="text-gray-700 mb-4 line-clamp-2">{job.description}</p>
-                          {job.skills.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mb-3">
-                              {job.skills.slice(0, 5).map((skill) => (
-                                <span
-                                  key={skill.id}
-                                  className="px-2.5 py-1 bg-gray-100 text-gray-700 rounded-md text-xs font-medium"
-                                >
-                                  {skill.name}
-                                </span>
-                              ))}
-                              {job.skills.length > 5 && (
-                                <span className="px-2.5 py-1 bg-gray-100 text-gray-700 rounded-md text-xs font-medium">
-                                  +{job.skills.length - 5} more
+                          <div className="flex-1">
+                            <p className="text-base font-semibold text-gray-900 hover:text-brand-purple">
+                              {job.title}
+                            </p>
+                            <p className="text-sm text-gray-500">{job.company?.name || job.recruiter?.email || 'No company'}</p>
+                            <div className="mt-2 flex flex-wrap gap-2 text-xs text-gray-500">
+                              {job.remote && <span className="rounded-full bg-gray-100 px-2 py-0.5">Remote</span>}
+                              {job.location && !job.remote && (
+                                <span className="rounded-full bg-gray-100 px-2 py-0.5">{job.location}</span>
+                              )}
+                              {job.salaryMin && (
+                                <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-700">
+                                  {job.currency || '$'}{job.salaryMin.toLocaleString()}
+                                  {job.salaryMax ? ` - ${job.currency || '$'}${job.salaryMax.toLocaleString()}` : ''}
                                 </span>
                               )}
                             </div>
-                          )}
-                        </div>
-                        {job.salaryMin && (
-                          <div className="text-right ml-4 flex-shrink-0">
-                            <div className="text-lg font-bold text-brand-purple">
-                              {job.currency || '$'}{job.salaryMin.toLocaleString()}
-                              {job.salaryMax && ` - ${job.currency || '$'}${job.salaryMax.toLocaleString()}`}
-                            </div>
-                            <div className="text-xs text-gray-500 mt-1">/hour</div>
+                            <p className="mt-3 text-xs text-gray-400">
+                              Posted {new Date(job.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            </p>
                           </div>
-                        )}
-                      </div>
-                      <Link href={`/talent/jobs/${job.id}`}>
-                        <Button className="w-full bg-brand-purple hover:bg-purple-700">View Details</Button>
-                      </Link>
-                    </CardContent>
-                  </Card>
+                          <div className="text-gray-300">*</div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
                 ))}
               </div>
-            ) : profileStatus && profileStatus.skills.length === 0 ? (
-              <Card className="border-2">
-                <CardContent className="py-12 text-center">
-                  <div className="text-4xl mb-4">🎯</div>
-                  <p className="text-gray-600 mb-2 text-lg font-semibold">No skills added yet</p>
-                  <p className="text-gray-500 mb-4 text-sm">Add your skills to see job matches</p>
-                  <Link href="/talent/profile">
-                    <Button className="bg-brand-purple hover:bg-purple-700">Add Skills to Profile</Button>
+            )}
+          </div>
+
+          <div className="space-y-6">
+            <Card className="border border-gray-100 shadow-sm">
+              <CardContent className="p-5 space-y-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-semibold text-gray-700">Profile Strength</p>
+                  <span className="text-sm font-semibold text-brand-purple">
+                    {profileStatus?.profileCompletion || 0}%
+                  </span>
+                </div>
+                <div className="h-2 w-full rounded-full bg-gray-200">
+                  <div
+                    className="h-2 rounded-full bg-gradient-to-r from-yellow-400 via-orange-400 to-brand-purple"
+                    style={{ width: `${profileStatus?.profileCompletion || 0}%` }}
+                  />
+                </div>
+                <p className="text-sm text-gray-500">
+                  Your profile is looking great! Add more details to reach All-Star status.
+                </p>
+                <Link href="/talent/profile">
+                  <Button className="w-full rounded-full bg-brand-purple hover:bg-purple-700">
+                    Complete Profile
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            <Card className="border border-gray-100 shadow-sm">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base">Upcoming</CardTitle>
+                  <span className="text-xs text-gray-400">Calendar</span>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {profileStatus?.submittedAt ? (
+                  <div className="flex items-start gap-3 rounded-xl border border-gray-100 p-3">
+                    <div className="rounded-xl bg-purple-50 px-3 py-2 text-center text-xs font-semibold text-purple-600">
+                      {new Date(profileStatus.submittedAt).toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}
+                      <div className="text-base text-gray-900">
+                        {new Date(profileStatus.submittedAt).toLocaleDateString('en-US', { day: '2-digit' })}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">Profile Review</p>
+                      <p className="text-xs text-gray-500">
+                        Submitted {new Date(profileStatus.submittedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500">No upcoming events yet.</p>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="border border-gray-100 shadow-sm">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base">Recent Messages</CardTitle>
+                  <Link href="/talent/messages" className="text-xs font-medium text-brand-purple hover:underline">
+                    View all
                   </Link>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card className="border-2">
-                <CardContent className="py-12 text-center">
-                  <div className="text-4xl mb-4">🔍</div>
-                  <p className="text-gray-600 mb-4 text-lg">No job matches found at the moment</p>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {Array.isArray(applications) && applications.slice(0, 3).map((app) => (
+                  <div key={app.id} className="flex items-start gap-3">
+                    <div className="h-10 w-10 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-xs font-semibold">
+                      {app.job.company?.name?.charAt(0) || 'R'}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-gray-900">
+                        {app.job.company?.name || app.job.recruiter.email}
+                      </p>
+                      <p className="text-xs text-gray-500 line-clamp-1">
+                        Application status: {app.status}
+                      </p>
+                    </div>
+                    <span className="text-xs text-gray-400">
+                      {new Date(app.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </span>
+                  </div>
+                ))}
+                {(!Array.isArray(applications) || applications.length === 0) && (
+                  <p className="text-sm text-gray-500">No recent messages yet.</p>
+                )}
+              </CardContent>
+            </Card>
+
+            {profileStatus && statusInfo && (
+              <Card className="border border-gray-100 shadow-sm">
+                <CardContent className="p-4">
+                  <div className={`${statusInfo.bgColor} ${statusInfo.color} rounded-xl p-4`}>
+                    <p className="text-sm font-semibold">{statusInfo.message}</p>
+                    <p className="text-xs opacity-80 mt-1">{statusInfo.description}</p>
+                  </div>
                 </CardContent>
               </Card>
             )}
           </div>
-
-          {/* Right: Profile Status */}
-          <div className="lg:col-span-1">
-            <Card className="sticky top-24 border-2">
-              <CardHeader className="bg-gradient-to-r from-brand-purple to-purple-700 text-white rounded-t-lg">
-                <CardTitle className="text-lg">Profile Status</CardTitle>
-                <CardDescription className="text-purple-100">Your profile review status</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4 p-6">
-                {profileStatus && statusInfo ? (
-                  <>
-                    {/* Status Badge */}
-                    <div className={`${statusInfo.bgColor} ${statusInfo.color} p-4 rounded-lg border-2 border-current border-opacity-20`}>
-                      <div className="flex items-start gap-3">
-                        <div className="text-2xl flex-shrink-0">
-                          {profileStatus.status === 'APPROVED' && '✅'}
-                          {profileStatus.status === 'SUBMITTED' && '⏳'}
-                          {profileStatus.status === 'NEED_REVISION' && '⚠️'}
-                          {profileStatus.status === 'REJECTED' && '❌'}
-                          {profileStatus.status === 'DRAFT' && '📝'}
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-semibold text-base mb-1">{statusInfo.message}</p>
-                          <p className="text-sm opacity-90 leading-relaxed">{statusInfo.description}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Profile Completion */}
-                    {profileStatus.profileCompletion > 0 && (
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Profile Completion</span>
-                          <span className="font-semibold text-gray-900">{profileStatus.profileCompletion}%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className="bg-brand-purple h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${profileStatus.profileCompletion}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Skills Count */}
-                    {profileStatus.skills.length > 0 && (
-                      <div className="bg-gray-50 p-3 rounded-lg border">
-                        <p className="text-sm text-gray-600 mb-1">Your Skills</p>
-                        <p className="text-lg font-semibold text-gray-900">{profileStatus.skills.length} skill{profileStatus.skills.length !== 1 ? 's' : ''} added</p>
-                      </div>
-                    )}
-
-                    {/* Submitted Date */}
-                    {profileStatus.submittedAt && (
-                      <div className="text-sm text-gray-600 pt-2 border-t">
-                        <p className="font-medium mb-1">Submitted on:</p>
-                        <p>{new Date(profileStatus.submittedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                      </div>
-                    )}
-
-                    {/* Revision Notes */}
-                    {profileStatus.status === 'NEED_REVISION' && profileStatus.revisionNotes && (
-                      <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4">
-                        <h3 className="font-semibold text-yellow-900 mb-2 text-sm">Revision Notes</h3>
-                        <p className="text-yellow-800 whitespace-pre-wrap text-sm leading-relaxed">{profileStatus.revisionNotes}</p>
-                      </div>
-                    )}
-
-                    {/* Actions */}
-                    <div className="flex flex-col gap-2 pt-2">
-                      {profileStatus.status === 'DRAFT' && (
-                        <Link href="/talent/profile">
-                          <Button className="w-full bg-brand-purple hover:bg-purple-700">Complete Profile</Button>
-                        </Link>
-                      )}
-                      {profileStatus.status === 'SUBMITTED' && null}
-                      {profileStatus.status === 'NEED_REVISION' && (
-                        <>
-                          <Link href="/talent/profile">
-                            <Button className="w-full bg-brand-purple hover:bg-purple-700">Edit Profile</Button>
-                          </Link>
-                        </>
-                      )}
-                      {profileStatus.status === 'APPROVED' && null}
-                      <Link href="/talent/profile">
-                        <Button variant="outline" className="w-full">View Profile</Button>
-                      </Link>
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-center py-8">
-                    <div className="text-4xl mb-4">👤</div>
-                    <p className="text-gray-600 mb-4">Loading profile status...</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+        </div>
         </div>
       </div>
-    </div>
+      <Footer />
+    </>
   )
 }
+

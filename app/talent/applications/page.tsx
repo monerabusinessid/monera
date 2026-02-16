@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -59,25 +59,28 @@ export default function TalentApplicationsPage() {
     }
   }
 
-  const getStatusColor = (status: string) => {
+  const getStatusBadge = (status: string) => {
     switch (status) {
       case 'ACCEPTED':
-        return 'bg-green-100 text-green-700'
+        return 'bg-green-50 text-green-700'
       case 'REJECTED':
-        return 'bg-red-100 text-red-700'
+        return 'bg-red-50 text-red-700'
       case 'SHORTLISTED':
-        return 'bg-blue-100 text-blue-700'
+        return 'bg-blue-50 text-blue-700'
       case 'REVIEWING':
-        return 'bg-yellow-100 text-yellow-700'
+        return 'bg-yellow-50 text-yellow-700'
       default:
-        return 'bg-gray-100 text-gray-700'
+        return 'bg-gray-100 text-gray-600'
     }
   }
 
   if (loading || loadingData) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">Loading...</div>
+      <div className="min-h-screen bg-[#f6f6f9] pt-24 pb-12 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-purple"></div>
+          <p className="mt-4 text-gray-600">Loading applications...</p>
+        </div>
       </div>
     )
   }
@@ -87,76 +90,66 @@ export default function TalentApplicationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">My Applications</h1>
-          <p className="text-gray-600">Track all your job applications</p>
+    <div className="min-h-screen bg-[#f6f6f9] pt-24 pb-12">
+      <div className="container mx-auto px-4 max-w-7xl">
+        <div className="mb-6">
+          <h1 className="text-3xl font-semibold text-gray-900">Applications</h1>
+          <p className="text-sm text-gray-500">Track your job applications and responses.</p>
         </div>
 
         {applications.length === 0 ? (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <p className="text-gray-500 mb-4">No applications yet</p>
+          <Card className="border border-gray-100 shadow-sm">
+            <CardContent className="p-10 text-center">
+              <div className="text-4xl mb-4"></div>
+              <p className="text-gray-600 mb-4 text-lg">No applications yet</p>
               <Link href="/talent/jobs">
-                <Button>Browse Jobs</Button>
+                <Button className="bg-brand-purple hover:bg-purple-700 rounded-full px-6">
+                  Browse Jobs
+                </Button>
               </Link>
             </CardContent>
           </Card>
         ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle>Application History</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left p-4 font-semibold">Job Title</th>
-                      <th className="text-left p-4 font-semibold">Recruiter</th>
-                      <th className="text-left p-4 font-semibold">Company</th>
-                      <th className="text-left p-4 font-semibold">Applied Date</th>
-                      <th className="text-left p-4 font-semibold">Status</th>
-                      <th className="text-left p-4 font-semibold">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {applications.map((app) => (
-                      <tr key={app.id} className="border-b hover:bg-gray-50">
-                        <td className="p-4">
-                          <Link
-                            href={`/talent/jobs/${app.job.id}`}
-                            className="text-brand-purple hover:underline font-medium"
-                          >
-                            {app.job.title}
-                          </Link>
-                        </td>
-                        <td className="p-4 text-gray-700">{app.job.recruiter.email}</td>
-                        <td className="p-4 text-gray-700">{app.job.company?.name || 'No company'}</td>
-                        <td className="p-4 text-gray-700">
-                          {new Date(app.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'numeric', day: 'numeric' })}
-                        </td>
-                        <td className="p-4">
-                          <span className={`px-2 py-1 rounded text-xs ${getStatusColor(app.status)}`}>
-                            {app.status}
-                          </span>
-                        </td>
-                        <td className="p-4">
-                          <Link href={`/talent/jobs/${app.job.id}`}>
-                            <Button variant="outline" size="sm">View Job</Button>
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {applications.map((app) => (
+              <Card key={app.id} className="border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <Link href={`/talent/jobs/${app.job.id}`}>
+                        <h3 className="text-lg font-semibold text-gray-900 hover:text-brand-purple">
+                          {app.job.title}
+                        </h3>
+                      </Link>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {app.job.company?.name || app.job.recruiter.email}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-2">
+                        Applied {new Date(app.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </p>
+                    </div>
+                    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusBadge(app.status)}`}>
+                      {app.status}
+                    </span>
+                  </div>
+                  <div className="mt-4 flex items-center justify-between">
+                    <span className="text-xs text-gray-400">
+                      Expected rate: {app.expectedRate ? `$${app.expectedRate}/hr` : 'N/A'}
+                    </span>
+                    <Link href={`/talent/jobs/${app.job.id}`}>
+                      <Button variant="outline" size="sm" className="rounded-full px-4 border-brand-purple text-brand-purple">
+                        View Job
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         )}
       </div>
       <Footer />
     </div>
   )
 }
+

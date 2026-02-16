@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { getStatusMessage } from '@/lib/talent-status'
 import Link from 'next/link'
+import { Footer } from '@/components/footer'
 
 interface ProfileStatus {
   status: string
@@ -53,7 +54,6 @@ export default function TalentStatusPage() {
         <div className="max-w-3xl mx-auto px-4">
           <Card className="border-2">
             <CardContent className="py-12 text-center">
-              <div className="text-5xl mb-4">📋</div>
               <p className="text-gray-600 mb-4 text-lg">Profile not found. Please complete your onboarding.</p>
               <Link href="/talent/onboarding">
                 <Button className="bg-brand-purple hover:bg-purple-700">Go to Onboarding</Button>
@@ -68,8 +68,9 @@ export default function TalentStatusPage() {
   const statusInfo = getStatusMessage(profile.status as any)
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-12">
-      <div className="max-w-3xl mx-auto px-4 space-y-6">
+    <>
+      <div className="min-h-screen bg-gray-50 pt-24 pb-12">
+        <div className="max-w-3xl mx-auto px-4 space-y-6">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Profile Status</h1>
@@ -85,12 +86,8 @@ export default function TalentStatusPage() {
             {/* Status Badge */}
             <div className={`${statusInfo.bgColor} ${statusInfo.color} p-6 rounded-lg border-2 border-current border-opacity-20`}>
               <div className="flex items-start gap-4">
-                <div className="text-4xl flex-shrink-0">
-                  {profile.status === 'APPROVED' && '✅'}
-                  {profile.status === 'SUBMITTED' && '⏳'}
-                  {profile.status === 'NEED_REVISION' && '⚠️'}
-                  {profile.status === 'REJECTED' && '❌'}
-                  {profile.status === 'DRAFT' && '📝'}
+                <div className="rounded-full bg-white/60 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
+                  {profile.status.replace('_', ' ')}
                 </div>
                 <div className="flex-1">
                   <p className="font-bold text-xl mb-2">{statusInfo.message}</p>
@@ -135,7 +132,7 @@ export default function TalentStatusPage() {
             {profile.status === 'NEED_REVISION' && profile.revisionNotes && (
               <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-5">
                 <div className="flex items-start gap-2 mb-3">
-                  <span className="text-2xl">📝</span>
+                  <span className="text-xs font-semibold uppercase tracking-wide text-yellow-700">Note</span>
                   <h3 className="font-semibold text-yellow-900 text-lg">Revision Notes from Admin</h3>
                 </div>
                 <p className="text-yellow-800 whitespace-pre-wrap leading-relaxed text-sm">
@@ -208,7 +205,10 @@ export default function TalentStatusPage() {
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
-    </div>
+      <Footer />
+    </>
   )
 }
+

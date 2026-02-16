@@ -101,10 +101,32 @@ export function Navbar() {
       setLoading(false)
     })
 
+    // Listen for custom profile update event
+    const handleProfileUpdate = () => {
+      const supabase = createClient()
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (user) {
+          supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single()
+            .then(({ data: profile }) => {
+              if (profile) {
+                setSupabaseProfile(profile)
+              }
+            })
+        }
+      })
+    }
+
+    window.addEventListener('profileUpdated', handleProfileUpdate)
+
     return () => {
       if (authStateChangeResult?.data?.subscription) {
         authStateChangeResult.data.subscription.unsubscribe()
       }
+      window.removeEventListener('profileUpdated', handleProfileUpdate)
     }
   }, [])
 
@@ -237,6 +259,13 @@ export function Navbar() {
   const navMutedLinkClass = 'text-gray-900 hover:text-gray-700'
   const navIconClass = 'text-gray-900'
   const mobileNavToneClass = 'bg-white/80'
+  const logoHref = user?.role === 'TALENT'
+    ? '/talent'
+    : user?.role === 'CLIENT'
+      ? '/client'
+      : user?.role && ['SUPER_ADMIN', 'QUALITY_ADMIN', 'SUPPORT_ADMIN', 'ANALYST', 'ADMIN'].includes(user.role)
+        ? '/admin'
+        : '/'
 
   return (
     <>
@@ -258,7 +287,7 @@ export function Navbar() {
 
               {/* Logo - Left */}
               <div className="flex-shrink-0">
-                <Logo />
+                <Logo href={logoHref} />
               </div>
             </div>
 
@@ -341,16 +370,24 @@ export function Navbar() {
                 <div className="relative" ref={(el) => { dropdownRefs.current['profile'] = el }}>
                   <button
                     onClick={() => setActiveDropdown(activeDropdown === 'profile' ? null : 'profile')}
-                    className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-purple to-purple-700 flex items-center justify-center text-white text-sm font-semibold hover:ring-2 hover:ring-brand-purple"
+                    className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-purple to-purple-700 flex items-center justify-center text-white text-sm font-semibold hover:ring-2 hover:ring-brand-purple overflow-hidden"
                   >
-                    {(user.fullName || user.email)?.[0]?.toUpperCase() || 'U'}
+                    {supabaseProfile?.avatar_url ? (
+                      <img src={supabaseProfile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      (user.fullName || user.email)?.[0]?.toUpperCase() || 'U'
+                    )}
                   </button>
                   {activeDropdown === 'profile' && (
                     <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2">
                       <div className="px-4 py-3 border-b">
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-purple to-purple-700 flex items-center justify-center text-white text-lg font-semibold">
-                            {(user.fullName || user.email)?.[0]?.toUpperCase() || 'U'}
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-purple to-purple-700 flex items-center justify-center text-white text-lg font-semibold overflow-hidden">
+                            {supabaseProfile?.avatar_url ? (
+                              <img src={supabaseProfile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                            ) : (
+                              (user.fullName || user.email)?.[0]?.toUpperCase() || 'U'
+                            )}
                           </div>
                           <div>
                             <div className="font-semibold">
@@ -365,6 +402,19 @@ export function Navbar() {
                           </div>
                         </div>
                       </div>
+
+                      {(user?.role === 'TALENT' || user?.role === 'CLIENT') && (
+                        <Link
+                          href={user.role === 'TALENT' ? '/talent' : '/client'}
+                          className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 text-gray-900"
+                          onClick={() => setActiveDropdown(null)}
+                        >
+                          <svg className="w-5 h-5 text-gray-800" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                          </svg>
+                          <span className="font-medium">Dashboard</span>
+                        </Link>
+                      )}
 
                       {(user?.role === 'SUPER_ADMIN' || user?.role === 'QUALITY_ADMIN' || user?.role === 'SUPPORT_ADMIN' || user?.role === 'ANALYST') && (
                         <Link
@@ -442,7 +492,7 @@ export function Navbar() {
                   ? 'opacity-100 scale-100' 
                   : 'opacity-0 scale-0 w-0 overflow-hidden'
               }`}>
-                <Logo />
+                <Logo href={logoHref} />
               </div>
             </div>
 
@@ -454,7 +504,7 @@ export function Navbar() {
                   ? 'opacity-0 scale-0 absolute pointer-events-none' 
                   : 'opacity-100 scale-100'
               }`}>
-                <Logo />
+                <Logo href={logoHref} />
               </div>
               
               {/* Menu - Center (when menu open) - Show all menu items for logged in users */}
@@ -510,16 +560,24 @@ export function Navbar() {
                     <div className="relative" ref={(el) => { dropdownRefs.current['profile-minimal'] = el }}>
                       <button
                         onClick={() => setActiveDropdown(activeDropdown === 'profile-minimal' ? null : 'profile-minimal')}
-                        className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-purple to-purple-700 flex items-center justify-center text-white text-sm font-semibold hover:ring-2 hover:ring-brand-purple transition-all"
+                        className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-purple to-purple-700 flex items-center justify-center text-white text-sm font-semibold hover:ring-2 hover:ring-brand-purple transition-all overflow-hidden"
                       >
-                        {(user.fullName || user.email)?.[0]?.toUpperCase() || 'U'}
+                        {supabaseProfile?.avatar_url ? (
+                          <img src={supabaseProfile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                          (user.fullName || user.email)?.[0]?.toUpperCase() || 'U'
+                        )}
                       </button>
                       {activeDropdown === 'profile-minimal' && (
                         <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                       <div className="px-4 py-3 border-b">
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-purple to-purple-700 flex items-center justify-center text-white text-lg font-semibold">
-                            {(user.fullName || user.email)?.[0]?.toUpperCase() || 'U'}
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-purple to-purple-700 flex items-center justify-center text-white text-lg font-semibold overflow-hidden">
+                            {supabaseProfile?.avatar_url ? (
+                              <img src={supabaseProfile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                            ) : (
+                              (user.fullName || user.email)?.[0]?.toUpperCase() || 'U'
+                            )}
                           </div>
                           <div>
                             <div className="font-semibold text-gray-900">
@@ -534,6 +592,18 @@ export function Navbar() {
                           </div>
                         </div>
                       </div>
+                      {(user?.role === 'TALENT' || user?.role === 'CLIENT') && (
+                        <Link
+                          href={user.role === 'TALENT' ? '/talent' : '/client'}
+                          className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 text-gray-900"
+                          onClick={() => setActiveDropdown(null)}
+                        >
+                          <svg className="w-5 h-5 text-gray-800" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                          </svg>
+                          <span className="font-medium">Dashboard</span>
+                        </Link>
+                      )}
                       {user.role === 'TALENT' && (
                         <>
                           <Link

@@ -29,6 +29,9 @@ export async function GET(request: NextRequest) {
 
     const supabase = await getSupabaseClient()
     const skip = (validatedParams.page - 1) * validatedParams.limit
+    const skillIds = validatedParams.skillIds || []
+    let skillMatchedJobIds: string[] | null = null
+    let skillFilterAdmin: Awaited<ReturnType<typeof createAdminClient>> | null = null
 
     // OPTIMIZATION: Select only needed fields instead of * to reduce data transfer
     // For public job listings (PUBLISHED), use regular client (RLS should allow)
@@ -74,6 +77,44 @@ export async function GET(request: NextRequest) {
     // Handle remote filter
     if (validatedParams.remote !== undefined) {
       query = query.eq('remote', validatedParams.remote)
+    }
+
+    // Handle salary filters
+    if (validatedParams.salaryMin !== undefined) {
+      query = query.gte('salary_max', validatedParams.salaryMin)
+    }
+    if (validatedParams.salaryMax !== undefined) {
+      query = query.lte('salary_min', validatedParams.salaryMax)
+    }
+
+    // Handle skills filter via junction table
+    if (skillIds.length > 0) {
+      skillFilterAdmin = await createAdminClient()
+      const { data: jobSkills, error: jobSkillsError } = await skillFilterAdmin
+        .from('_JobSkills')
+        .select('A')
+        .in('B', skillIds)
+
+      if (jobSkillsError) {
+        console.error('Error fetching job skills for filter:', jobSkillsError)
+        return errorResponse('Failed to filter jobs by skills', 500)
+      }
+
+      skillMatchedJobIds = Array.from(new Set((jobSkills || []).map((js: any) => js.A).filter(Boolean)))
+
+      if (skillMatchedJobIds.length === 0) {
+        return successResponse({
+          jobs: [],
+          pagination: {
+            page: validatedParams.page,
+            limit: validatedParams.limit,
+            total: 0,
+            totalPages: 0,
+          },
+        })
+      }
+
+      query = query.in('id', skillMatchedJobIds)
     }
 
     // Handle category filter
@@ -134,7 +175,7 @@ export async function GET(request: NextRequest) {
     // If RLS blocks access, try with admin client
     if (jobsError) {
       console.log('RLS blocked access or query error, trying with admin client')
-      const adminSupabase = await createAdminClient()
+      const adminSupabase = skillFilterAdmin || await createAdminClient()
       let adminQuery = adminSupabase
         .from('jobs')
         .select('id, title, description, requirements, scope_of_work, location, remote, salary_min, salary_max, currency, engagement_type, hours_per_week, duration, experience_level, project_type, status, company_id, recruiter_id, created_at, updated_at', { count: 'exact' })
@@ -148,6 +189,10 @@ export async function GET(request: NextRequest) {
       const categoryParam = searchParams.get('category')
       if (categoryParam) {
         adminQuery = adminQuery.eq('category', categoryParam)
+      }
+
+      if (skillMatchedJobIds && skillMatchedJobIds.length > 0) {
+        adminQuery = adminQuery.in('id', skillMatchedJobIds)
       }
       
       if (recruiterIdParam === 'me') {
@@ -173,6 +218,14 @@ export async function GET(request: NextRequest) {
       // Handle remote filter
       if (validatedParams.remote !== undefined) {
         adminQuery = adminQuery.eq('remote', validatedParams.remote)
+      }
+      
+      // Handle salary filters
+      if (validatedParams.salaryMin !== undefined) {
+        adminQuery = adminQuery.gte('salary_max', validatedParams.salaryMin)
+      }
+      if (validatedParams.salaryMax !== undefined) {
+        adminQuery = adminQuery.lte('salary_min', validatedParams.salaryMax)
       }
       
       const { data: adminData, error: adminError, count: adminCount } = await adminQuery

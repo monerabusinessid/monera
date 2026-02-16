@@ -4,12 +4,19 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { SkillModal } from './skill-modal'
 
-export function CreateSkillButton() {
+interface CreateSkillButtonProps {
+  className?: string
+  label?: string
+}
+
+export function CreateSkillButton({ className, label = 'Add Skill' }: CreateSkillButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
     <>
-      <Button onClick={() => setIsOpen(true)}>+ Add New Skill</Button>
+      <Button onClick={() => setIsOpen(true)} className={className}>
+        + {label}
+      </Button>
       <SkillModal
         skill={null}
         isOpen={isOpen}

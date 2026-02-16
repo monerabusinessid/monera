@@ -51,23 +51,24 @@ export default function TalentDetailActions({ talentId, currentStatus }: TalentD
   }
 
   return (
-    <div className="flex gap-2">
-      {currentStatus !== 'APPROVED' && (
-        <Button
-          onClick={handleApprove}
-          disabled={loading}
-          className="bg-green-600 hover:bg-green-700"
-        >
-          Approve
-        </Button>
-      )}
+    <div className="flex flex-wrap gap-3">
       {currentStatus !== 'REJECTED' && (
         <Button
           onClick={handleReject}
           disabled={loading}
-          variant="destructive"
+          variant="outline"
+          className="rounded-full border-red-200 px-5 text-red-600 hover:bg-red-50"
         >
-          Reject
+          Reject Request
+        </Button>
+      )}
+      {currentStatus !== 'APPROVED' && (
+        <Button
+          onClick={handleApprove}
+          disabled={loading}
+          className="rounded-full bg-brand-purple px-5 text-white shadow-sm hover:bg-brand-purple/90"
+        >
+          Approve Talent
         </Button>
       )}
     </div>

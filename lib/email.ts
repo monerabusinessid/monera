@@ -207,14 +207,16 @@ export const emailTemplates = {
   },
 
   emailVerification: (name: string, code: string, email: string) => {
-    const verifyUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/verify-email?email=${encodeURIComponent(email)}`
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const verifyUrl = `${appUrl}/verify-email?email=${encodeURIComponent(email)}`
+    const logoUrl = `${appUrl}/images/logo.png`
     return {
       subject: 'Verify Your Email - Monera',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #7c3aed; margin: 0; font-size: 28px;">Monera</h1>
-            <p style="color: #666; margin: 5px 0 0 0;">Premium Talent Marketplace</p>
+            <img src="${logoUrl}" alt="Monera" style="height: 40px; width: auto; display: inline-block; margin-bottom: 6px;" />
+            <p style="color: #666; margin: 5px 0 0 0;">Hire vetted remote talent</p>
           </div>
           
           <div style="background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); padding: 30px; border-radius: 12px; margin-bottom: 30px;">

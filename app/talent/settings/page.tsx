@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Footer } from '@/components/footer'
 
 export default function TalentSettingsPage() {
   const { user, loading } = useAuth()
@@ -14,7 +15,6 @@ export default function TalentSettingsPage() {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [formData, setFormData] = useState({
-    email: '',
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
@@ -23,10 +23,6 @@ export default function TalentSettingsPage() {
   useEffect(() => {
     if (!loading && (!user || user.role !== 'TALENT')) {
       router.push('/login')
-      return
-    }
-    if (user) {
-      setFormData(prev => ({ ...prev, email: user.email || '' }))
     }
   }, [user, loading, router])
 
@@ -56,7 +52,6 @@ export default function TalentSettingsPage() {
         },
         credentials: 'include',
         body: JSON.stringify({
-          email: formData.email,
           currentPassword: formData.currentPassword || undefined,
           newPassword: formData.newPassword || undefined,
         }),
@@ -85,7 +80,7 @@ export default function TalentSettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 pt-24">
+      <div className="min-h-screen flex items-center justify-center bg-[#f6f6f9] pt-24">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-purple"></div>
           <p className="mt-4 text-gray-600">Loading...</p>
@@ -94,45 +89,43 @@ export default function TalentSettingsPage() {
     )
   }
 
+  const displayName = user?.email?.split('@')[0] || 'Talent'
+
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-12">
-      <div className="container mx-auto px-4 max-w-4xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Account Settings</h1>
-          <p className="text-gray-600">Manage your account preferences and security</p>
-        </div>
-
-        {message && (
-          <div className={`mb-6 p-4 rounded-md ${
-            message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
-          }`}>
-            {message.text}
-          </div>
-        )}
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Account Information</CardTitle>
-            <CardDescription>Update your email and password</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+    <>
+      <div className="min-h-screen bg-[#f6f6f9] pt-24 pb-12">
+        <div className="container mx-auto px-4 max-w-2xl">
+          <div className="space-y-6">
+            <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  className="mt-1"
-                />
+                <h1 className="text-3xl font-semibold text-gray-900">Account Settings</h1>
+                <p className="text-sm text-gray-500 mt-1">Manage your account security and password.</p>
               </div>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => router.back()} className="rounded-full">
+                  Cancel
+                </Button>
+                <Button type="submit" form="settings-form" className="bg-brand-purple hover:bg-purple-700 rounded-full" disabled={saving}>
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </div>
+            </div>
 
-              <div className="border-t pt-6">
-                <h3 className="text-lg font-semibold mb-4">Change Password</h3>
-                <div className="space-y-4">
+            {message && (
+              <div className={`rounded-xl px-4 py-3 text-sm ${
+                message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+              }`}>
+                {message.text}
+              </div>
+            )}
+
+            <Card className="border border-gray-100 shadow-sm">
+              <CardHeader>
+                <CardTitle>Change Password</CardTitle>
+                <CardDescription>Update your account password</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form id="settings-form" onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <Label htmlFor="currentPassword">Current Password</Label>
                     <Input
@@ -142,7 +135,7 @@ export default function TalentSettingsPage() {
                       value={formData.currentPassword}
                       onChange={handleChange}
                       placeholder="Enter current password"
-                      className="mt-1"
+                      className="mt-2"
                     />
                   </div>
                   <div>
@@ -154,7 +147,7 @@ export default function TalentSettingsPage() {
                       value={formData.newPassword}
                       onChange={handleChange}
                       placeholder="Enter new password"
-                      className="mt-1"
+                      className="mt-2"
                     />
                   </div>
                   <div>
@@ -166,35 +159,20 @@ export default function TalentSettingsPage() {
                       value={formData.confirmPassword}
                       onChange={handleChange}
                       placeholder="Confirm new password"
-                      className="mt-1"
+                      className="mt-2"
                     />
                   </div>
-                </div>
-                <p className="text-sm text-gray-500 mt-2">
-                  Leave password fields empty if you don't want to change your password
-                </p>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => router.back()}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  className="bg-brand-purple hover:bg-purple-700"
-                  disabled={saving}
-                >
-                  {saving ? 'Saving...' : 'Save Changes'}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+                  <p className="text-xs text-gray-500">
+                    Password must be at least 8 characters long.
+                  </p>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
-    </div>
+      <Footer />
+    </>
   )
 }
+

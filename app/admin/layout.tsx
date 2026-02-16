@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation'
-import { isAdmin, hasRouteAccess } from '@/lib/admin/rbac'
+import { isAdmin } from '@/lib/admin/rbac'
 import { AdminNav } from '@/components/admin/admin-nav'
-
+import { cookies } from 'next/headers'
+import { verifyToken } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,34 +11,22 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { getSupabaseClient } = await import('@/lib/supabase/server-helper')
-  const supabase = await getSupabaseClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
+  // Only use JWT token authentication to avoid conflicts
+  const cookieStore = await cookies()
+  const authToken = cookieStore.get('auth-token')?.value
+  
+  if (!authToken) {
     redirect('/login?redirect=/admin')
   }
 
-  // Get user profile and role
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, status')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile || !isAdmin(profile.role)) {
-    redirect('/?error=admin_access_required')
-  }
-
-  if (profile.status === 'SUSPENDED') {
-    redirect('/?error=account_suspended')
+  const payload = verifyToken(authToken)
+  if (!payload || !payload.role || !isAdmin(payload.role)) {
+    redirect('/login?redirect=/admin&error=admin_access_required')
   }
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      <AdminNav userRole={profile.role} userEmail={user.email} />
+      <AdminNav userRole={payload.role} userEmail={payload.email} />
       <main className="flex-1 overflow-x-hidden">
         <div className="container mx-auto px-6 py-8">{children}</div>
       </main>

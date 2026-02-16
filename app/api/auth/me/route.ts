@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/server'
 import { getAuthUser, successResponse, errorResponse } from '@/lib/api-utils'
 export const dynamic = 'force-dynamic'
 
@@ -46,7 +47,19 @@ export async function GET(request: NextRequest) {
 
     // Try to get additional profile data, but don't fail if it doesn't work
     try {
-      const supabase = createClient(supabaseUrl, supabaseAnonKey)
+      // Use service role to avoid RLS blocking profile lookups
+      const supabase = await createAdminClient()
+
+      // Fetch full_name from profiles table
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      if (profile?.full_name) {
+        additionalData.fullName = profile.full_name
+      }
 
       if (user.role === 'TALENT') {
         const { data: talentProfile } = await supabase

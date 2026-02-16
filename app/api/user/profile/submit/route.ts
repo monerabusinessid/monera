@@ -2,16 +2,20 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseClient, createAdminClient } from '@/lib/supabase/server-helper'
 import { getAuthUser, successResponse, errorResponse } from '@/lib/api-utils'
 import { z } from 'zod'
+import { prisma } from '@/lib/db'
 export const dynamic = 'force-dynamic'
 
 const submitProfileSchema = z.object({
-  fullName: z.string().min(1),
+  firstName: z.string().min(1),
+  lastName: z.string().min(1),
   jobTitle: z.string().min(1), // Professional job title/headline (required)
   country: z.string().min(1),
   timezone: z.string().min(1),
   bio: z.string().min(1),
   phone: z.string().min(1),
   location: z.string().min(1),
+  hourlyRate: z.number().positive().optional(),
+  availability: z.enum(['Open', 'Busy']).optional(),
   linkedInUrl: z.string().url().optional().or(z.literal('')),
   githubUrl: z.string().url().optional().or(z.literal('')),
   skillIds: z.array(z.string()).min(1, 'At least one skill is required'),
@@ -35,11 +39,14 @@ export async function POST(request: NextRequest) {
 
     const supabase = await getSupabaseClient()
     const adminSupabase = await createAdminClient()
+    const fullName = `${validatedData.firstName} ${validatedData.lastName}`.trim()
 
     // Update profile - don't update status here if it's enum UserStatus
     // Status for onboarding will be stored in talent_profiles table
     const updateData: any = {
-      full_name: validatedData.fullName,
+      full_name: fullName,
+      first_name: validatedData.firstName,
+      last_name: validatedData.lastName,
       updated_at: new Date().toISOString(),
     }
     
@@ -86,7 +93,7 @@ export async function POST(request: NextRequest) {
       if (isColumnError) {
         console.log('Column error detected, retrying without country/timezone fields')
         const retryData: any = {
-          full_name: validatedData.fullName,
+          full_name: fullName,
           updated_at: new Date().toISOString(),
         }
         
@@ -116,7 +123,8 @@ export async function POST(request: NextRequest) {
     // Calculate profile completion based on filled fields
     const calculateProfileCompletion = (): number => {
       const fields = [
-        validatedData.fullName, // fullName is required
+        validatedData.firstName, // firstName is required
+        validatedData.lastName, // lastName is required
         validatedData.jobTitle, // jobTitle is required
         validatedData.country, // country is required
         validatedData.timezone, // timezone is required
@@ -129,6 +137,8 @@ export async function POST(request: NextRequest) {
         validatedData.linkedInUrl, // linkedIn is optional
         validatedData.githubUrl, // github is optional
         validatedData.introVideoUrl, // video is optional
+        validatedData.hourlyRate,
+        validatedData.availability,
       ]
       const completed = fields.filter(Boolean).length
       return Math.round((completed / fields.length) * 100)
@@ -165,6 +175,8 @@ export async function POST(request: NextRequest) {
       bio: validatedData.bio,
       portfolio_url: validatedData.portfolioUrl?.trim() || null,
       intro_video_url: validatedData.introVideoUrl,
+      hourly_rate: validatedData.hourlyRate || null,
+      availability: validatedData.availability || null,
       status: 'SUBMITTED',
       submitted_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -317,6 +329,44 @@ export async function POST(request: NextRequest) {
 
     if (!talentProfileId) {
       return errorResponse('Failed to get talent profile ID', 500)
+    }
+
+    // Best-effort sync to candidate profile (Prisma) for profile overview fields
+    try {
+      await prisma.candidateProfile.upsert({
+        where: { userId: user.id },
+        create: {
+          userId: user.id,
+          firstName: validatedData.firstName,
+          lastName: validatedData.lastName,
+          headline: validatedData.jobTitle,
+          bio: validatedData.bio,
+          location: validatedData.location,
+          phone: validatedData.phone,
+          hourlyRate: validatedData.hourlyRate ?? null,
+          availability: validatedData.availability ?? null,
+          portfolioUrl: validatedData.portfolioUrl?.trim() || null,
+          linkedInUrl: normalizedLinkedInUrl,
+          githubUrl: normalizedGithubUrl,
+          videoIntroUrl: validatedData.introVideoUrl,
+        },
+        update: {
+          firstName: validatedData.firstName,
+          lastName: validatedData.lastName,
+          headline: validatedData.jobTitle,
+          bio: validatedData.bio,
+          location: validatedData.location,
+          phone: validatedData.phone,
+          hourlyRate: validatedData.hourlyRate ?? null,
+          availability: validatedData.availability ?? null,
+          portfolioUrl: validatedData.portfolioUrl?.trim() || null,
+          linkedInUrl: normalizedLinkedInUrl,
+          githubUrl: normalizedGithubUrl,
+          videoIntroUrl: validatedData.introVideoUrl,
+        },
+      })
+    } catch (prismaError) {
+      console.warn('Failed to sync candidate profile (non-blocking):', prismaError)
     }
 
     // Update skills (delete old, insert new)

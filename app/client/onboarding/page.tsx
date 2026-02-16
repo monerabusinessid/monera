@@ -108,6 +108,11 @@ export default function ClientOnboardingPage() {
 
       console.log('[ClientOnboarding] User authenticated as CLIENT, proceeding')
 
+      // Always redirect to dashboard - let client layout handle onboarding check
+      console.log('[ClientOnboarding] Redirecting to dashboard')
+      router.push('/client')
+      return
+
       // Fetch existing profile data
       try {
         const profileRes = await fetch('/api/user/profile', { credentials: 'include' })
@@ -155,6 +160,8 @@ export default function ClientOnboardingPage() {
     setSubmitting(true)
 
     try {
+      console.log('[ClientOnboarding] Submitting form data:', formData)
+      
       const response = await fetch('/api/client/profile/setup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -163,20 +170,21 @@ export default function ClientOnboardingPage() {
       })
 
       const data = await response.json()
+      console.log('[ClientOnboarding] API response:', data)
 
       if (!data.success) {
         throw new Error(data.error || 'Failed to save profile')
       }
 
+      console.log('[ClientOnboarding] Profile saved successfully, moving to step 4')
+      
       // Move to completion step
       setCurrentStep(STEPS.length)
       
-      // Redirect to client dashboard after 2 seconds
-      setTimeout(() => {
-        window.location.href = '/client'
-      }, 2000)
+      // Mark onboarding as complete in sessionStorage
+      sessionStorage.setItem('client_onboarding_complete', 'true')
     } catch (error) {
-      console.error('Submission error:', error)
+      console.error('[ClientOnboarding] Submission error:', error)
       alert(error instanceof Error ? error.message : 'Failed to save profile. Please try again.')
     } finally {
       setSubmitting(false)
@@ -366,7 +374,7 @@ export default function ClientOnboardingPage() {
                 <div className="text-6xl mb-4">✅</div>
                 <h2 className="text-xl font-semibold mb-2">Profile Complete!</h2>
                 <p className="text-gray-600 mb-6">
-                  Your client profile has been set up successfully. Redirecting to your dashboard...
+                  Your client profile has been set up successfully.
                 </p>
                 <Button onClick={() => router.push('/client')} className="bg-brand-purple hover:bg-purple-700">
                   Go to Dashboard

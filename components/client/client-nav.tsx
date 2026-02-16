@@ -285,7 +285,7 @@ export function ClientNav({ userName, userEmail }: ClientNavProps) {
   }
 
   return (
-    <nav className="bg-white/80 backdrop-blur-lg border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+    <nav className="bg-white/80 backdrop-blur-lg sticky top-4 sm:top-6 rounded-2xl mx-3 sm:mx-4 z-50 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo, Search, and Navigation */}
@@ -332,7 +332,7 @@ export function ClientNav({ userName, userEmail }: ClientNavProps) {
                     {/* Dropdown Menu */}
                     {dropdownOpen && (
                       <div 
-                        className="absolute top-full left-0 mt-2 w-72 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50"
+                        className="absolute top-full left-0 mt-2 w-72 bg-white/95 backdrop-blur rounded-lg shadow-lg border border-gray-200/80 py-2 z-50"
                       >
                         {group.items.map((item) => {
                           const itemActive = isActive(item.href)
@@ -434,7 +434,7 @@ export function ClientNav({ userName, userEmail }: ClientNavProps) {
                       className="fixed inset-0 z-10"
                       onClick={() => setShowNotifications(false)}
                     />
-                    <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-20 max-h-[500px] overflow-y-auto">
+                    <div className="absolute right-0 mt-2 w-96 bg-white/95 backdrop-blur rounded-lg shadow-lg border border-gray-200/80 py-2 z-20 max-h-[500px] overflow-y-auto">
                       <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
                         <p className="text-sm font-semibold text-gray-900">Notifications</p>
                         {unreadCount > 0 && (
@@ -519,7 +519,7 @@ export function ClientNav({ userName, userEmail }: ClientNavProps) {
                       className="fixed inset-0 z-10"
                       onClick={() => setShowUserMenu(false)}
                     />
-                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
+                    <div className="absolute right-0 mt-2 w-56 bg-white/95 backdrop-blur rounded-lg shadow-lg border border-gray-200/80 py-1 z-20">
                       <div className="px-4 py-3 border-b border-gray-200">
                         <p className="text-sm font-medium text-gray-900">{userName}</p>
                         <p className="text-xs text-gray-500 truncate">{userEmail}</p>
@@ -573,7 +573,7 @@ export function ClientNav({ userName, userEmail }: ClientNavProps) {
 
       {/* Mobile Menu */}
       {showMobileMenu && (
-        <div className="md:hidden border-t border-gray-200 bg-white">
+        <div className="md:hidden border-t border-gray-200/80 bg-white/95 backdrop-blur">
           <div className="px-4 py-3 space-y-1">
             <div className="pt-2 border-b border-gray-200 pb-3 mb-3">
               <p className="text-sm font-medium text-gray-900">{userName}</p>

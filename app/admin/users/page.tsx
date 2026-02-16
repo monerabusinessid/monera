@@ -1,6 +1,6 @@
 import { requireAdmin } from '@/lib/admin/rbac-server'
 import { redirect } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { UsersTable } from '@/components/admin/users-table'
 import { CreateUserButton } from '@/components/admin/create-user-button'
 
@@ -86,18 +86,21 @@ export default async function AdminUsersPage() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">Admin User Management</h1>
-        <p className="text-gray-600">View and manage admin accounts</p>
+      <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <p className="text-sm text-gray-500">
+            Home / Admin / <span className="text-brand-purple font-medium">Users</span>
+          </p>
+          <h1 className="text-3xl font-semibold text-gray-900 mt-3">User Management</h1>
+          <p className="text-gray-500 mt-2">Manage platform access, track activity, and update user roles.</p>
+        </div>
+        <CreateUserButton
+          className="rounded-full bg-brand-purple px-5 text-white shadow-lg hover:bg-brand-purple/90"
+          label="Add User"
+        />
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Admin Users ({profiles?.length || 0})</CardTitle>
-            <CreateUserButton />
-          </div>
-        </CardHeader>
+      <Card className="border border-gray-100 shadow-sm">
         <CardContent>
           {error ? (
             <div className="p-8 text-center text-red-600">

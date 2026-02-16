@@ -1,9 +1,11 @@
-'use client'
+﻿'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
-import { useParams } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/lib/auth-context'
+import { Button } from '@/components/ui/button'
 import { Footer } from '@/components/footer'
 
 interface Skill {
@@ -11,20 +13,25 @@ interface Skill {
   name: string
 }
 
-interface Profile {
+interface ProfileData {
   id: string
-  firstName: string | null
-  lastName: string | null
+  fullName: string | null
   headline: string | null
   bio: string | null
   location: string | null
-  phone: string | null
-  portfolioUrl: string | null
+  timezone: string | null
+  country: string | null
   linkedInUrl: string | null
   githubUrl: string | null
-  videoIntroUrl: string | null
+  portfolioUrl: string | null
+  hourlyRate: number | null
+  availability: string | null
   avatarUrl: string | null
+  profileCompletion: number
   skills: Skill[]
+}
+
+interface ExperienceData {
   workHistory: any[]
   education: any[]
   languages: any[]
@@ -32,308 +39,338 @@ interface Profile {
 }
 
 export default function TalentPublicProfilePage() {
-  const params = useParams()
-  const userId = params?.id as string
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { user, loading } = useAuth()
+  const router = useRouter()
+  const [profile, setProfile] = useState<ProfileData | null>(null)
+  const [experience, setExperience] = useState<ExperienceData>({
+    workHistory: [],
+    education: [],
+    languages: [],
+    certifications: [],
+  })
+  const [loadingData, setLoadingData] = useState(true)
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    if (!loading && (!user || user.role !== 'TALENT')) {
+      router.push('/login?redirect=/talent/profile/public')
+    }
+  }, [user, loading, router])
+
+  useEffect(() => {
+    if (!user || user.role !== 'TALENT') return
+
+    const fetchData = async () => {
+      setLoadingData(true)
       try {
-        // If no userId in params, try to get current user's profile
-        const endpoint = userId ? `/api/user/profile/${userId}` : '/api/user/profile'
-        const response = await fetch(endpoint, {
-          credentials: 'include',
-        })
-        const data = await response.json()
+        const [profileRes, experienceRes] = await Promise.all([
+          fetch('/api/user/profile', { credentials: 'include', cache: 'no-store' }),
+          fetch('/api/user/profile/experience', { credentials: 'include', cache: 'no-store' }),
+        ])
 
-        if (data.success && data.data) {
-          const p = data.data
-          const fullName = p.fullName || ''
-          const nameParts = fullName.split(' ')
-          const firstName = nameParts[0] || ''
-          const lastName = nameParts.slice(1).join(' ') || ''
+        const profileJson = await profileRes.json()
+        const experienceJson = await experienceRes.json()
 
-          // Fetch experience data
-          const experienceRes = await fetch('/api/user/profile/experience', {
-            credentials: 'include',
-          })
-          const experienceData = await experienceRes.json()
-
+        if (profileJson?.success && profileJson.data) {
+          const data = profileJson.data
           setProfile({
-            id: p.id,
-            firstName,
-            lastName,
-            headline: p.headline || p.jobTitle || '',
-            bio: p.bio || '',
-            location: p.location || '',
-            phone: p.phone || '',
-            portfolioUrl: p.portfolioUrl || '',
-            linkedInUrl: p.linkedInUrl || '',
-            githubUrl: p.githubUrl || '',
-            videoIntroUrl: p.introVideoUrl || p.videoIntroUrl || '',
-            avatarUrl: p.avatarUrl || null,
-            skills: p.skills || [],
-            workHistory: experienceData.success ? (experienceData.data?.workHistory || []) : [],
-            education: experienceData.success ? (experienceData.data?.education || []) : [],
-            languages: experienceData.success ? (experienceData.data?.languages || []) : [],
-            certifications: experienceData.success ? (experienceData.data?.certifications || []) : [],
+            id: data.id,
+            fullName: data.fullName || null,
+            headline: data.headline || null,
+            bio: data.bio || null,
+            location: data.location || null,
+            timezone: data.timezone || null,
+            country: data.country || null,
+            linkedInUrl: data.linkedInUrl || null,
+            githubUrl: data.githubUrl || null,
+            portfolioUrl: data.portfolioUrl || null,
+            hourlyRate: data.hourlyRate ?? null,
+            availability: data.availability || null,
+            avatarUrl: data.avatarUrl || null,
+            profileCompletion: data.profileCompletion || 0,
+            skills: data.skills || [],
+          })
+        }
+
+        if (experienceJson?.success && experienceJson.data) {
+          setExperience({
+            workHistory: experienceJson.data.workHistory || [],
+            education: experienceJson.data.education || [],
+            languages: experienceJson.data.languages || [],
+            certifications: experienceJson.data.certifications || [],
           })
         }
       } catch (error) {
-        console.error('Error fetching profile:', error)
+        console.error('[Talent Public Profile] Failed to load data:', error)
       } finally {
-        setLoading(false)
+        setLoadingData(false)
       }
     }
 
-    fetchProfile()
-  }, [userId])
+    fetchData()
+  }, [user])
 
-  if (loading) {
+  const displayName = profile?.fullName || 'N/A'
+  const headline = profile?.headline || 'N/A'
+  const locationLabel = profile?.location || profile?.country || 'N/A'
+  const timezoneLabel = profile?.timezone || 'N/A'
+
+  const verificationItems = useMemo(
+    () => [
+      { label: 'Email Verified', active: Boolean(user?.email) },
+      { label: 'Portfolio Linked', active: Boolean(profile?.portfolioUrl) },
+      { label: 'LinkedIn Linked', active: Boolean(profile?.linkedInUrl) },
+    ],
+    [profile?.portfolioUrl, profile?.linkedInUrl, user?.email]
+  )
+
+  if (loading || loadingData) {
     return (
-      <div className="min-h-screen bg-gray-50 pt-24 pb-12">
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-[#f6f4fb] pt-24">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-purple"></div>
+          <p className="mt-4 text-gray-600">Loading profile...</p>
         </div>
       </div>
     )
   }
-
-  if (!profile) {
-    return (
-      <div className="min-h-screen bg-gray-50 pt-24 pb-12">
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">Profile not found</div>
-        </div>
-      </div>
-    )
-  }
-
-  const fullName = profile.firstName && profile.lastName
-    ? `${profile.firstName} ${profile.lastName}`
-    : profile.firstName || 'Talent'
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-12">
-      <div className="container mx-auto px-4 max-w-4xl">
-        {/* Profile Header */}
-        <Card className="mb-6">
-          <CardContent className="p-8">
-            <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-              <div className="relative">
-                {profile.avatarUrl ? (
-                  <Image
-                    src={profile.avatarUrl}
-                    alt={fullName}
-                    width={128}
-                    height={128}
-                    className="w-32 h-32 rounded-full object-cover border-4 border-purple-200"
-                    unoptimized
-                  />
-                ) : (
-                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-brand-purple to-purple-700 flex items-center justify-center text-white text-4xl font-semibold">
-                    {fullName[0]?.toUpperCase() || 'T'}
+    <>
+      <div className="min-h-screen bg-[#f6f4fb] pt-24 pb-16">
+        <div className="container mx-auto max-w-6xl px-4">
+        <div className="rounded-3xl border border-purple-100 bg-white/90 shadow-sm">
+          <div className="relative overflow-hidden rounded-3xl">
+            <div className="h-24 w-full bg-gradient-to-r from-purple-100 via-purple-50 to-white" />
+            <div className="px-6 pb-6">
+              <div className="-mt-12 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="relative h-20 w-20 overflow-hidden rounded-full border-4 border-white bg-gray-100">
+                    {profile?.avatarUrl ? (
+                      <Image
+                        src={profile.avatarUrl}
+                        alt={displayName}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-2xl font-semibold text-gray-400">
+                        {displayName.charAt(0)}
+                      </div>
+                    )}
                   </div>
+                  <div>
+                    <h1 className="text-xl font-semibold text-gray-900">{headline}</h1>
+                    <div className="mt-2 flex flex-wrap items-center gap-4 text-xs text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                        {locationLabel}
+                      </span>
+                      <span>UTC {timezoneLabel}</span>
+                      <span>{profile?.profileCompletion || 0}% Profile Completion</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-3">
+                  <Button variant="outline" className="rounded-full px-5">Save Profile</Button>
+                  <Button className="rounded-full bg-brand-purple px-6 text-white hover:bg-purple-700">Offer Contract</Button>
+                </div>
+              </div>
+
+              <div className="mt-6 flex flex-wrap gap-6 border-b border-gray-100 text-sm font-medium text-gray-500">
+                <span className="border-b-2 border-brand-purple pb-3 text-brand-purple">Overview</span>
+                <span className="pb-3">Portfolio</span>
+                <span className="pb-3">Experience</span>
+                <span className="pb-3">Reviews</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+          <div className="space-y-6">
+            <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+              <h2 className="text-lg font-semibold text-gray-900">About Me</h2>
+              <p className="mt-3 text-sm leading-6 text-gray-600">
+                {profile?.bio || 'No bio added yet.'}
+              </p>
+            </section>
+
+            <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900">Portfolio Highlights</h2>
+                {profile?.portfolioUrl && (
+                  <Link
+                    href={profile.portfolioUrl}
+                    className="text-sm font-medium text-brand-purple"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    View All Projects
+                  </Link>
                 )}
               </div>
-              <div className="flex-1 text-center md:text-left">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">{fullName}</h1>
-                {profile.headline && (
-                  <p className="text-xl text-gray-600 mb-4">{profile.headline}</p>
-                )}
-                {profile.location && (
-                  <p className="text-gray-500 mb-4">📍 {profile.location}</p>
-                )}
-                {profile.bio && (
-                  <p className="text-gray-700 mb-4">{profile.bio}</p>
-                )}
-                <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                  {profile.portfolioUrl && (
-                    <a
+              <div className="mt-5 grid gap-4 md:grid-cols-2">
+                <div className="rounded-2xl border border-gray-100 bg-gradient-to-br from-purple-50 to-white p-5">
+                  <h3 className="text-sm font-semibold text-gray-900">Portfolio Link</h3>
+                  {profile?.portfolioUrl ? (
+                    <Link
                       href={profile.portfolioUrl}
                       target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-brand-purple hover:text-purple-700 font-medium"
+                      rel="noreferrer"
+                      className="mt-2 block text-sm text-brand-purple hover:underline"
                     >
-                      Portfolio
-                    </a>
+                      {profile.portfolioUrl}
+                    </Link>
+                  ) : (
+                    <p className="mt-2 text-sm text-gray-500">No portfolio URL provided.</p>
                   )}
-                  {profile.linkedInUrl && (
-                    <a
-                      href={profile.linkedInUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-brand-purple hover:text-purple-700 font-medium"
-                    >
-                      LinkedIn
-                    </a>
-                  )}
-                  {profile.githubUrl && (
-                    <a
+                </div>
+                <div className="rounded-2xl border border-gray-100 bg-gradient-to-br from-purple-50 to-white p-5">
+                  <h3 className="text-sm font-semibold text-gray-900">GitHub</h3>
+                  {profile?.githubUrl ? (
+                    <Link
                       href={profile.githubUrl}
                       target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-brand-purple hover:text-purple-700 font-medium"
+                      rel="noreferrer"
+                      className="mt-2 block text-sm text-brand-purple hover:underline"
                     >
-                      GitHub
-                    </a>
+                      {profile.githubUrl}
+                    </Link>
+                  ) : (
+                    <p className="mt-2 text-sm text-gray-500">No GitHub URL provided.</p>
                   )}
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </section>
 
-        {/* Introduction Video */}
-        {profile.videoIntroUrl && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Introduction Video</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="aspect-video rounded-lg overflow-hidden bg-gray-100">
-                {profile.videoIntroUrl.includes('youtube.com') || profile.videoIntroUrl.includes('youtu.be') ? (
-                  <iframe
-                    src={profile.videoIntroUrl
-                      .replace('watch?v=', 'embed/')
-                      .replace('youtu.be/', 'youtube.com/embed/')
-                      .replace(/&.*$/, '')}
-                    className="w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
+            <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+              <h2 className="text-lg font-semibold text-gray-900">Work History</h2>
+              <div className="mt-4 space-y-5">
+                {experience.workHistory.length === 0 && (
+                  <p className="text-sm text-gray-500">No work history added yet.</p>
+                )}
+                {experience.workHistory.map((work, index) => (
+                  <div key={`${work.title || 'role'}-${index}`} className="border-l-2 border-purple-200 pl-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-semibold text-gray-900">{work.title || 'Role'}</h3>
+                      <span className="text-xs text-gray-400">
+                        {work.startDate || 'N/A'} - {work.endDate || 'Present'}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600">{work.company || 'Company'}</p>
+                    {work.description && (
+                      <p className="mt-2 text-sm text-gray-500">{work.description}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+              <h2 className="text-lg font-semibold text-gray-900">Education</h2>
+              <div className="mt-4 space-y-4">
+                {experience.education.length === 0 && (
+                  <p className="text-sm text-gray-500">No education added yet.</p>
+                )}
+                {experience.education.map((edu, index) => (
+                  <div key={`${edu.institution || 'edu'}-${index}`} className="rounded-xl border border-gray-100 p-4">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-semibold text-gray-900">{edu.institution || 'Institution'}</p>
+                      <span className="text-xs text-gray-400">
+                        {edu.startYear || 'N/A'} - {edu.endYear || 'Present'}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600">{edu.degree || 'Degree'} {edu.field ? ` ${edu.field}` : ''}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+
+          <div className="space-y-6">
+            <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+              <h2 className="text-lg font-semibold text-gray-900">Work Preferences</h2>
+              <div className="mt-4 space-y-3 text-sm text-gray-600">
+                <div className="flex items-center justify-between">
+                  <span>Hourly Rate</span>
+                  <span className="font-medium text-gray-900">
+                    {profile?.hourlyRate ? `$${profile.hourlyRate}/hr` : 'N/A'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Availability</span>
+                  <span className="font-medium text-gray-900">{profile?.availability || 'N/A'}</span>
+                </div>
+              </div>
+            </section>
+
+            <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900">Skills</h2>
+                <span className="text-xs text-gray-400">View All</span>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {profile?.skills?.length ? (
+                  profile.skills.map((skill) => (
+                    <span key={skill.id} className="rounded-full bg-purple-50 px-3 py-1 text-xs text-purple-700">
+                      {skill.name}
+                    </span>
+                  ))
                 ) : (
-                  <video
-                    src={profile.videoIntroUrl}
-                    controls
-                    className="w-full h-full"
-                  />
+                  <p className="text-sm text-gray-500">No skills added yet.</p>
                 )}
               </div>
-            </CardContent>
-          </Card>
-        )}
+            </section>
 
-        {/* Skills */}
-        {profile.skills && profile.skills.length > 0 && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Skills</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {profile.skills.map((skill) => (
-                  <span
-                    key={skill.id}
-                    className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium"
-                  >
-                    {skill.name}
-                  </span>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Work History */}
-        {profile.workHistory && profile.workHistory.length > 0 && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Work History</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {profile.workHistory.map((work: any, idx: number) => (
-                  <div key={idx} className="border-l-4 border-purple-500 pl-4">
-                    <h3 className="font-semibold text-lg">{work.title} | {work.company}</h3>
-                    <p className="text-sm text-gray-600">{work.startDate} - {work.endDate || 'Present'}</p>
-                    {work.description && (
-                      <p className="text-gray-700 mt-2">{work.description}</p>
-                    )}
+            <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+              <h2 className="text-lg font-semibold text-gray-900">Verifications</h2>
+              <div className="mt-4 space-y-3">
+                {verificationItems.map((item) => (
+                  <div key={item.label} className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">{item.label}</span>
+                    <span className={item.active ? 'text-emerald-500' : 'text-gray-300'}>
+                      {item.active ? 'Verified' : 'Not set'}
+                    </span>
                   </div>
                 ))}
               </div>
-            </CardContent>
-          </Card>
-        )}
+            </section>
 
-        {/* Education */}
-        {profile.education && profile.education.length > 0 && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Education</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {profile.education.map((edu: any, idx: number) => (
-                  <div key={idx} className="border-l-4 border-purple-500 pl-4">
-                    <h3 className="font-semibold text-lg">{edu.institution}</h3>
-                    <p className="text-gray-600">{edu.degree} {edu.field && `- ${edu.field}`}</p>
-                    {edu.startYear && (
-                      <p className="text-sm text-gray-500">{edu.startYear} - {edu.endYear || 'Present'}</p>
-                    )}
+            <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+              <h2 className="text-lg font-semibold text-gray-900">External Links</h2>
+              <div className="mt-4 space-y-3 text-sm text-gray-600">
+                {profile?.linkedInUrl ? (
+                  <Link href={profile.linkedInUrl} className="block text-brand-purple hover:underline" target="_blank" rel="noreferrer">
+                    {profile.linkedInUrl}
+                  </Link>
+                ) : (
+                  <p className="text-sm text-gray-500">No LinkedIn URL provided.</p>
+                )}
+              </div>
+            </section>
+
+            <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+              <h2 className="text-lg font-semibold text-gray-900">Languages</h2>
+              <div className="mt-4 space-y-2">
+                {experience.languages.length === 0 && (
+                  <p className="text-sm text-gray-500">No languages added yet.</p>
+                )}
+                {experience.languages.map((lang, index) => (
+                  <div key={`${lang.name || 'lang'}-${index}`} className="flex items-center justify-between text-sm text-gray-600">
+                    <span>{lang.name || 'Language'}</span>
+                    <span className="text-gray-500">{lang.proficiency || 'N/A'}</span>
                   </div>
                 ))}
               </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Languages */}
-        {profile.languages && profile.languages.length > 0 && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Languages</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {profile.languages.map((lang: any, idx: number) => (
-                  <div key={idx} className="flex justify-between items-center">
-                    <span className="font-medium">{lang.name}</span>
-                    <span className="text-sm text-gray-600">{lang.proficiency}</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Certifications */}
-        {profile.certifications && profile.certifications.length > 0 && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Certifications</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {profile.certifications.map((cert: any, idx: number) => (
-                  <div key={idx}>
-                    <h3 className="font-semibold">{cert.name}</h3>
-                    {cert.issuer && (
-                      <p className="text-sm text-gray-600">Issued by {cert.issuer}</p>
-                    )}
-                    {cert.issueDate && (
-                      <p className="text-sm text-gray-500">Issued {cert.issueDate}</p>
-                    )}
-                    {cert.credentialUrl && (
-                      <a
-                        href={cert.credentialUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-brand-purple hover:text-purple-700 text-sm"
-                      >
-                        View Credential
-                      </a>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+            </section>
+          </div>
+        </div>
       </div>
-      <Footer />
     </div>
+    <Footer />
+    </>
   )
 }
+
+

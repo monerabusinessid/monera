@@ -1,246 +1,188 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import Link from 'next/link'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useState, useEffect } from 'react'
+import { useAuth } from '@/lib/auth-context'
+import { JobSearchFilters, JobFilters } from '@/components/jobs/job-search-filters'
+import { JobCard } from '@/components/jobs/job-card'
 import { Button } from '@/components/ui/button'
-import { Footer } from '@/components/footer'
-
-interface Job {
-  id: string
-  title: string
-  description: string
-  location: string | null
-  remote: boolean
-  salaryMin: number | null
-  salaryMax: number | null
-  currency: string | null
-  company: {
-    id: string
-    name: string
-    logoUrl: string | null
-  } | null
-  skills: Array<{ id: string; name: string }>
-  createdAt: string
-}
 
 export default function JobsPage() {
-  const [jobs, setJobs] = useState<Job[]>([])
+  const { user } = useAuth()
+  const [jobs, setJobs] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [filters, setFilters] = useState({
-    query: '',
-    location: '',
-    remote: '',
-    workType: 'any',
-    page: 1,
-  })
+  const [filters, setFilters] = useState<JobFilters>({})
+  const [appliedJobs, setAppliedJobs] = useState<Set<string>>(new Set())
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+  const [totalJobs, setTotalJobs] = useState(0)
 
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search)
-    const query = urlParams.get('query')
-    if (query) {
-      setFilters(prev => ({ ...prev, query }))
-    }
-  }, [])
-
-  const fetchJobs = useCallback(async () => {
-    setLoading(true)
+  const fetchJobs = async (newFilters: JobFilters = filters, pageNum: number = 1, append: boolean = false) => {
     try {
-      const params = new URLSearchParams({
-        status: 'PUBLISHED',
-        page: filters.page.toString(),
-        limit: '20',
-      })
-      if (filters.query) params.append('query', filters.query)
-      if (filters.location) params.append('location', filters.location)
-      if (filters.remote === 'true') params.append('remote', 'true')
-      if (filters.workType && filters.workType !== 'any') params.append('category', filters.workType)
+      setLoading(true)
+      
+      const params = new URLSearchParams()
+      if (newFilters.query) params.append('query', newFilters.query)
+      if (newFilters.location) params.append('location', newFilters.location)
+      if (newFilters.remote !== undefined) params.append('remote', newFilters.remote.toString())
+      if (newFilters.salaryMin) params.append('salaryMin', newFilters.salaryMin.toString())
+      if (newFilters.salaryMax) params.append('salaryMax', newFilters.salaryMax.toString())
+      if (newFilters.company) params.append('company', newFilters.company)
+      if (newFilters.skills?.length) {
+        newFilters.skills.forEach(skill => params.append('skills', skill))
+      }
+      params.append('page', pageNum.toString())
+      params.append('limit', '12')
 
-      const response = await fetch(`/api/jobs?${params}`)
+      const response = await fetch(`/api/jobs?${params.toString()}`)
       const data = await response.json()
+
       if (data.success) {
-        setJobs(data.data.jobs || [])
+        const newJobs = data.data || []
+        setJobs(append ? [...jobs, ...newJobs] : newJobs)
+        setTotalJobs(data.total || 0)
+        setHasMore(newJobs.length === 12) // If we got less than limit, no more pages
       }
     } catch (error) {
-      console.error('Failed to fetch jobs:', error)
+      console.error('Error fetching jobs:', error)
     } finally {
       setLoading(false)
     }
-  }, [filters])
+  }
+
+  const fetchAppliedJobs = async () => {
+    if (!user || user.role !== 'TALENT') return
+
+    try {
+      const response = await fetch('/api/applications')
+      const data = await response.json()
+      
+      if (data.success) {
+        const appliedJobIds = new Set(data.data.map((app: any) => app.jobId))
+        setAppliedJobs(appliedJobIds)
+      }
+    } catch (error) {
+      console.error('Error fetching applied jobs:', error)
+    }
+  }
 
   useEffect(() => {
     fetchJobs()
-  }, [fetchJobs])
+    fetchAppliedJobs()
+  }, [])
 
-  const workTypes = [
-    { label: 'Any type of work', value: 'any' },
-    { label: 'Development & IT', value: 'Development & IT' },
-    { label: 'Design & Creative', value: 'Design & Creative' },
-    { label: 'Finance & Accounting', value: 'Finance & Accounting' },
-    { label: 'Admin & Customer Support', value: 'Admin & Customer Support' },
-    { label: 'Engineering & Architecture', value: 'Engineering & Architecture' },
-    { label: 'Legal', value: 'Legal' },
-    { label: 'Sales & Marketing', value: 'Sales & Marketing' },
-    { label: 'Writing & Translation', value: 'Writing & Translation' },
-  ]
+  const handleFiltersChange = (newFilters: JobFilters) => {
+    setFilters(newFilters)
+    setPage(1)
+    fetchJobs(newFilters, 1, false)
+  }
 
+  const handleApply = async (jobId: string) => {
+    if (!user) {
+      window.location.href = '/login'
+      return
+    }
+
+    if (user.role !== 'TALENT') {
+      alert('Only talent can apply to jobs')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/applications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ jobId }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setAppliedJobs(prev => new Set([...prev, jobId]))
+        alert('Application submitted successfully!')
+      } else {
+        alert(data.error || 'Failed to submit application')
+      }
+    } catch (error) {
+      console.error('Error applying to job:', error)
+      alert('Failed to submit application')
+    }
+  }
+
+  const loadMore = () => {
+    const nextPage = page + 1
+    setPage(nextPage)
+    fetchJobs(filters, nextPage, true)
+  }
 
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-brand-purple via-purple-900 to-indigo-950 text-white pt-40 sm:pt-36 pb-12 md:pb-16 overflow-hidden -mt-20 sm:-mt-24">
-        {/* Animated Background - Enhanced Stars/Particles */}
-        <div className="absolute inset-0 overflow-hidden -top-20 md:-top-24">
-          {/* Enhanced animated stars/particles */}
-          <div className="absolute inset-0">
-            {[...Array(80)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute rounded-full bg-white animate-twinkle"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  width: `${Math.random() * 4 + 2}px`,
-                  height: `${Math.random() * 4 + 2}px`,
-                  opacity: Math.random() * 0.8 + 0.2,
-                  animationDelay: `${Math.random() * 4}s`,
-                  animationDuration: `${Math.random() * 4 + 2}s`,
-                  boxShadow: '0 0 6px rgba(255, 255, 255, 0.8)',
-                }}
-              />
-            ))}
-          </div>
-          
-          {/* Enhanced Large animated bubbles */}
-          <div className="absolute -bottom-40 -right-40 w-[700px] h-[700px] bg-gradient-to-br from-brand-yellow/40 via-purple-400/30 to-indigo-400/30 rounded-full blur-3xl animate-float-slow opacity-80"></div>
-          <div className="absolute -top-40 -left-40 w-[600px] h-[600px] bg-gradient-to-br from-purple-500/30 via-indigo-500/30 to-brand-yellow/30 rounded-full blur-3xl animate-float-reverse opacity-70"></div>
-          
-          {/* Enhanced Medium floating bubbles */}
-          <div className="absolute top-1/4 right-1/4 w-80 h-80 bg-gradient-to-br from-purple-400/25 to-indigo-400/25 rounded-full blur-2xl animate-float-medium opacity-60"></div>
-          <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-gradient-to-br from-brand-yellow/25 to-purple-400/25 rounded-full blur-2xl animate-float-slow opacity-50"></div>
-          
-          {/* Enhanced Small floating particles */}
-          <div className="absolute top-1/2 left-1/3 w-40 h-40 bg-purple-400/20 rounded-full blur-xl animate-float-fast opacity-70"></div>
-          <div className="absolute bottom-1/3 right-1/3 w-48 h-48 bg-indigo-400/20 rounded-full blur-xl animate-float-medium opacity-60"></div>
-          
-          {/* Additional pulsing glow effects */}
-          <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-brand-yellow/10 rounded-full blur-3xl animate-pulse-slow transform -translate-x-1/2 -translate-y-1/2"></div>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="container mx-auto px-4">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Find Your Next Opportunity</h1>
+          <p className="text-gray-600">
+            Discover {totalJobs} quality job opportunities from vetted companies
+          </p>
         </div>
-        
-        <div className="container mx-auto px-4 relative z-10 pt-2">
-          <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-3 md:mb-4 font-headline leading-[1.1] tracking-tight animate-fade-in">
-              Find the Best <span className="text-brand-yellow">Talent Jobs</span>
-            </h1>
-            <p className="text-lg md:text-xl text-purple-100 mb-6 md:mb-8 leading-relaxed opacity-90 animate-slide-up">
-              Browse jobs posted on Monera, or create a free profile to find the work you love.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link href="/register">
-                <Button size="lg" className="bg-brand-yellow text-gray-900 hover:bg-yellow-400 font-semibold shadow-md mb-6">
-                  Find jobs
-                </Button>
-              </Link>
+
+        <JobSearchFilters 
+          onFiltersChange={handleFiltersChange}
+          loading={loading}
+        />
+
+        {loading && jobs.length === 0 ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-purple"></div>
+              <p className="mt-4 text-gray-600">Loading jobs...</p>
             </div>
           </div>
-        </div>
-      </section>
-
-      <div className="bg-white rounded-t-3xl -mt-6 sm:-mt-8 relative z-10">
-        <div className="container mx-auto px-4 py-8">
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Type of Work */}
-          <div className="lg:col-span-1">
-            <h2 className="font-semibold text-lg mb-4">Type of work</h2>
-            <div className="space-y-2">
-              {workTypes.map((type, idx) => (
-                <label key={idx} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                  <input
-                    type="radio"
-                    name="workType"
-                    value={type.value}
-                    checked={filters.workType === type.value}
-                    onChange={(e) => setFilters({ ...filters, workType: e.target.value })}
-                    className="w-4 h-4 text-brand-purple accent-brand-yellow"
-                  />
-                  <span className="text-sm">{type.label}</span>
-                </label>
+        ) : jobs.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-gray-500 mb-4">
+              <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No jobs found</h3>
+            <p className="text-gray-600 mb-4">Try adjusting your search filters to find more opportunities.</p>
+            <Button 
+              onClick={() => handleFiltersChange({})}
+              variant="outline"
+            >
+              Clear All Filters
+            </Button>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              {jobs.map((job) => (
+                <JobCard
+                  key={job.id}
+                  job={job}
+                  onApply={handleApply}
+                  isApplied={appliedJobs.has(job.id)}
+                  showApplyButton={user?.role === 'TALENT'}
+                />
               ))}
             </div>
-          </div>
 
-          {/* Right Column - Jobs List */}
-          <div className="lg:col-span-2">
-            {/* Jobs List */}
-            {loading ? (
-              <div className="text-center py-12">Loading jobs...</div>
-            ) : jobs.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-gray-500 mb-4">No jobs found</p>
-                <Button onClick={() => setFilters({ ...filters, query: '', location: '', remote: '', workType: 'any' })}>
-                  Clear Filters
+            {hasMore && (
+              <div className="text-center">
+                <Button
+                  onClick={loadMore}
+                  disabled={loading}
+                  variant="outline"
+                  size="lg"
+                >
+                  {loading ? 'Loading...' : 'Load More Jobs'}
                 </Button>
               </div>
-            ) : (
-              <div className="flex flex-col gap-8">
-                {jobs.map((job) => {
-                  const jobUrl = `/jobs/${job.id}`
-                  console.log('JobsPage: Rendering job card:', { id: job.id, title: job.title, url: jobUrl })
-                  return (
-                    <Link
-                      key={job.id}
-                      href={jobUrl}
-                      className="block"
-                      onClick={() => console.log('JobsPage: Clicked job link:', jobUrl)}
-                    >
-                      <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                        <CardHeader>
-                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                            <div className="flex-1">
-                              <CardTitle className="text-2xl">{job.title}</CardTitle>
-                              <CardDescription className="mt-1">
-                                {job.company?.name || 'Company'}
-                                {job.location && !job.remote && ` • ${job.location}`}
-                                {job.remote && ' • Remote'}
-                              </CardDescription>
-                            </div>
-                            {job.salaryMin && (
-                              <div className="text-left sm:text-right">
-                                <div className="text-lg font-semibold text-brand-purple">
-                                  {job.currency || '$'}{job.salaryMin.toLocaleString()}
-                                  {job.salaryMax && ` - ${job.currency || '$'}${job.salaryMax.toLocaleString()}`}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          <p className="text-gray-600 line-clamp-2 mb-4">{job.description}</p>
-                          <div className="flex flex-wrap gap-2">
-                            {job.skills.map((skill) => (
-                              <span
-                                key={skill.id}
-                                className="px-2 py-1 bg-gradient-to-r from-purple-50 to-yellow-50 text-purple-700 text-xs rounded border border-purple-200"
-                              >
-                                {skill.name}
-                              </span>
-                            ))}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  )
-                })}
-              </div>
             )}
-          </div>
-        </div>
-      </div>
-
-      <Footer />
+          </>
+        )}
       </div>
     </div>
   )
 }
-

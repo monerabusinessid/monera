@@ -27,6 +27,12 @@ enum ApplicationStatus {
   ACCEPTED
 }
 
+enum DocumentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum JobStatus {
   DRAFT
   PUBLISHED
@@ -37,8 +43,12 @@ enum JobStatus {
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
-  passwordHash  String
+  passwordHash  String?
   role          UserRole  @default(CANDIDATE)
+  verificationCode String?
+  verificationCodeExpiresAt DateTime?
+  isVerified    Boolean   @default(false)
+  googleId      String?   @unique
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -70,6 +80,7 @@ model CandidateProfile {
   hoursPerWeek      String?    // "More than 30 hrs/week", "Less than 30 hrs/week"
   profileCompletion Float?    @default(0) // 0-100
   isProfileReady    Boolean   @default(false)
+  onboardingCompleted Boolean @default(false)
   lastValidatedAt   DateTime?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
@@ -150,13 +161,16 @@ model Certification {
 
 model RecruiterProfile {
   id        String   @id @default(cuid())
-  userId    String   @unique
-  firstName String?
-  lastName  String?
+  userId    String   @unique @map("user_id")
+  firstName String?  @map("first_name")
+  lastName  String?  @map("last_name")
   phone     String?
-  companyId String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  companyId String?  @map("company_id")
+  documentsSubmitted Boolean @default(false) @map("documents_submitted")
+  documentsStatus DocumentStatus @default(PENDING) @map("documents_status")
+  adminNotes String? @map("admin_notes")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -181,6 +195,7 @@ model Company {
   // Relations
   members     RecruiterProfile[]
   jobs        Job[]
+  documents   CompanyDocument[]
 
   @@map("companies")
 }
@@ -291,4 +306,29 @@ model Conversation {
 
   @@unique([talentId, recruiterId])
   @@map("conversations")
+}
+
+model SavedJob {
+  id        String   @id @default(cuid())
+  userId    String
+  jobId     String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, jobId])
+  @@map("saved_jobs")
+}
+model CompanyDocument {
+  id          String   @id @default(cuid())
+  companyId   String
+  documentType String  // 'business_license', 'tax_certificate', 'company_profile'
+  fileUrl     String
+  fileName    String
+  uploadedAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@map("company_documents")
 }

@@ -58,6 +58,9 @@
   body {
     @apply bg-background text-foreground font-body;
   }
+  body.talent-shell {
+    background-color: #f6f6f9;
+  }
   h1, h2, h3, h4, h5, h6 {
     @apply font-headline;
   }
@@ -473,4 +476,91 @@
 .hover-accent-yellow:hover {
   border-color: #ffd52a;
   box-shadow: 0 0 0 3px rgba(255, 213, 42, 0.1);
+}
+
+/* Admin Dashboard Styles */
+.accent-yellow {
+  color: #ffd52a;
+}
+
+.bg-accent-yellow\/20 {
+  background-color: rgba(255, 213, 42, 0.2);
+}
+
+.bg-accent-yellow\/10 {
+  background-color: rgba(255, 213, 42, 0.1);
+}
+
+.bg-accent-yellow\/40 {
+  background-color: rgba(255, 213, 42, 0.4);
+}
+
+.border-accent-yellow\/50 {
+  border-color: rgba(255, 213, 42, 0.5);
+}
+
+.border-accent-yellow\/30 {
+  border-color: rgba(255, 213, 42, 0.3);
+}
+
+.text-\[\#111118\] {
+  color: #111118;
+}
+
+.text-\[\#616289\] {
+  color: #616289;
+}
+
+.bg-\[\#f6f6f8\] {
+  background-color: #f6f6f8;
+}
+
+.bg-\[\#111122\] {
+  background-color: #111122;
+}
+
+.bg-\[\#1a1a2e\] {
+  background-color: #1a1a2e;
+}
+
+.bg-\[\#252538\] {
+  background-color: #252538;
+}
+
+.bg-\[\#303048\] {
+  background-color: #303048;
+}
+
+.border-\[\#e5e7eb\] {
+  border-color: #e5e7eb;
+}
+
+.border-\[\#2b2b40\] {
+  border-color: #2b2b40;
+}
+
+.bg-background-light {
+  background-color: #f6f6f8;
+}
+
+.bg-background-dark {
+  background-color: #111122;
+}
+
+/* Custom scrollbar for action required section */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }

@@ -83,27 +83,36 @@ export async function POST(request: NextRequest) {
     }
 
     // Update recruiter_profile
-    const { error: recruiterProfileError } = await adminSupabase
+    const recruiterProfileData = {
+      user_id: user.id,
+      first_name: firstName,
+      last_name: lastName,
+      phone: phone || null,
+      company_id: companyId,
+      updated_at: new Date().toISOString(),
+    }
+    
+    console.log('[Setup] Upserting recruiter profile with data:', recruiterProfileData)
+    
+    const { data: upsertedProfile, error: recruiterProfileError } = await adminSupabase
       .from('recruiter_profiles')
-      .upsert({
-        user_id: user.id,
-        first_name: firstName,
-        last_name: lastName,
-        phone: phone || null,
-        company_id: companyId,
-        updated_at: new Date().toISOString(),
-      }, {
+      .upsert(recruiterProfileData, {
         onConflict: 'user_id',
       })
+      .select()
+      .single()
 
     if (recruiterProfileError) {
-      console.error('Error updating recruiter_profile:', recruiterProfileError)
-      return errorResponse('Failed to update recruiter profile', 500)
+      console.error('[Setup] Error updating recruiter_profile:', recruiterProfileError)
+      return errorResponse(`Failed to update recruiter profile: ${recruiterProfileError.message}`, 500)
     }
+    
+    console.log('[Setup] Recruiter profile upserted successfully:', upsertedProfile)
 
     return successResponse({
       message: 'Profile setup completed successfully',
       companyId,
+      profile: upsertedProfile,
     })
   } catch (error) {
     console.error('Error in POST /api/client/profile/setup:', error)

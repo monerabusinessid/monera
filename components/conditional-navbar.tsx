@@ -14,6 +14,7 @@ export function ConditionalNavbar() {
     pathname?.startsWith('/admin') || 
     pathname?.startsWith('/client') ||
     pathname?.startsWith('/user') ||
+    pathname?.startsWith('/talent/onboarding') ||
     pathname === '/login' ||
     pathname === '/register' ||
     pathname?.startsWith('/verify-email')

@@ -20,6 +20,31 @@ function VerifyEmailContent() {
   const [cooldown, setCooldown] = useState(0)
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
 
+  const resolvePostVerifyRedirect = async () => {
+    try {
+      const meResponse = await fetch('/api/auth/me', { credentials: 'include' })
+      if (!meResponse.ok) return '/login?verified=true'
+      const meData = await meResponse.json()
+      const role = meData?.data?.role
+      const adminRoles = ['SUPER_ADMIN', 'QUALITY_ADMIN', 'SUPPORT_ADMIN', 'ANALYST', 'ADMIN']
+
+      if (adminRoles.includes(role)) return '/admin'
+      if (role === 'TALENT') {
+        const status = meData?.data?.talentProfile?.status || 'DRAFT'
+        return status === 'DRAFT' ? '/talent/onboarding' : '/talent'
+      }
+      if (role === 'CLIENT') {
+        const rp = meData?.data?.recruiterProfile
+        const isComplete = rp?.first_name && rp?.last_name && rp?.company_id
+        return isComplete ? '/client' : '/client/onboarding'
+      }
+      return '/login?verified=true'
+    } catch (err) {
+      console.warn('[VerifyEmail] Failed to resolve redirect:', err)
+      return '/login?verified=true'
+    }
+  }
+
   useEffect(() => {
     // Get email from URL params or sessionStorage
     const emailParam = searchParams.get('email')
@@ -66,22 +91,22 @@ function VerifyEmailContent() {
     if (e.key === 'Backspace' && !code[index] && index > 0) {
       inputRefs.current[index - 1]?.focus()
     }
-    // Handle paste
-    if (e.key === 'v' && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault()
-      navigator.clipboard.readText().then(text => {
-        const digits = text.replace(/\D/g, '').slice(0, 6).split('')
-        const newCode = [...code]
-        digits.forEach((digit, i) => {
-          if (i < 6) newCode[i] = digit
-        })
-        setCode(newCode)
-        if (digits.length === 6) {
-          handleVerify(newCode.join(''))
-        } else {
-          inputRefs.current[Math.min(digits.length, 5)]?.focus()
-        }
-      })
+  }
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault()
+    const text = e.clipboardData.getData('text')
+    const digits = text.replace(/\D/g, '').slice(0, 6).split('')
+    if (digits.length === 0) return
+    const newCode = [...code]
+    digits.forEach((digit, i) => {
+      if (i < 6) newCode[i] = digit
+    })
+    setCode(newCode)
+    if (digits.length === 6) {
+      handleVerify(newCode.join(''))
+    } else {
+      inputRefs.current[Math.min(digits.length, 5)]?.focus()
     }
   }
 
@@ -121,17 +146,11 @@ function VerifyEmailContent() {
         // Clear sessionStorage
         sessionStorage.removeItem('register_email')
         
-        // Redirect to appropriate dashboard after 2 seconds
+        // Redirect to appropriate destination after 2 seconds
         setTimeout(() => {
-          // Get role from sessionStorage or redirect to login
-          const storedRole = sessionStorage.getItem('register_role')
-          if (storedRole === 'TALENT') {
-            router.push('/talent')
-          } else if (storedRole === 'CLIENT') {
-            router.push('/client')
-          } else {
-            router.push('/login?verified=true')
-          }
+          resolvePostVerifyRedirect().then((path) => {
+            window.location.replace(path)
+          })
         }, 2000)
       } else {
         setError(data.error || 'Verification failed. Please check your code and try again.')
@@ -209,7 +228,7 @@ function VerifyEmailContent() {
             </div>
             <CardTitle className="text-2xl">Email Verified!</CardTitle>
             <CardDescription>
-              Your email has been successfully verified. Redirecting you to your dashboard...
+              Your email has been successfully verified. Redirecting you now...
             </CardDescription>
           </CardHeader>
         </Card>
@@ -253,6 +272,7 @@ function VerifyEmailContent() {
                   value={digit}
                   onChange={(e) => handleCodeChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
+                  onPaste={handlePaste}
                   className="w-12 h-14 text-center text-2xl font-bold border-2 focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/20"
                   disabled={loading}
                 />

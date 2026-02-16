@@ -4,9 +4,10 @@ import Image from 'next/image'
 interface LogoProps {
   className?: string
   size?: 'sm' | 'md' | 'lg'
+  href?: string
 }
 
-export function Logo({ className = '', size = 'md' }: LogoProps) {
+export function Logo({ className = '', size = 'md', href = '/' }: LogoProps) {
   const sizeClasses = {
     sm: 'h-8',
     md: 'h-12',
@@ -22,7 +23,7 @@ export function Logo({ className = '', size = 'md' }: LogoProps) {
   const dim = imageSizes[size]
 
   return (
-    <Link href="/" className={`flex items-center ${className}`}>
+    <Link href={href} className={`flex items-center ${className}`}>
       <Image
         src="/images/logo.png"
         alt="Monera Logo"

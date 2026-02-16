@@ -11,14 +11,6 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 export async function POST(request: NextRequest) {
   try {
-    // CSRF protection (skip for development, enable for production)
-    if (process.env.NODE_ENV === 'production') {
-      const csrfValid = validateCSRFTokenFromRequest(request)
-      if (!csrfValid) {
-        return errorResponse('Invalid CSRF token', 403)
-      }
-    }
-
     const body = await request.json()
     const validatedData = loginSchema.parse(body)
 
@@ -26,21 +18,15 @@ export async function POST(request: NextRequest) {
       return errorResponse('Supabase not configured', 500)
     }
 
-    // Create response first - we'll use this to collect Supabase cookies
-    let supabaseResponse = NextResponse.next({ request })
+    const cookiesToSet: Array<{ name: string; value: string; options: any }> = []
     
-    // Create Supabase client with cookie support
     const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
       cookies: {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet) {
-          // Update response with new cookies from Supabase
-          supabaseResponse = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) => {
-            supabaseResponse.cookies.set(name, value, options)
-          })
+        setAll(cookiesToSet_) {
+          cookiesToSet.push(...cookiesToSet_)
         },
       },
     })
@@ -124,15 +110,13 @@ export async function POST(request: NextRequest) {
       }, { status: 403 })
     }
 
-    // Generate JWT token for backward compatibility (but store in httpOnly cookie)
     const token = generateToken({
       userId: authData.user.id,
       email: authData.user.email!,
       role: profile.role,
     })
 
-    // Create JSON response - copy all cookies from Supabase response
-    const jsonResponse = NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       data: {
         user: {
@@ -141,39 +125,26 @@ export async function POST(request: NextRequest) {
           role: profile.role,
           name: profile.full_name,
           fullName: profile.full_name,
-          status: profile.status, // Include status for redirect logic
+          status: profile.status,
         },
-        // Don't return token in response body for security
-        // Token is stored in httpOnly cookie
         session: authData.session,
       },
     })
 
-    // Copy all cookies from Supabase response (these are the session cookies)
-    // Supabase SSR automatically sets session cookies via setAll callback
-    supabaseResponse.cookies.getAll().forEach((cookie) => {
-      jsonResponse.cookies.set(cookie.name, cookie.value, {
-        httpOnly: cookie.httpOnly ?? true,
-        secure: cookie.secure ?? (process.env.NODE_ENV === 'production'),
-        sameSite: (cookie.sameSite as 'lax' | 'strict' | 'none') ?? 'lax',
-        path: cookie.path ?? '/',
-        maxAge: cookie.maxAge,
-      })
+    cookiesToSet.forEach(({ name, value, options }) => {
+      response.cookies.set(name, value, options)
     })
 
-    // Store JWT token in httpOnly cookie for additional security (backward compatibility)
-    jsonResponse.cookies.set('auth-token', token, {
+    response.cookies.set('auth-token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'lax' : 'lax', // Use 'lax' for both dev and prod
+      sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 60 * 24 * 7, // 7 days (match JWT_EXPIRES_IN)
-      // Explicitly set domain to undefined for localhost (default behavior)
-      // This ensures cookie works on localhost
+      maxAge: 60 * 60 * 24 * 7,
     })
 
-    console.log('[API /auth/login] Login successful, cookies set for user:', authData.user.id)
-    return jsonResponse
+    console.log('[API /auth/login] Login successful for user:', authData.user.id)
+    return response
   } catch (error) {
     return handleApiError(error)
   }

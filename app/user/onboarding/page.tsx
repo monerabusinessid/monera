@@ -71,18 +71,24 @@ export default function OnboardingPage() {
   })
 
   useEffect(() => {
-    // Check if user is already approved - redirect to dashboard
-    fetch('/api/user/profile', { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.data) {
-          const profile = data.data
-          // If profile is approved, redirect to dashboard
+    const loadData = async () => {
+      try {
+        const [profileRes, skillsRes] = await Promise.all([
+          fetch('/api/user/profile', { credentials: 'include' }),
+          fetch('/api/skills', { credentials: 'include' })
+        ])
+
+        const [profileData, skillsData] = await Promise.all([
+          profileRes.json(),
+          skillsRes.json()
+        ])
+
+        if (profileData.success && profileData.data) {
+          const profile = profileData.data
           if (profile.status === 'APPROVED') {
             router.push('/talent/dashboard')
             return
           }
-          // Otherwise, load form data
           setFormData(prev => ({
             ...prev,
             fullName: profile.fullName || '',
@@ -94,19 +100,18 @@ export default function OnboardingPage() {
             introVideoUrl: profile.introVideoUrl || null,
           }))
         }
-      })
-      .catch(err => console.error('Failed to fetch profile:', err))
-      .finally(() => setLoading(false))
 
-    // Fetch available skills
-    fetch('/api/skills', { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          setSkills(data.data || [])
+        if (skillsData.success) {
+          setSkills(skillsData.data || [])
         }
-      })
-      .catch(err => console.error('Failed to fetch skills:', err))
+      } catch (err) {
+        console.error('Failed to load data:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadData()
   }, [router])
 
   const handleNext = () => {

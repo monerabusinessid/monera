@@ -49,10 +49,10 @@ npm run db:seed
 ### 💼 Recruiter/Client
 - **Email:** recruiter@monera.com
 - **Password:** demo123
-- **Role:** RECRUITER
+- **Role:** CLIENT
 - **Profile:** John Recruiter
 - **Akses:**
-  - Recruiter Dashboard
+  - Client Dashboard (/client)
   - Post Jobs
   - Talent Search
   - Manage Applications
@@ -108,6 +108,6 @@ npm run db:seed
 
 | Role | Email | Password | Dashboard URL |
 |------|-------|----------|---------------|
-| Admin | admin@monera.com | demo123 | `/admin/dashboard` |
-| Recruiter/Client | recruiter@monera.com | demo123 | `/recruiter/dashboard` |
-| Candidate/Talent | candidate@monera.com | demo123 | `/candidate/dashboard` |
+| Admin | admin@monera.com | demo123 | `/admin` |
+| Recruiter/Client | recruiter@monera.com | demo123 | `/client` |
+| Candidate/Talent | candidate@monera.com | demo123 | `/talent` |

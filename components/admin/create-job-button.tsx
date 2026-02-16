@@ -4,12 +4,19 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { JobModal } from './job-modal'
 
-export function CreateJobButton() {
+interface CreateJobButtonProps {
+  className?: string
+  label?: string
+}
+
+export function CreateJobButton({ className, label = 'Add Job' }: CreateJobButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
     <>
-      <Button onClick={() => setIsOpen(true)}>+ Add New Job</Button>
+      <Button onClick={() => setIsOpen(true)} className={className}>
+        + {label}
+      </Button>
       <JobModal
         job={null}
         isOpen={isOpen}

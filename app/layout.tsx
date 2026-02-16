@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { ConditionalNavbar } from "@/components/conditional-navbar";
+import { BodyRouteStyle } from "@/components/body-route-style";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://monera.com'),
@@ -87,6 +88,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="min-h-screen flex flex-col bg-transparent">
         <AuthProvider>
+          <BodyRouteStyle />
           <ConditionalNavbar />
           <main className="flex-1">
             {children}

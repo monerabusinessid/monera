@@ -1,17 +1,19 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import Link from 'next/link'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
 import { Footer } from '@/components/footer'
+
 export const dynamic = 'force-dynamic'
+
 interface Job {
   id: string
   title: string
@@ -66,6 +68,8 @@ export default function JobDetailPage() {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [loadingData, setLoadingData] = useState(true)
   const [profileStatus, setProfileStatus] = useState<string | null>(null)
+  const [isSaved, setIsSaved] = useState(false)
+  const [savingJob, setSavingJob] = useState(false)
 
   const fetchProfileStatus = useCallback(async () => {
     try {
@@ -112,6 +116,21 @@ export default function JobDetailPage() {
     }
   }, [jobId])
 
+  const fetchSavedState = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/saved-jobs?jobId=${jobId}`, {
+        credentials: 'include',
+        cache: 'no-store',
+      })
+      const data = await response.json()
+      if (data.success) {
+        setIsSaved(Boolean(data.data?.saved))
+      }
+    } catch (error) {
+      console.error('Failed to fetch saved state:', error)
+    }
+  }, [jobId])
+
   useEffect(() => {
     if (!loading && (!user || user.role !== 'TALENT')) {
       router.push('/login')
@@ -121,14 +140,58 @@ export default function JobDetailPage() {
       fetchJob()
       checkApplication()
       fetchProfileStatus()
+      fetchSavedState()
     }
-  }, [user, loading, router, jobId, fetchJob, checkApplication, fetchProfileStatus])
+  }, [user, loading, router, jobId, fetchJob, checkApplication, fetchProfileStatus, fetchSavedState])
+
+  const handleToggleSave = async () => {
+    if (savingJob) return
+    setSavingJob(true)
+    try {
+      if (isSaved) {
+        const response = await fetch(`/api/saved-jobs?jobId=${jobId}`, {
+          method: 'DELETE',
+          credentials: 'include',
+        })
+        const data = await response.json()
+        if (data.success) {
+          setIsSaved(false)
+        }
+      } else {
+        const response = await fetch('/api/saved-jobs', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({ jobId }),
+        })
+        const data = await response.json()
+        if (data.success) {
+          setIsSaved(true)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to toggle saved job:', error)
+    } finally {
+      setSavingJob(false)
+    }
+  }
+
+  const handleReport = () => {
+    if (!job) return
+    const subject = encodeURIComponent(`Report Job: ${job.title}`)
+    const body = encodeURIComponent(
+      `Job ID: ${job.id}\nJob Title: ${job.title}\nJob Link: ${typeof window !== 'undefined' ? window.location.href : ''}\n\nPlease describe the issue:`
+    )
+    window.location.href = `mailto:monerabusiness.id@gmail.com?subject=${subject}&body=${body}`
+  }
 
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString)
     const now = new Date()
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
-    
+
     if (diffInSeconds < 60) return 'Just now'
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} hours ago`
     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`
@@ -168,16 +231,16 @@ export default function JobDetailPage() {
         setMessage({ type: 'success', text: 'Application submitted successfully!' })
         setHasApplied(true)
         setShowApplyForm(false)
-        setFormData({ 
-          coverLetter: '', 
-          expectedRate: '', 
-          availability: '', 
-          startDate: '', 
-          portfolioUrl: '', 
-          resumeUrl: '', 
-          linkedInUrl: '', 
-          githubUrl: '', 
-          additionalInfo: '' 
+        setFormData({
+          coverLetter: '',
+          expectedRate: '',
+          availability: '',
+          startDate: '',
+          portfolioUrl: '',
+          resumeUrl: '',
+          linkedInUrl: '',
+          githubUrl: '',
+          additionalInfo: ''
         })
         setTimeout(() => {
           router.push('/talent/applications')
@@ -194,8 +257,11 @@ export default function JobDetailPage() {
 
   if (loading || loadingData) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">Loading...</div>
+      <div className="min-h-screen bg-[#f6f6f9] pt-24 pb-12 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-purple"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
       </div>
     )
   }
@@ -206,179 +272,179 @@ export default function JobDetailPage() {
 
   if (!job) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Card>
-          <CardContent className="p-8 text-center">
-            <p className="text-gray-500 mb-4">Job not found</p>
-            <Link href="/talent/jobs">
-              <Button>Back to Jobs</Button>
-            </Link>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-[#f6f6f9] pt-24 pb-12">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <Card className="border border-gray-100 shadow-sm">
+            <CardContent className="p-8 text-center">
+              <p className="text-gray-500 mb-4">Job not found</p>
+              <Link href="/talent/jobs">
+                <Button className="rounded-full">Back to Jobs</Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
+    <div className="min-h-screen bg-[#f6f6f9] pt-24 pb-12">
+      <div className="container mx-auto px-4 max-w-7xl">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <Link href="/talent/jobs">
-            <Button variant="outline" size="sm">← Back to Jobs</Button>
+            <Button variant="outline" size="sm" className="rounded-full">Back to Jobs</Button>
           </Link>
+          <span className="text-xs text-gray-400">Posted {formatTimeAgo(job.createdAt)}</span>
         </div>
 
         {message && (
-          <div className={`mb-6 p-4 rounded-md ${
+          <div className={`mb-6 rounded-xl px-4 py-3 text-sm ${
             message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
           }`}>
             {message.text}
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Job Header */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex-1">
-                    <CardTitle className="text-3xl mb-3">{job.title}</CardTitle>
-                    <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
-                      <span>Posted {formatTimeAgo(job.createdAt)}</span>
-                      <span>•</span>
-                      <span>{job.location || 'Worldwide'}</span>
-                      {job.remote && <span className="text-brand-purple">🌍 Remote</span>}
-                    </div>
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-6">
+          <div className="space-y-6">
+            <Card className="border border-gray-100 shadow-sm">
+              <CardContent className="p-6 space-y-4">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <h1 className="text-3xl font-semibold text-gray-900">{job.title}</h1>
+                    <p className="text-sm text-gray-500 mt-2">
+                      {job.company?.name || job.recruiter?.name || job.recruiter?.email || 'Company'} - {job.location || 'Worldwide'}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {job.remote && <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">Remote</span>}
+                    {job.engagementType && (
+                      <span className="rounded-full bg-purple-50 px-3 py-1 text-xs text-purple-700">{job.engagementType}</span>
+                    )}
+                    {job.experienceLevel && (
+                      <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">{job.experienceLevel}</span>
+                    )}
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Summary / Project Description */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">Summary / Project Description</h3>
-                  <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{job.description}</p>
-                </div>
-
-                {/* Scope of Work */}
-                {job.scopeOfWork && (
-                  <div>
-                    <h3 className="text-lg font-semibold mb-3">Scope of Work</h3>
-                    <ul className="list-disc list-inside space-y-2 text-gray-700">
-                      {job.scopeOfWork.split('\n').filter(line => line.trim()).map((item, index) => (
-                        <li key={index} className="leading-relaxed">{item.trim()}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Engagement Details */}
-                {(job.engagementType || job.hoursPerWeek || job.duration || job.experienceLevel || job.projectType) && (
-                  <div>
-                    <h3 className="text-lg font-semibold mb-3">Engagement Details</h3>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      {job.engagementType && (
-                        <div>
-                          <span className="font-medium text-gray-600">Engagement:</span>
-                          <span className="ml-2 text-gray-900">{job.engagementType}</span>
-                        </div>
-                      )}
-                      {job.hoursPerWeek && (
-                        <div>
-                          <span className="font-medium text-gray-600">Hours:</span>
-                          <span className="ml-2 text-gray-900">{job.hoursPerWeek}</span>
-                        </div>
-                      )}
-                      {job.duration && (
-                        <div>
-                          <span className="font-medium text-gray-600">Duration:</span>
-                          <span className="ml-2 text-gray-900">{job.duration}</span>
-                        </div>
-                      )}
-                      {job.experienceLevel && (
-                        <div>
-                          <span className="font-medium text-gray-600">Experience Level:</span>
-                          <span className="ml-2 text-gray-900">{job.experienceLevel}</span>
-                        </div>
-                      )}
-                      {job.projectType && (
-                        <div>
-                          <span className="font-medium text-gray-600">Project Type:</span>
-                          <span className="ml-2 text-gray-900">{job.projectType}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Skills and Expertise */}
-                {job.skills.length > 0 && (
-                  <div>
-                    <h3 className="text-lg font-semibold mb-3">Skills and Expertise (Mandatory skills)</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {job.skills.map((skill) => (
-                        <span
-                          key={skill.id}
-                          className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium"
-                        >
-                          {skill.name}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Requirements */}
-                {job.requirements && (
-                  <div>
-                    <h3 className="text-lg font-semibold mb-3">Requirements</h3>
-                    <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{job.requirements}</p>
-                  </div>
-                )}
-
-                {/* Activity on this job */}
-                {job._count && (
-                  <div className="border-t pt-4">
-                    <h3 className="text-lg font-semibold mb-3">Activity on this job</h3>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="text-gray-600">Proposals:</span>
-                        <span className="ml-2 font-medium text-gray-900">{job._count.applications || 0}</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-600">Last viewed:</span>
-                        <span className="ml-2 font-medium text-gray-900">{formatTimeAgo(job.createdAt)}</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{job.description}</p>
               </CardContent>
             </Card>
 
-            {/* Application Form */}
+            {job.scopeOfWork && (
+              <Card className="border border-gray-100 shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-lg">Scope of Work</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2 text-sm text-gray-600">
+                  {job.scopeOfWork.split('\n').filter(line => line.trim()).map((item, index) => (
+                    <div key={index} className="flex gap-2">
+                      <span className="mt-1 h-2 w-2 rounded-full bg-brand-purple"></span>
+                      <p className="leading-relaxed">{item.trim()}</p>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
+            {(job.engagementType || job.hoursPerWeek || job.duration || job.experienceLevel || job.projectType) && (
+              <Card className="border border-gray-100 shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-lg">Engagement Details</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-600">
+                  {job.engagementType && (
+                    <div>
+                      <p className="text-xs uppercase text-gray-400">Engagement</p>
+                      <p className="font-medium text-gray-900">{job.engagementType}</p>
+                    </div>
+                  )}
+                  {job.hoursPerWeek && (
+                    <div>
+                      <p className="text-xs uppercase text-gray-400">Hours / Week</p>
+                      <p className="font-medium text-gray-900">{job.hoursPerWeek}</p>
+                    </div>
+                  )}
+                  {job.duration && (
+                    <div>
+                      <p className="text-xs uppercase text-gray-400">Duration</p>
+                      <p className="font-medium text-gray-900">{job.duration}</p>
+                    </div>
+                  )}
+                  {job.projectType && (
+                    <div>
+                      <p className="text-xs uppercase text-gray-400">Project Type</p>
+                      <p className="font-medium text-gray-900">{job.projectType}</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {job.skills.length > 0 && (
+              <Card className="border border-gray-100 shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-lg">Skills Required</CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-wrap gap-2">
+                  {job.skills.map((skill) => (
+                    <span key={skill.id} className="rounded-full bg-purple-50 px-3 py-1 text-xs text-purple-700">
+                      {skill.name}
+                    </span>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
+            {job.requirements && (
+              <Card className="border border-gray-100 shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-lg">Requirements</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-gray-600 whitespace-pre-wrap">
+                  {job.requirements}
+                </CardContent>
+              </Card>
+            )}
+
+            {job._count && (
+              <Card className="border border-gray-100 shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-lg">Activity</CardTitle>
+                </CardHeader>
+                <CardContent className="flex items-center gap-6 text-sm text-gray-600">
+                  <div>
+                    <span className="text-xs uppercase text-gray-400">Applications</span>
+                    <p className="text-lg font-semibold text-gray-900">{job._count.applications || 0}</p>
+                  </div>
+                  <div>
+                    <span className="text-xs uppercase text-gray-400">Last viewed</span>
+                    <p className="text-lg font-semibold text-gray-900">{formatTimeAgo(job.createdAt)}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {profileStatus && profileStatus !== 'APPROVED' ? (
-              <Card>
+              <Card className="border border-gray-100 shadow-sm">
                 <CardContent className="p-6">
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-blue-900 font-medium">You can't apply while your profile is under review.</p>
-                    <p className="text-blue-800 text-sm mt-1">Once your profile is approved, you'll be able to apply to jobs.</p>
+                  <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+                    Your profile is still under review. You can apply once it is approved.
                   </div>
                 </CardContent>
               </Card>
             ) : hasApplied ? (
-              <Card>
+              <Card className="border border-gray-100 shadow-sm">
                 <CardContent className="p-6">
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-green-800 font-medium">You have already applied to this job</p>
-                    <Link href="/talent/applications">
-                      <Button variant="outline" className="mt-2">View My Applications</Button>
-                    </Link>
+                  <div className="rounded-xl border border-green-100 bg-green-50 px-4 py-3 text-sm text-green-700">
+                    You already applied to this job.
                   </div>
+                  <Link href="/talent/applications">
+                    <Button variant="outline" className="mt-4 rounded-full">View Applications</Button>
+                  </Link>
                 </CardContent>
               </Card>
             ) : showApplyForm ? (
-              <Card>
+              <Card className="border border-gray-100 shadow-sm">
                 <CardHeader>
                   <CardTitle>Submit Application</CardTitle>
                 </CardHeader>
@@ -501,33 +567,21 @@ export default function JobDetailPage() {
                       </p>
                     </div>
 
-                    {/* Cost Breakdown */}
                     {formData.expectedRate && job.salaryMin && (
-                      <div className="mt-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
-                        <h4 className="font-semibold text-purple-900 mb-3">Cost Breakdown</h4>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Your Expected Rate:</span>
-                            <span className="font-medium">${parseFloat(formData.expectedRate || '0').toFixed(2)}/hour</span>
-                          </div>
-                          {formData.availability && (
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Availability:</span>
-                              <span className="font-medium">{formData.availability}</span>
-                            </div>
-                          )}
-                          {job.salaryMin && (
-                            <div className="border-t border-purple-200 pt-2 mt-2">
-                              <div className="flex justify-between">
-                                <span className="text-gray-600">Job Budget Range:</span>
-                                <span className="font-medium">
-                                  ${job.salaryMin.toLocaleString()}
-                                  {job.salaryMax && ` - $${job.salaryMax.toLocaleString()}`}
-                                </span>
-                              </div>
-                            </div>
-                          )}
+                      <div className="mt-6 rounded-xl border border-purple-100 bg-purple-50 px-4 py-3 text-sm">
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-600">Your Expected Rate</span>
+                          <span className="font-semibold text-gray-900">${parseFloat(formData.expectedRate || '0').toFixed(2)}/hour</span>
                         </div>
+                        {job.salaryMin && (
+                          <div className="mt-2 flex items-center justify-between">
+                            <span className="text-gray-600">Job Budget</span>
+                            <span className="font-semibold text-gray-900">
+                              ${job.salaryMin.toLocaleString()}
+                              {job.salaryMax && ` - $${job.salaryMax.toLocaleString()}`}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -537,26 +591,26 @@ export default function JobDetailPage() {
                         variant="outline"
                         onClick={() => {
                           setShowApplyForm(false)
-                          setFormData({ 
-                            coverLetter: '', 
-                            expectedRate: '', 
-                            availability: '', 
-                            startDate: '', 
-                            portfolioUrl: '', 
-                            resumeUrl: '', 
-                            linkedInUrl: '', 
-                            githubUrl: '', 
-                            additionalInfo: '' 
+                          setFormData({
+                            coverLetter: '',
+                            expectedRate: '',
+                            availability: '',
+                            startDate: '',
+                            portfolioUrl: '',
+                            resumeUrl: '',
+                            linkedInUrl: '',
+                            githubUrl: '',
+                            additionalInfo: ''
                           })
                         }}
-                        className="flex-1"
+                        className="flex-1 rounded-full"
                       >
                         Cancel
                       </Button>
                       <Button
                         type="submit"
                         disabled={submitting}
-                        className="flex-1 bg-brand-purple hover:bg-purple-700"
+                        className="flex-1 bg-brand-purple hover:bg-purple-700 rounded-full"
                       >
                         {submitting ? 'Submitting...' : 'Submit Application'}
                       </Button>
@@ -567,65 +621,60 @@ export default function JobDetailPage() {
             ) : null}
           </div>
 
-          {/* Sidebar */}
           <div className="lg:col-span-1">
-            <Card className="sticky top-4">
+            <Card className="border border-gray-100 shadow-sm sticky top-24">
               <CardContent className="p-6 space-y-6">
-                {/* Actions */}
                 {!hasApplied && profileStatus === 'APPROVED' && !showApplyForm && (
                   <div className="space-y-3">
                     <Button
                       onClick={() => setShowApplyForm(true)}
-                      className="w-full bg-brand-purple hover:bg-purple-700"
+                      className="w-full bg-brand-purple hover:bg-purple-700 rounded-full"
                       size="lg"
                     >
                       Apply now
                     </Button>
-                    <div className="flex gap-2">
-                      <Button variant="outline" className="flex-1" size="sm">
-                        Save job
-                      </Button>
-                      <Button variant="outline" className="flex-1" size="sm">
-                        Flag as inappropriate
-                      </Button>
-                    </div>
                   </div>
                 )}
 
-                {/* Budget */}
+                <div className="flex gap-2">
+                  <Button
+                    variant={isSaved ? 'default' : 'outline'}
+                    className={`flex-1 rounded-full ${isSaved ? 'bg-brand-purple hover:bg-purple-700 text-white' : ''}`}
+                    size="sm"
+                    onClick={handleToggleSave}
+                    disabled={savingJob}
+                  >
+                    {savingJob ? 'Saving...' : (isSaved ? 'Saved' : 'Save job')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="flex-1 rounded-full"
+                    size="sm"
+                    onClick={handleReport}
+                  >
+                    Report
+                  </Button>
+                </div>
+
                 {job.salaryMin && (
                   <div className="border-t pt-4">
-                    <h4 className="font-semibold mb-2">Budget</h4>
-                    <p className="text-2xl font-bold text-brand-purple">
+                    <h4 className="text-sm font-semibold text-gray-700">Budget</h4>
+                    <p className="text-2xl font-semibold text-brand-purple mt-2">
                       {job.currency || '$'}{job.salaryMin.toLocaleString()}
                       {job.salaryMax && ` - ${job.currency || '$'}${job.salaryMax.toLocaleString()}`}
                     </p>
-                    <p className="text-sm text-gray-600 mt-1">per hour</p>
+                    <p className="text-xs text-gray-400">per hour</p>
                   </div>
                 )}
 
-                {/* About the client */}
-                <div className="border-t pt-4">
-                  <h4 className="font-semibold mb-3">About the client</h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="text-green-600">✓</span>
-                      <span className="text-gray-600">Payment method verified</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-600">Location:</span>
-                      <span className="ml-2 font-medium">{job.location || 'Worldwide'}</span>
-                    </div>
-                    {job.company && (
-                      <div>
-                        <span className="text-gray-600">Company:</span>
-                        <span className="ml-2 font-medium">{job.company.name}</span>
-                      </div>
-                    )}
-                  </div>
+                <div className="border-t pt-4 space-y-2">
+                  <h4 className="text-sm font-semibold text-gray-700">About the client</h4>
+                  <p className="text-xs text-gray-500">Location: {job.location || 'Worldwide'}</p>
+                  {job.company && (
+                    <p className="text-xs text-gray-500">Company: {job.company.name}</p>
+                  )}
                 </div>
 
-                {/* Job link */}
                 <div className="border-t pt-4">
                   <p className="text-xs text-gray-500 mb-2">Job link</p>
                   <div className="flex items-center gap-2">
@@ -657,3 +706,4 @@ export default function JobDetailPage() {
     </div>
   )
 }
+

@@ -2,7 +2,9 @@
 
 // Dynamic imports to prevent bundling server-only code with client
 import { requireAdmin } from '@/lib/admin/rbac-server'
-import { isSuperAdmin } from '@/lib/admin/rbac'
+import { isAdmin, isSuperAdmin } from '@/lib/admin/rbac'
+import type { AdminRole } from '@/lib/admin/rbac'
+import { getUserFromToken } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -15,9 +17,34 @@ const approveTalentSchema = z.object({
   notes: z.string().nullable().optional(),
 })
 
+async function requireAdminFromToken(allowedRoles?: AdminRole[]) {
+  const { cookies } = await import('next/headers')
+  const cookieStore = await cookies()
+  const token = cookieStore.get('auth-token')?.value
+
+  if (!token) {
+    throw new Error('Unauthorized')
+  }
+
+  const user = await getUserFromToken(token)
+  if (!user) {
+    throw new Error('Unauthorized')
+  }
+
+  if (!isAdmin(user.role)) {
+    throw new Error('Admin access required')
+  }
+
+  if (allowedRoles && !allowedRoles.includes(user.role as AdminRole)) {
+    throw new Error('Insufficient permissions')
+  }
+
+  return { user, role: user.role as AdminRole }
+}
+
 export async function approveTalent(formData: FormData) {
   try {
-    const { user, profile, role } = await requireAdmin(['SUPER_ADMIN', 'QUALITY_ADMIN'])
+    const { user } = await requireAdminFromToken(['SUPER_ADMIN', 'QUALITY_ADMIN'])
 
     const notesValue = formData.get('notes')
     const data = approveTalentSchema.parse({
@@ -65,7 +92,7 @@ const rejectTalentSchema = z.object({
 
 export async function rejectTalent(formData: FormData) {
   try {
-    const { user, profile, role } = await requireAdmin(['SUPER_ADMIN', 'QUALITY_ADMIN'])
+    const { user } = await requireAdminFromToken(['SUPER_ADMIN', 'QUALITY_ADMIN'])
 
     const data = rejectTalentSchema.parse({
       talentId: formData.get('talentId'),

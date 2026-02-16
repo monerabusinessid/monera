@@ -27,18 +27,29 @@ export function AdminNav({ userRole, userEmail }: AdminNavProps) {
 
   const handleLogout = async () => {
     try {
-      const supabase = createClient()
-      await supabase.auth.signOut()
-      // Call logout API to clear cookies
+      // Clear auth token cookie first
+      document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+      
+      // Call logout API to clear server-side session
       await fetch('/api/auth/logout', {
         method: 'POST',
         credentials: 'include',
       })
-      // Direct redirect to login (no navbar will show)
+      
+      // Clear Supabase session
+      const supabase = createClient()
+      await supabase.auth.signOut()
+      
+      // Clear any localStorage data
+      localStorage.clear()
+      sessionStorage.clear()
+      
+      // Force redirect to login
       window.location.href = '/login'
     } catch (error) {
       console.error('Error logging out:', error)
-      router.push('/login')
+      // Force redirect even if logout API fails
+      window.location.href = '/login'
     }
   }
 

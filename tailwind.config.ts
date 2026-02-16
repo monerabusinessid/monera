@@ -28,6 +28,9 @@ const config: Config = {
           yellow: "#ffd52a",
           white: "#ffffff",
         },
+        "accent-yellow": "#ffd52a",
+        "background-light": "#f6f6f8",
+        "background-dark": "#111122",
         purple: {
           50: "#f5e6ff",
           100: "#e6ccff",
@@ -77,6 +80,7 @@ const config: Config = {
         sans: ["Poppins", "sans-serif"],
         headline: ["Barlow Condensed", "sans-serif"],
         body: ["Poppins", "sans-serif"],
+        display: ["Inter", "sans-serif"],
       },
       borderRadius: {
         lg: "var(--radius)",

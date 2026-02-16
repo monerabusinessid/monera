@@ -1,23 +1,27 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Footer } from '@/components/footer'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
 
 interface OnboardingData {
-  fullName: string
+  firstName: string
+  lastName: string
   jobTitle: string
   country: string
   timezone: string
   bio: string
   phone: string
   location: string
+  hourlyRate?: string
+  availability?: string
   linkedInUrl: string
   githubUrl: string
   skillIds: string[]
@@ -31,7 +35,7 @@ const STEPS = [
   { id: 1, title: 'Welcome', description: 'Get started' },
   { id: 2, title: 'Basic Info', description: 'Personal information' },
   { id: 3, title: 'Skills', description: 'Your expertise' },
-  { id: 4, title: 'Experience & Video', description: 'Background & introduction' },
+  { id: 4, title: 'Experience', description: 'Background & introduction' },
   { id: 5, title: 'Complete', description: 'Success!' },
 ]
 
@@ -60,13 +64,16 @@ export default function TalentOnboardingPage() {
   const [pageLoading, setPageLoading] = useState(true)
   const [skills, setSkills] = useState<Array<{ id: string; name: string }>>([])
   const [formData, setFormData] = useState<OnboardingData>({
-    fullName: '',
+    firstName: '',
+    lastName: '',
     jobTitle: '',
     country: '',
     timezone: '',
     bio: '',
     phone: '',
     location: '',
+    hourlyRate: '',
+    availability: 'Open',
     linkedInUrl: '',
     githubUrl: '',
     skillIds: [],
@@ -78,7 +85,8 @@ export default function TalentOnboardingPage() {
   const [newSkillName, setNewSkillName] = useState('')
   const [addingSkill, setAddingSkill] = useState(false)
   const isStep2Complete = Boolean(
-    formData.fullName &&
+    formData.firstName &&
+      formData.lastName &&
       formData.jobTitle &&
       formData.country &&
       formData.timezone &&
@@ -152,15 +160,22 @@ export default function TalentOnboardingPage() {
             return
           }
           if (profile.fullName || profile.country || profile.timezone || profile.headline) {
+            const fullNameValue = (profile.fullName || '').trim()
+            const nameParts = fullNameValue.split(/\s+/).filter(Boolean)
+            const firstName = nameParts[0] || ''
+            const lastName = nameParts.slice(1).join(' ') || ''
             setFormData(prev => ({
               ...prev,
-              fullName: profile.fullName || prev.fullName,
+              firstName: firstName || prev.firstName,
+              lastName: lastName || prev.lastName,
               jobTitle: profile.headline || profile.jobTitle || prev.jobTitle,
               country: profile.country || prev.country,
               timezone: profile.timezone || prev.timezone,
               bio: profile.bio || prev.bio,
               phone: profile.phone || prev.phone,
               location: profile.location || prev.location,
+              hourlyRate: profile.hourlyRate ? String(profile.hourlyRate) : prev.hourlyRate,
+              availability: profile.availability || prev.availability,
               linkedInUrl: profile.linkedInUrl || prev.linkedInUrl,
               githubUrl: profile.githubUrl || prev.githubUrl,
               skillIds: profile.skills?.map((s: any) => s.id) || prev.skillIds,
@@ -302,6 +317,7 @@ export default function TalentOnboardingPage() {
         credentials: 'include',
         body: JSON.stringify({
           ...formData,
+          hourlyRate: formData.hourlyRate ? Number(formData.hourlyRate) : undefined,
           skillIds: allSkillIds,
           customSkills: undefined, // Don't send customSkills, we've converted them to skillIds
         }),
@@ -309,7 +325,7 @@ export default function TalentOnboardingPage() {
 
       const data = await response.json()
       if (data.success) {
-        console.log('✅ Profile submitted successfully')
+        console.log(' Profile submitted successfully')
         // Move to completion step
         setCurrentStep(5)
         // Note: User will manually click "Go to Dashboard" button
@@ -317,7 +333,7 @@ export default function TalentOnboardingPage() {
       } else {
         const errorMessage = data.error || data.message || 'Failed to submit profile'
         alert(errorMessage)
-        console.error('❌ Profile submission error:', data)
+        console.error(' Profile submission error:', data)
       }
     } catch (error) {
       console.error('Error submitting profile:', error)
@@ -346,37 +362,40 @@ export default function TalentOnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-12">
-      <div className="max-w-3xl mx-auto px-4 space-y-8">
+    <>
+      <div className="min-h-screen bg-gray-50 pt-8 pb-8">
+        <div className="max-w-6xl mx-auto px-6 space-y-4">
         {/* Progress Indicator */}
         {currentStep < 5 && (
-          <div className="mb-8">
-            <div className="flex items-center justify-between gap-2 mb-4">
+          <div className="mb-4">
+            <div className="mb-2 max-w-[720px] mx-auto">
+              <div className="flex items-center justify-between">
               {STEPS.slice(0, 4).map((step, index) => (
-                <div key={step.id} className="flex items-center flex-1">
-                  <div className="flex flex-col items-center flex-1 min-w-0">
+                <div key={step.id} className="flex items-center">
+                  <div className="flex flex-col items-center w-20">
                     <div
                       className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 transition-all duration-200 ${
                         currentStep >= step.id
-                          ? 'bg-brand-purple text-white shadow-lg scale-110'
+                          ? 'bg-brand-purple text-white shadow-lg ring-2 ring-brand-purple/20'
                           : 'bg-gray-200 text-gray-600'
                       }`}
                     >
-                      {currentStep > step.id ? '✓' : step.id}
+                      {step.id}
                     </div>
                     <div className="mt-2 text-center w-full">
-                      <p className="text-xs font-semibold truncate text-gray-900">{step.title}</p>
+                      <p className="text-xs font-semibold text-gray-900">{step.title}</p>
                     </div>
                   </div>
                   {index < STEPS.slice(0, 4).length - 1 && (
                     <div
-                      className={`flex-1 h-1 mx-2 rounded-full transition-all duration-300 ${
+                      className={`h-1 w-10 rounded-full transition-all duration-300 ${
                         currentStep > step.id ? 'bg-brand-purple' : 'bg-gray-200'
                       }`}
                     />
                   )}
                 </div>
               ))}
+              </div>
             </div>
             <div className="text-center">
               <p className="text-sm text-gray-600">
@@ -391,16 +410,16 @@ export default function TalentOnboardingPage() {
           {/* Step 1: Welcome */}
           {currentStep === 1 && (
             <>
-              <CardHeader className="bg-gradient-to-r from-brand-purple to-purple-700 text-white rounded-t-lg">
-                <CardTitle className="text-2xl">Welcome to Monera Talent! 🎉</CardTitle>
+              <CardHeader className="bg-gradient-to-r from-brand-purple to-purple-700 text-white rounded-t-lg py-6">
+                <CardTitle className="text-2xl">Welcome to Monera Talent! </CardTitle>
                 <CardDescription className="text-purple-100">
                   Complete your profile to start finding amazing opportunities
                 </CardDescription>
               </CardHeader>
-              <CardContent className="p-8 space-y-6">
+              <CardContent className="p-6 space-y-4">
                 <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
                   <h3 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
-                    <span className="text-xl">📹</span>
+                    <span className="text-xl"></span>
                     Video Introduction Required
                   </h3>
                   <p className="text-blue-800 text-sm mb-2">
@@ -415,9 +434,9 @@ export default function TalentOnboardingPage() {
 
                 <div className="grid grid-cols-3 gap-4">
                   {[
-                    { step: 1, title: 'Basic Info', icon: '👤' },
-                    { step: 2, title: 'Skills', icon: '🎯' },
-                    { step: 3, title: 'Experience', icon: '💼' },
+                    { step: 1, title: 'Basic Info', icon: '' },
+                    { step: 2, title: 'Skills', icon: '' },
+                    { step: 3, title: 'Experience', icon: '' },
                   ].map((item) => (
                     <div key={item.step} className="p-4 bg-purple-50 rounded-lg border border-purple-200 text-center">
                       <div className="text-2xl mb-2">{item.icon}</div>
@@ -432,7 +451,7 @@ export default function TalentOnboardingPage() {
                     className="bg-brand-purple hover:bg-purple-700 text-white px-8 py-3 text-base font-semibold"
                     onClick={handleNext}
                   >
-                    Get Started →
+                    Get Started 
                   </Button>
                 </div>
               </CardContent>
@@ -446,131 +465,167 @@ export default function TalentOnboardingPage() {
                 <CardTitle className="text-xl">Step 2: Basic Information</CardTitle>
                 <CardDescription className="text-purple-100">Tell us about yourself</CardDescription>
               </CardHeader>
-              <CardContent className="p-6 space-y-5">
-                <div>
-                  <Label htmlFor="fullName" className="text-sm font-semibold">Full Name *</Label>
-                  <Input
-                    id="fullName"
-                    value={formData.fullName}
-                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                    required
-                    className="mt-2"
-                    placeholder="Enter your full name"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="jobTitle" className="text-sm font-semibold">Professional Job Title *</Label>
-                  <Input
-                    id="jobTitle"
-                    value={formData.jobTitle}
-                    onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
-                    required
-                    className="mt-2"
-                    placeholder="e.g. Senior Frontend Developer, UI/UX Designer, Data Scientist"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Your current or desired professional position</p>
-                </div>
-                <div>
-                  <Label htmlFor="bio" className="text-sm font-semibold">Bio / About You *</Label>
-                  <Textarea
-                    id="bio"
-                    value={formData.bio}
-                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                    rows={4}
-                    className="mt-2"
-                    placeholder="Tell us about yourself, your background, and what makes you unique..."
-                    required
-                  />
-                  <p className="text-xs text-gray-500 mt-1">{formData.bio.length}/1000 characters</p>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="country" className="text-sm font-semibold">Country *</Label>
-                    <Select
-                      id="country"
-                      value={formData.country}
-                      onValueChange={(value) => setFormData({ ...formData, country: value })}
+              <CardContent className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+                  <div className="md:col-span-1">
+                    <Label className="text-sm font-semibold">First Name *</Label>
+                    <Input
+                      id="firstName"
+                      value={formData.firstName}
+                      onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                       required
+                      placeholder="First name"
                       className="mt-2"
-                    >
-                      <option value="">Select your country</option>
-                      {COUNTRIES.map((country) => (
-                        <option key={country} value={country}>
-                          {country}
-                        </option>
-                      ))}
-                  </Select>
-                </div>
-                <div>
-                    <Label htmlFor="location" className="text-sm font-semibold">City / Location *</Label>
-                  <Input
-                    id="location"
-                    value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    className="mt-2"
-                    placeholder="e.g. Jakarta, New York, London"
-                    required
-                  />
+                    />
                   </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="timezone" className="text-sm font-semibold">Timezone *</Label>
-                    <Select
-                      id="timezone"
-                      value={formData.timezone}
-                      onValueChange={(value) => setFormData({ ...formData, timezone: value })}
+                  <div className="md:col-span-1">
+                    <Label className="text-sm font-semibold">Last Name *</Label>
+                    <Input
+                      id="lastName"
+                      value={formData.lastName}
+                      onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                      required
+                      placeholder="Last name"
+                      className="mt-2"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label htmlFor="jobTitle" className="text-sm font-semibold">Professional Job Title *</Label>
+                    <Input
+                      id="jobTitle"
+                      value={formData.jobTitle}
+                      onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
                       required
                       className="mt-2"
+                      placeholder="e.g. Senior Frontend Developer, UI/UX Designer, Data Scientist"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Your current or desired position</p>
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label htmlFor="bio" className="text-sm font-semibold">Bio / About You *</Label>
+                    <Textarea
+                      id="bio"
+                      value={formData.bio}
+                      onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                      rows={2}
+                      className="mt-2"
+                      placeholder="Tell us about yourself, your background, and what makes you unique..."
+                      required
+                    />
+                    <p className="text-xs text-gray-500 mt-1">{formData.bio.length}/1000 characters</p>
+                  </div>
+                  <div className="md:col-span-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div>
+                        <Label htmlFor="country" className="text-sm font-semibold">Country *</Label>
+                        <Select
+                          id="country"
+                          value={formData.country}
+                          onValueChange={(value) => setFormData({ ...formData, country: value })}
+                          required
+                          className="mt-2"
+                        >
+                          <option value="">Select your country</option>
+                          {COUNTRIES.map((country) => (
+                            <option key={country} value={country}>
+                              {country}
+                            </option>
+                          ))}
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="location" className="text-sm font-semibold">City / Location *</Label>
+                        <Input
+                          id="location"
+                          value={formData.location}
+                          onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                          className="mt-2"
+                          placeholder="e.g. Jakarta, New York, London"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="timezone" className="text-sm font-semibold">Timezone *</Label>
+                        <Select
+                          id="timezone"
+                          value={formData.timezone}
+                          onValueChange={(value) => setFormData({ ...formData, timezone: value })}
+                          required
+                          className="mt-2"
+                        >
+                          <option value="">Select your timezone</option>
+                          {TIMEZONES.map((tz) => (
+                            <option key={tz} value={tz}>
+                              {tz}
+                            </option>
+                          ))}
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="phone" className="text-sm font-semibold">Phone Number *</Label>
+                        <Input
+                          id="phone"
+                          type="tel"
+                          value={formData.phone}
+                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                          className="mt-2"
+                          placeholder="e.g. +62 812-3456-7890"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="md:col-span-1">
+                    <Label htmlFor="linkedInUrl" className="text-sm font-semibold">LinkedIn URL</Label>
+                    <Input
+                      id="linkedInUrl"
+                      type="url"
+                      value={formData.linkedInUrl}
+                      onChange={(e) => setFormData({ ...formData, linkedInUrl: e.target.value })}
+                      className="mt-2"
+                      placeholder="https://linkedin.com/in/yourprofile"
+                    />
+                  </div>
+                  <div className="md:col-span-1">
+                    <Label htmlFor="githubUrl" className="text-sm font-semibold">GitHub URL</Label>
+                    <Input
+                      id="githubUrl"
+                      type="url"
+                      value={formData.githubUrl}
+                      onChange={(e) => setFormData({ ...formData, githubUrl: e.target.value })}
+                      className="mt-2"
+                      placeholder="https://github.com/yourusername"
+                    />
+                  </div>
+                  <div className="md:col-span-1">
+                    <Label htmlFor="hourlyRate" className="text-sm font-semibold">Hourly Rate (USD)</Label>
+                    <Input
+                      id="hourlyRate"
+                      type="number"
+                      value={formData.hourlyRate || ''}
+                      onChange={(e) => setFormData({ ...formData, hourlyRate: e.target.value })}
+                      className="mt-2"
+                      placeholder="e.g. 50"
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                  <div className="md:col-span-1">
+                    <Label htmlFor="availability" className="text-sm font-semibold">Availability</Label>
+                    <Select
+                      id="availability"
+                      value={formData.availability || 'Open'}
+                      onValueChange={(value) => setFormData({ ...formData, availability: value })}
+                      className="mt-2"
                     >
-                      <option value="">Select your timezone</option>
-                      {TIMEZONES.map((tz) => (
-                        <option key={tz} value={tz}>
-                          {tz}
-                        </option>
-                      ))}
+                      <option value="Open">Open</option>
+                      <option value="Busy">Busy</option>
                     </Select>
                   </div>
-                  <div>
-                    <Label htmlFor="phone" className="text-sm font-semibold">Phone Number *</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="mt-2"
-                    placeholder="e.g. +62 812-3456-7890"
-                    required
-                  />
-                  </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="linkedInUrl" className="text-sm font-semibold">LinkedIn URL (Optional)</Label>
-                  <Input
-                    id="linkedInUrl"
-                    type="url"
-                    value={formData.linkedInUrl}
-                    onChange={(e) => setFormData({ ...formData, linkedInUrl: e.target.value })}
-                    className="mt-2"
-                    placeholder="https://linkedin.com/in/yourprofile"
-                  />
-                  </div>
-                  <div>
-                    <Label htmlFor="githubUrl" className="text-sm font-semibold">GitHub URL (Optional)</Label>
-                  <Input
-                    id="githubUrl"
-                    type="url"
-                    value={formData.githubUrl}
-                    onChange={(e) => setFormData({ ...formData, githubUrl: e.target.value })}
-                    className="mt-2"
-                    placeholder="https://github.com/yourusername"
-                  />
-                  </div>
-                </div>
-                <div className="flex justify-between gap-4 mt-8 pt-6 border-t">
+                <div className="flex justify-between gap-4 mt-6 pt-4 border-t">
                   <Button type="button" variant="outline" onClick={handleBack} className="min-w-[100px]">
-                    ← Back
+                     Back
                   </Button>
                   <Button
                     type="button"
@@ -578,7 +633,7 @@ export default function TalentOnboardingPage() {
                     disabled={!isStep2Complete}
                     className="bg-brand-purple hover:bg-purple-700 min-w-[100px]"
                   >
-                    Next →
+                    Next 
                   </Button>
                 </div>
               </CardContent>
@@ -679,7 +734,7 @@ export default function TalentOnboardingPage() {
                             }}
                             className="text-green-700 hover:text-green-900"
                           >
-                            ×
+                            
                           </button>
                         </span>
                       ))}
@@ -692,7 +747,7 @@ export default function TalentOnboardingPage() {
 
                 <div className="flex justify-between gap-4 mt-6 pt-4 border-t">
                   <Button type="button" variant="outline" onClick={handleBack} className="min-w-[100px]">
-                    ← Back
+                     Back
                   </Button>
                   <Button
                     type="button"
@@ -700,18 +755,18 @@ export default function TalentOnboardingPage() {
                     disabled={formData.skillIds.length === 0 && formData.customSkills.length === 0}
                     className="bg-brand-purple hover:bg-purple-700 min-w-[100px]"
                   >
-                    Next →
+                    Next 
                   </Button>
                 </div>
               </CardContent>
             </>
           )}
 
-          {/* Step 4: Experience & Video */}
+          {/* Step 4: Experience */}
           {currentStep === 4 && (
             <>
               <CardHeader className="bg-gradient-to-r from-brand-purple to-purple-700 text-white rounded-t-lg">
-                <CardTitle className="text-xl">Step 4: Experience & Video Introduction</CardTitle>
+                <CardTitle className="text-xl">Step 4: Experience</CardTitle>
                 <CardDescription className="text-purple-100">Share your background</CardDescription>
               </CardHeader>
               <CardContent className="p-6 space-y-5">
@@ -742,7 +797,7 @@ export default function TalentOnboardingPage() {
                 <div>
                   <Label className="text-sm font-semibold">Video Introduction *</Label>
                   <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded mb-3 mt-2">
-                    <p className="text-sm text-blue-900 font-semibold mb-1">📹 Video Requirements:</p>
+                    <p className="text-sm text-blue-900 font-semibold mb-1"> Video Requirements:</p>
                     <ul className="text-xs text-blue-800 space-y-1 list-disc list-inside">
                       <li>Record in <strong>English</strong></li>
                       <li>2-5 minutes duration</li>
@@ -784,12 +839,12 @@ export default function TalentOnboardingPage() {
                     className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
                   />
                   {formData.introVideoUrl && (
-                    <p className="text-sm text-green-600 mt-2 font-medium">✓ Video uploaded successfully</p>
+                    <p className="text-sm text-green-600 mt-2 font-medium"> Video uploaded successfully</p>
                   )}
                 </div>
                 <div className="flex justify-between gap-4 mt-8 pt-6 border-t">
                   <Button type="button" variant="outline" onClick={handleBack} className="min-w-[100px]">
-                    ← Back
+                     Back
                   </Button>
                   <Button
                     type="button"
@@ -803,7 +858,7 @@ export default function TalentOnboardingPage() {
                         Submitting...
                       </>
                     ) : (
-                      '✓ Submit Profile'
+                      ' Submit Profile'
                     )}
                   </Button>
                 </div>
@@ -815,13 +870,13 @@ export default function TalentOnboardingPage() {
           {currentStep === 5 && (
             <>
               <CardHeader className="bg-gradient-to-r from-green-600 to-green-700 text-white rounded-t-lg">
-                <CardTitle className="text-2xl text-center">🎉 Congratulations!</CardTitle>
+                <CardTitle className="text-2xl text-center"> Congratulations!</CardTitle>
                 <CardDescription className="text-green-100 text-center">
                   Your profile has been submitted successfully
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-8 space-y-6 text-center">
-                <div className="text-5xl mb-4">✅</div>
+                <div className="text-5xl mb-4"></div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2">You're All Set!</h3>
                 <p className="text-gray-600 mb-6">
                   Your profile is now under review. Our team will review it within 24 hours.
@@ -839,13 +894,16 @@ export default function TalentOnboardingPage() {
                   className="bg-brand-purple hover:bg-purple-700 text-white px-8 py-3 text-base font-semibold"
                   onClick={handleComplete}
                 >
-                  Go to Dashboard →
+                  Go to Dashboard 
                 </Button>
               </CardContent>
             </>
           )}
         </Card>
+        </div>
       </div>
-    </div>
+    </>
   )
 }
+
+

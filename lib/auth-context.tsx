@@ -14,7 +14,13 @@ interface User {
 interface AuthContextType {
   user: User | null
   token: string | null
-  login: (email: string, password: string) => Promise<void>
+  login: (email: string, password: string) => Promise<{
+    success: boolean
+    user?: User
+    requiresVerification?: boolean
+    email?: string
+    error?: string
+  }>
   register: (email: string, password: string, role: string) => Promise<void>
   logout: () => void
   loading: boolean
@@ -30,102 +36,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false)
 
   useEffect(() => {
-    // Token is now stored in httpOnly cookie, so we just fetch user
-    // Cookie will be automatically sent with the request
     console.log('[Auth] useEffect triggered', { hasCheckedAuth, loading, hasUser: !!user })
     
     // Check for OAuth user data in sessionStorage (from OAuth callback)
-    // This helps immediately recognize user after OAuth redirect
     if (!hasCheckedAuth && typeof window !== 'undefined') {
       try {
         console.log('[Auth] Checking sessionStorage for oauth_user...')
         const oauthUserStr = sessionStorage.getItem('oauth_user')
-        console.log('[Auth] sessionStorage.getItem result:', oauthUserStr ? 'found' : 'not found')
         
         if (oauthUserStr) {
-          console.log('[Auth] ✅ Found OAuth user in sessionStorage, parsing...')
+          console.log('[Auth] ✅ Found OAuth user in sessionStorage')
           const oauthUser = JSON.parse(oauthUserStr)
-          console.log('[Auth] ✅ Parsed OAuth user:', oauthUser)
-          console.log('[Auth] Setting user state with OAuth data...')
           
           setUser(oauthUser)
           setHasCheckedAuth(true)
           setLoading(false)
           
-          console.log('[Auth] ✅ User state updated from sessionStorage')
-          console.log('[Auth] Clearing sessionStorage...')
-          
-          // Clear sessionStorage after using it
           sessionStorage.removeItem('oauth_user')
           
-          // Verify it was cleared
-          const verifyCleared = sessionStorage.getItem('oauth_user')
-          if (!verifyCleared) {
-            console.log('[Auth] ✅ SessionStorage cleared successfully')
-          } else {
-            console.warn('[Auth] ⚠️ SessionStorage still contains data after removal attempt')
-          }
-          
-          // Still fetch from API to get latest data, but don't wait for it
-          console.log('[Auth] Fetching latest user data from API in background...')
+          // Fetch latest data in background
           fetchUser().catch((err) => {
-            // If fetch fails, we still have the user from sessionStorage
-            console.warn('[Auth] ⚠️ Failed to fetch user after OAuth, but user already set from sessionStorage:', err)
+            console.warn('[Auth] ⚠️ Failed to fetch user after OAuth:', err)
           })
           return
-        } else {
-          console.log('[Auth] No OAuth user found in sessionStorage, proceeding with normal auth check')
         }
       } catch (e) {
         console.error('[Auth] ❌ Error reading OAuth user from sessionStorage:', e)
-        console.error('[Auth] Error details:', {
-          message: e instanceof Error ? e.message : String(e),
-          name: e instanceof Error ? e.name : 'Unknown',
-          stack: e instanceof Error ? e.stack : undefined
-        })
       }
     }
     
     if (!hasCheckedAuth) {
       console.log('[Auth] hasCheckedAuth is false, calling fetchUser')
-      // Add a small delay before fetchUser to allow sessionStorage check to complete
-      // This ensures sessionStorage is checked first if it exists
-      setTimeout(() => {
-        if (!hasCheckedAuth) {
-          fetchUser()
-        }
-      }, 100)
+      fetchUser()
     } else {
-      console.log('[Auth] hasCheckedAuth is true, but ensuring loading is false')
-      // If we've already checked auth but loading is still true, set it to false
       if (loading) {
         console.log('[Auth] Loading is still true after hasCheckedAuth, setting to false')
         setLoading(false)
       }
     }
 
-    // Fallback timeout: if loading is still true after 10 seconds, force it to false
+    // Fallback timeout: if loading is still true after 3 seconds, force it to false
     const timeoutId = setTimeout(() => {
       if (loading) {
-        console.warn('[Auth] Loading timeout - forcing loading to false after 10 seconds')
+        console.warn('[Auth] Loading timeout - forcing loading to false after 3 seconds')
         setLoading(false)
         setHasCheckedAuth(true)
       }
-    }, 10000)
+    }, 3000)
 
-    // Refresh user when page becomes visible (handles back button case)
-    // Only refresh if we haven't checked auth yet or if user was previously logged in
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && (!hasCheckedAuth || user)) {
-        console.log('[Auth] Page visible, refreshing user')
-        fetchUser()
-      }
-    }
-
-    document.addEventListener('visibilitychange', handleVisibilityChange)
     return () => {
       clearTimeout(timeoutId)
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Only run once on mount
@@ -226,9 +186,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(null) // Token is managed by cookie
       // Remove any old localStorage token (cleanup)
       localStorage.removeItem('token')
-    } else {
-      throw new Error(data.error || 'Login failed')
+      return { success: true, user: data.data.user }
     }
+
+    if (data.requiresVerification && data.email) {
+      return {
+        success: false,
+        requiresVerification: true,
+        email: data.email,
+        error: data.error || 'Please verify your email before logging in.',
+      }
+    }
+
+    return { success: false, error: data.error || 'Login failed' }
   }
 
   const register = async (email: string, password: string, role: string) => {

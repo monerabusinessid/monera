@@ -79,6 +79,26 @@ export default function HomePage() {
   const faqRef = useRef<HTMLDivElement>(null)
   const ctaRef = useRef<HTMLDivElement>(null)
 
+  useEffect(() => {
+    if (loading) return
+    if (!user) return
+
+    const adminRoles = ['SUPER_ADMIN', 'QUALITY_ADMIN', 'SUPPORT_ADMIN', 'ANALYST', 'ADMIN']
+
+    // Immediate redirect without showing loading
+    if (user.role === 'TALENT') {
+      router.replace('/talent')
+      return
+    }
+    if (user.role === 'CLIENT') {
+      router.replace('/client')
+      return
+    }
+    if (adminRoles.includes(user.role)) {
+      router.replace('/admin')
+    }
+  }, [user, loading, router])
+
   // Scroll reveal effect
   useEffect(() => {
     // Only run on client-side and after component mounts
@@ -272,6 +292,18 @@ export default function HomePage() {
 
 
 
+  // Show loading state while checking auth
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-purple"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
   // Show loading state while fetching landing page data
   if (loadingData && !headerSettingsLoaded) {
     return (
@@ -279,6 +311,18 @@ export default function HomePage() {
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-purple"></div>
           <p className="mt-4 text-gray-600">Loading content...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show loading state while checking auth or if user is logged in (will redirect)
+  if (user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-purple"></div>
+          <p className="mt-4 text-gray-600">Redirecting...</p>
         </div>
       </div>
     )

@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
+import { createAdminClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 import { successResponse, errorResponse, handleApiError } from '@/lib/api-utils'
+import bcrypt from 'bcryptjs'
 export const dynamic = 'force-dynamic'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-
 const resetPasswordSchema = z.object({
+  token: z.string(),
   password: z.string().min(8, 'Password must be at least 8 characters'),
 })
 
@@ -16,60 +15,62 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = resetPasswordSchema.parse(body)
 
-    if (!supabaseUrl || !supabaseAnonKey) {
-      return errorResponse('Supabase not configured', 500)
+    const supabase = await createAdminClient()
+
+    // Find user with valid reset token
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, reset_token_expiry')
+      .eq('reset_token', validatedData.token)
+      .maybeSingle()
+
+    if (profileError || !profile) {
+      console.error('[API /auth/reset-password] Invalid token')
+      return errorResponse('Invalid or expired reset link', 400)
     }
 
-    // Create response first - we'll use this to collect Supabase cookies
-    let supabaseResponse = NextResponse.next({ request })
-
-    // Create Supabase client with cookie support
-    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          // Update response with new cookies from Supabase
-          supabaseResponse = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) => {
-            supabaseResponse.cookies.set(name, value, options)
-          })
-        },
-      },
-    })
-
-    // Check if user is authenticated (should have session from password reset link)
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
-
-    if (userError || !user) {
-      console.error('[API /auth/reset-password] User not authenticated:', userError)
-      return errorResponse('Invalid or expired reset link. Please request a new password reset.', 401)
+    // Check if token is expired
+    if (!profile.reset_token_expiry || new Date(profile.reset_token_expiry) < new Date()) {
+      console.error('[API /auth/reset-password] Token expired')
+      return errorResponse('Reset link has expired. Please request a new one.', 400)
     }
 
-    // Update password using the authenticated session
-    const { error } = await supabase.auth.updateUser({
-      password: validatedData.password,
-    })
-
-    if (error) {
-      console.error('[API /auth/reset-password] Error updating password:', error)
-      return errorResponse(error.message || 'Failed to reset password. The link may have expired.', 400)
-    }
-
-    console.log('[API /auth/reset-password] Password reset successful for user:', user.id)
+    // Get user email from auth.users
+    const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(profile.id)
     
-    // Return success response with cookies
-    const jsonResponse = successResponse({
+    if (authError || !authUser.user) {
+      console.error('[API /auth/reset-password] User not found in auth')
+      return errorResponse('Invalid reset link', 400)
+    }
+
+    // Hash new password
+    const passwordHash = await bcrypt.hash(validatedData.password, 10)
+
+    // Update password in auth.users
+    const { error: updateError } = await supabase.auth.admin.updateUserById(
+      profile.id,
+      { password: validatedData.password }
+    )
+
+    if (updateError) {
+      console.error('[API /auth/reset-password] Error updating password:', updateError)
+      return errorResponse('Failed to reset password', 500)
+    }
+
+    // Clear reset token
+    await supabase
+      .from('profiles')
+      .update({
+        reset_token: null,
+        reset_token_expiry: null,
+      })
+      .eq('id', profile.id)
+
+    console.log('[API /auth/reset-password] Password reset successful for:', authUser.user.email)
+    
+    return successResponse({
       message: 'Password has been reset successfully. You can now login with your new password.',
     })
-
-    // Copy cookies from supabaseResponse to jsonResponse
-    supabaseResponse.cookies.getAll().forEach((cookie) => {
-      jsonResponse.cookies.set(cookie.name, cookie.value, cookie)
-    })
-
-    return jsonResponse
   } catch (error) {
     return handleApiError(error)
   }

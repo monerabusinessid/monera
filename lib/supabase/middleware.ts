@@ -45,6 +45,18 @@ export async function updateSession(request: NextRequest) {
   const isPublicRoute = publicRoutes.some(route => pathname === route || pathname.startsWith('/api/auth/'))
   
   if (isPublicRoute) {
+    // If already authenticated, redirect away from login to the correct dashboard
+    if (pathname === '/login' && jwtUser) {
+      if (isAdmin(jwtUser.role)) {
+        return NextResponse.redirect(new URL('/admin', request.url))
+      }
+      if (jwtUser.role === 'CLIENT' || jwtUser.role === 'RECRUITER') {
+        return NextResponse.redirect(new URL('/client', request.url))
+      }
+      if (jwtUser.role === 'TALENT' || jwtUser.role === 'CANDIDATE') {
+        return NextResponse.redirect(new URL('/talent', request.url))
+      }
+    }
     return supabaseResponse
   }
   
@@ -82,7 +94,22 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(loginUrl)
     }
 
-    // Get user role
+    // Prefer JWT user (already resolved via service role in getAuthUser)
+    if (jwtUser) {
+      if (!isAdmin(jwtUser.role)) {
+        const loginUrl = new URL('/login', request.url)
+        loginUrl.searchParams.set('error', 'admin_access_required')
+        return NextResponse.redirect(loginUrl)
+      }
+      if (jwtUser.status === 'SUSPENDED') {
+        const loginUrl = new URL('/login', request.url)
+        loginUrl.searchParams.set('error', 'account_suspended')
+        return NextResponse.redirect(loginUrl)
+      }
+      return supabaseResponse
+    }
+
+    // Fallback: Get user role via Supabase session
     const { data: profile } = await supabase
       .from('profiles')
       .select('role, status')
@@ -103,7 +130,7 @@ export async function updateSession(request: NextRequest) {
 
     // Check route-specific permissions
     if (!hasRouteAccess(profile.role, pathname)) {
-      const dashboardUrl = new URL('/admin/dashboard', request.url)
+      const dashboardUrl = new URL('/admin', request.url)
       dashboardUrl.searchParams.set('error', 'insufficient_permissions')
       return NextResponse.redirect(dashboardUrl)
     }
@@ -141,7 +168,24 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(loginUrl)
     }
 
-    // Get user role
+    // Prefer JWT user (already resolved via service role in getAuthUser)
+    if (jwtUser) {
+      const role = jwtUser.role
+      const status = jwtUser.status
+      if (role !== 'CLIENT' && role !== 'RECRUITER') {
+        const loginUrl = new URL('/login', request.url)
+        loginUrl.searchParams.set('error', 'client_access_required')
+        return NextResponse.redirect(loginUrl)
+      }
+      if (status === 'SUSPENDED') {
+        const loginUrl = new URL('/login', request.url)
+        loginUrl.searchParams.set('error', 'account_suspended')
+        return NextResponse.redirect(loginUrl)
+      }
+      return supabaseResponse
+    }
+
+    // Fallback: Get user role via Supabase session
     const { data: profile } = await supabase
       .from('profiles')
       .select('role, status')
@@ -211,7 +255,7 @@ export async function updateSession(request: NextRequest) {
       if (userRole === 'CLIENT' || userRole === 'RECRUITER') {
         return NextResponse.redirect(new URL('/client', request.url))
       } else if (isAdmin(userRole)) {
-        return NextResponse.redirect(new URL('/admin/dashboard', request.url))
+        return NextResponse.redirect(new URL('/admin', request.url))
       } else {
         const loginUrl = new URL('/login', request.url)
         loginUrl.searchParams.set('error', 'invalid_role')

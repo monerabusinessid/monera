@@ -11,8 +11,9 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "date-fns": "^3.6.0",
-    "jsonwebtoken": "^9.0.2",
+    "jsonwebtoken": "^9.0.3",
     "next": "^14.2.0",
+    "node-fetch": "^3.3.2",
     "nodemailer": "^6.9.8",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
@@ -22,7 +23,7 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
-    "@types/jsonwebtoken": "^9.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20.14.0",
     "@types/nodemailer": "^6.4.14",
     "@types/react": "^18.3.0",
@@ -57,7 +58,10 @@
     "create:super-admin": "tsx scripts/create-super-admin.ts",
     "test:supabase": "tsx scripts/test-supabase-connection.ts",
     "check:tables": "tsx scripts/check-unused-tables.ts",
-    "test:client-auth": "tsx scripts/test-client-auth-flow.ts"
+    "test:client-auth": "tsx scripts/test-client-auth-flow.ts",
+    "setup": "node setup.js",
+    "setup:windows": "setup.bat",
+    "setup:unix": "bash setup.sh"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

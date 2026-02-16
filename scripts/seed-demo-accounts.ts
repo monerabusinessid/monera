@@ -33,7 +33,7 @@ interface DemoUser {
   email: string
   password: string
   name: string
-  role: 'SUPER_ADMIN' | 'QUALITY_ADMIN' | 'SUPPORT_ADMIN' | 'ANALYST' | 'RECRUITER' | 'TALENT'
+  role: 'SUPER_ADMIN' | 'QUALITY_ADMIN' | 'SUPPORT_ADMIN' | 'ANALYST' | 'CLIENT' | 'TALENT'
 }
 
 const demoUsers: DemoUser[] = [
@@ -67,7 +67,7 @@ const demoUsers: DemoUser[] = [
     email: 'recruiter@monera.com',
     password: 'demo123',
     name: 'John Recruiter',
-    role: 'RECRUITER',
+    role: 'CLIENT',
   },
   {
     email: 'candidate@monera.com',
@@ -81,12 +81,12 @@ async function createDemoUser(user: DemoUser) {
   try {
     // Check if user already exists
     const { data: existingUsers, error: listError } = await supabase.auth.admin.listUsers()
-    
+
     if (listError) {
       console.error(`❌ Error listing users: ${listError.message}`)
       throw listError
     }
-    
+
     const existingUser = existingUsers?.users.find((u) => u.email === user.email)
 
     let userId: string
@@ -120,6 +120,7 @@ async function createDemoUser(user: DemoUser) {
       full_name: user.name,
       role: user.role,
       status: 'ACTIVE',
+      email_verified: true, // Set to true for demo accounts so they can login immediately
     }, {
       onConflict: 'id'
     })
@@ -132,7 +133,7 @@ async function createDemoUser(user: DemoUser) {
     console.log(`✅ Profile created/updated: ${user.email} (${user.role})`)
 
     // Create role-specific profiles
-    if (user.role === 'RECRUITER') {
+    if (user.role === 'CLIENT') {
       // Create recruiter profile
       const { error: recruiterError } = await supabase.from('recruiter_profiles').upsert({
         user_id: userId,

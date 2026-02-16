@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Footer } from '@/components/footer'
 
@@ -124,7 +123,7 @@ export default function TalentMessagesPage() {
       if (data.success) {
         setMessages([...messages, data.data])
         setNewMessage('')
-        fetchConversations() // Refresh conversations to update last message
+        fetchConversations()
       }
     } catch (error) {
       console.error('Failed to send message:', error)
@@ -135,8 +134,11 @@ export default function TalentMessagesPage() {
 
   if (loading || loadingData) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">Loading...</div>
+      <div className="min-h-screen bg-[#f6f6f9] pt-24 pb-12 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-purple"></div>
+          <p className="mt-4 text-gray-600">Loading messages...</p>
+        </div>
       </div>
     )
   }
@@ -146,105 +148,83 @@ export default function TalentMessagesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Messages</h1>
-          <p className="text-gray-600">Communicate with recruiters</p>
+    <div className="min-h-screen bg-[#f6f6f9] pt-24 pb-12">
+      <div className="container mx-auto px-4 max-w-7xl">
+        <div className="mb-6">
+          <h1 className="text-3xl font-semibold text-gray-900">Messages</h1>
+          <p className="text-sm text-gray-500">Stay connected with recruiters.</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Conversations List */}
-          <div className="lg:col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle>Conversations</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                {conversations.length === 0 ? (
-                  <div className="p-4 text-center text-gray-500">
-                    No conversations yet
-                  </div>
-                ) : (
-                  <div className="divide-y">
-                    {conversations.map((conv) => (
-                      <button
-                        key={conv.id}
-                        onClick={() => setSelectedConversation(conv)}
-                        className={`w-full text-left p-4 hover:bg-gray-50 transition-colors ${
-                          selectedConversation?.id === conv.id ? 'bg-purple-50' : ''
-                        }`}
-                      >
-                        <div className="font-semibold">
-                          {conv.recruiter.user.email}
-                        </div>
-                        {conv.recruiter.company && (
-                          <div className="text-sm text-gray-600">
-                            {conv.recruiter.company.name}
-                          </div>
-                        )}
-                        {conv.job && (
-                          <div className="text-sm text-brand-purple mt-1">
-                            {conv.job.title}
-                          </div>
-                        )}
-                        {conv.messages.length > 0 && (
-                          <div className="text-xs text-gray-500 mt-2 line-clamp-1">
-                            {conv.messages[0].content}
-                          </div>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-[320px_minmax(0,1fr)] gap-6">
+          <Card className="border border-gray-100 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-base">Conversations</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              {conversations.length === 0 ? (
+                <div className="p-6 text-center text-sm text-gray-500">No conversations yet</div>
+              ) : (
+                <div className="divide-y">
+                  {conversations.map((conv) => (
+                    <button
+                      key={conv.id}
+                      onClick={() => setSelectedConversation(conv)}
+                      className={`w-full text-left px-5 py-4 hover:bg-gray-50 transition-colors ${
+                        selectedConversation?.id === conv.id ? 'bg-purple-50' : ''
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-semibold text-gray-900">
+                          {conv.recruiter.company?.name || conv.recruiter.user.email}
+                        </p>
+                        <span className="text-xs text-gray-400">
+                          {new Date(conv.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </span>
+                      </div>
+                      {conv.job && (
+                        <p className="text-xs text-brand-purple mt-1">{conv.job.title}</p>
+                      )}
+                      {conv.messages.length > 0 && (
+                        <p className="text-xs text-gray-500 mt-2 line-clamp-1">{conv.messages[0].content}</p>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-          {/* Messages Thread */}
-          <div className="lg:col-span-2">
+          <Card className="border border-gray-100 shadow-sm flex flex-col min-h-[520px]">
             {selectedConversation ? (
-              <Card className="h-[600px] flex flex-col">
+              <>
                 <CardHeader>
-                  <CardTitle>
-                    {selectedConversation.recruiter.user.email}
-                    {selectedConversation.recruiter.company && (
-                      <span className="text-sm font-normal text-gray-600 ml-2">
-                        • {selectedConversation.recruiter.company.name}
-                      </span>
-                    )}
+                  <CardTitle className="text-base">
+                    {selectedConversation.recruiter.company?.name || selectedConversation.recruiter.user.email}
                   </CardTitle>
                   {selectedConversation.job && (
-                    <p className="text-sm text-brand-purple">
-                      Job: {selectedConversation.job.title}
-                    </p>
+                    <p className="text-xs text-brand-purple">Job: {selectedConversation.job.title}</p>
                   )}
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col p-0">
-                  {/* Messages */}
-                  <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                  <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
                     {messages.length === 0 ? (
-                      <div className="text-center text-gray-500 py-8">
-                        No messages yet. Start the conversation!
-                      </div>
+                      <div className="text-center text-sm text-gray-500 py-10">No messages yet.</div>
                     ) : (
                       messages.map((msg) => (
                         <div
                           key={msg.id}
-                          className={`flex ${
-                            msg.sender.id === user.id ? 'justify-end' : 'justify-start'
-                          }`}
+                          className={`flex ${msg.sender.id === user.id ? 'justify-end' : 'justify-start'}`}
                         >
                           <div
-                            className={`max-w-[70%] rounded-lg p-3 ${
+                            className={`max-w-[70%] rounded-2xl px-4 py-3 text-sm ${
                               msg.sender.id === user.id
                                 ? 'bg-brand-purple text-white'
-                                : 'bg-gray-200 text-gray-800'
+                                : 'bg-white border border-gray-100 text-gray-700'
                             }`}
                           >
-                            <p className="text-sm">{msg.content}</p>
-                            <p className={`text-xs mt-1 ${
-                              msg.sender.id === user.id ? 'text-purple-100' : 'text-gray-500'
+                            <p>{msg.content}</p>
+                            <p className={`mt-2 text-xs ${
+                              msg.sender.id === user.id ? 'text-purple-100' : 'text-gray-400'
                             }`}>
                               {new Date(msg.createdAt).toLocaleString()}
                             </p>
@@ -253,10 +233,8 @@ export default function TalentMessagesPage() {
                       ))
                     )}
                   </div>
-
-                  {/* Message Input */}
-                  <form onSubmit={handleSendMessage} className="p-4 border-t">
-                    <div className="flex gap-2">
+                  <form onSubmit={handleSendMessage} className="border-t px-5 py-4">
+                    <div className="flex gap-3">
                       <Textarea
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
@@ -267,22 +245,20 @@ export default function TalentMessagesPage() {
                       <Button
                         type="submit"
                         disabled={!newMessage.trim() || sending}
-                        className="bg-brand-purple hover:bg-purple-700"
+                        className="bg-brand-purple hover:bg-purple-700 rounded-full px-5"
                       >
                         Send
                       </Button>
                     </div>
                   </form>
                 </CardContent>
-              </Card>
+              </>
             ) : (
-              <Card>
-                <CardContent className="p-8 text-center text-gray-500">
-                  Select a conversation to view messages
-                </CardContent>
-              </Card>
+              <CardContent className="p-8 text-center text-sm text-gray-500">
+                Select a conversation to view messages.
+              </CardContent>
             )}
-          </div>
+          </Card>
         </div>
       </div>
       <Footer />

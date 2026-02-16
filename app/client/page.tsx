@@ -51,6 +51,9 @@ export default function ClientDashboard() {
   const [loadingData, setLoadingData] = useState(true)
   const [lastFetch, setLastFetch] = useState(Date.now())
   const redirectAttempted = useRef(false)
+  const checkedClientOnboarding = useRef(false)
+  const authRecheckAttempted = useRef(false)
+  const authConfirmed = useRef(false)
 
   // Fetch data function
   const fetchData = useCallback(async () => {
@@ -139,7 +142,7 @@ export default function ClientDashboard() {
                 if (currentUser.role === 'TALENT') {
                   router.push('/talent')
                 } else if (['SUPER_ADMIN', 'QUALITY_ADMIN', 'SUPPORT_ADMIN', 'ANALYST', 'ADMIN'].includes(currentUser.role)) {
-                  router.push('/admin/dashboard')
+                  router.push('/admin')
                 } else {
                   router.push('/login')
                 }
@@ -202,7 +205,7 @@ export default function ClientDashboard() {
       if (!loading) {
         // Check if user is authenticated and has CLIENT role
         if (user && user.role === 'CLIENT') {
-          // User is authenticated as CLIENT, proceed
+          // User is authenticated as CLIENT, proceed to dashboard
           // Data will be fetched by the other useEffect
         } else if (user && user.role !== 'CLIENT') {
           // User is authenticated but not CLIENT, redirect to appropriate page
@@ -211,7 +214,7 @@ export default function ClientDashboard() {
             if (user.role === 'TALENT') {
               router.push('/talent')
             } else if (['SUPER_ADMIN', 'QUALITY_ADMIN', 'SUPPORT_ADMIN', 'ANALYST', 'ADMIN'].includes(user.role)) {
-              router.push('/admin/dashboard')
+              router.push('/admin')
             } else {
               router.push('/login')
             }
@@ -219,12 +222,28 @@ export default function ClientDashboard() {
         } else if (!user) {
           // User is not authenticated, redirect to login
           // But wait a bit more to ensure sessionStorage user is loaded (from OAuth callback)
+          if (!authRecheckAttempted.current) {
+            authRecheckAttempted.current = true
+            try {
+              const meRes = await fetch('/api/auth/me', { credentials: 'include' })
+              const meData = await meRes.json()
+              if (meData?.success && (meData?.data?.role === 'CLIENT' || meData?.data?.role === 'RECRUITER')) {
+                authConfirmed.current = true
+                return
+              }
+            } catch (err) {
+              console.warn('[Client] Auth recheck failed:', err)
+            }
+          }
+          if (authConfirmed.current) {
+            return
+          }
           if (!redirectAttempted.current) {
             redirectAttempted.current = true
             // Give auth context more time to check sessionStorage (OAuth callback stores user there)
             setTimeout(() => {
               if (!mounted) return
-              router.push('/login')
+              router.push('/login?redirect=/client')
             }, 2000)
           }
         }
@@ -300,7 +319,7 @@ export default function ClientDashboard() {
   }
 
   // Show loading state while auth is loading or data is fetching
-  if (loading || (loadingData && user && user.role === 'CLIENT')) {
+  if (loading || (loadingData && user && user.role === 'CLIENT') || (!user && authConfirmed.current)) {
     return (
       <div className="text-center py-12">
         <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-purple"></div>

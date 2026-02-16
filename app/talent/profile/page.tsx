@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState, useCallback } from 'react'
 import Image from 'next/image'
@@ -25,6 +25,8 @@ interface Profile {
   headline: string | null
   bio: string | null
   location: string | null
+  country?: string | null
+  timezone?: string | null
   phone: string | null
   hourlyRate: number | null
   availability: string | null
@@ -32,7 +34,6 @@ interface Profile {
   linkedInUrl: string | null
   githubUrl: string | null
   videoIntroUrl: string | null
-  hoursPerWeek: string | null
   avatarUrl: string | null
   skills: Skill[]
   workHistory: any[]
@@ -48,6 +49,21 @@ interface Section {
   expanded: boolean
 }
 
+const COUNTRIES = [
+  'Indonesia', 'United States', 'United Kingdom', 'India', 'Philippines', 'Vietnam',
+  'Singapore', 'Malaysia', 'Thailand', 'Australia', 'Canada', 'Germany', 'France',
+  'Japan', 'South Korea', 'China', 'Brazil', 'Mexico', 'Spain', 'Italy', 'Netherlands',
+  'Poland', 'Ukraine', 'Romania', 'Bangladesh', 'Pakistan', 'Nigeria', 'South Africa',
+  'Argentina', 'Chile', 'Colombia', 'Egypt', 'Turkey', 'Saudi Arabia', 'United Arab Emirates'
+].sort()
+
+const TIMEZONES = [
+  'UTC+07:00 (WIB - Jakarta)', 'UTC+08:00 (WITA - Bali)', 'UTC+09:00 (WIT - Papua)',
+  'UTC-05:00 (EST - New York)', 'UTC-08:00 (PST - Los Angeles)', 'UTC+00:00 (GMT - London)',
+  'UTC+05:30 (IST - Mumbai)', 'UTC+08:00 (SGT - Singapore)', 'UTC+09:00 (JST - Tokyo)',
+  'UTC+10:00 (AEST - Sydney)', 'UTC+01:00 (CET - Berlin)', 'UTC+02:00 (EET - Cairo)'
+]
+
 export default function TalentProfilePage() {
   const { user, loading } = useAuth()
   const router = useRouter()
@@ -56,12 +72,12 @@ export default function TalentProfilePage() {
   const [skillSearch, setSkillSearch] = useState('')
   const [sections, setSections] = useState<Section[]>([
     { id: 'overview', title: 'Overview', completed: false, expanded: true },
-    { id: 'skills', title: 'Skills', completed: false, expanded: false },
+    { id: 'skills', title: 'Skills', completed: false, expanded: true },
     { id: 'portfolio', title: 'Portfolio & Links', completed: false, expanded: true },
-    { id: 'work-history', title: 'Work history', completed: false, expanded: false },
-    { id: 'education', title: 'Education', completed: false, expanded: false },
-    { id: 'languages', title: 'Languages', completed: false, expanded: false },
-    { id: 'certifications', title: 'Certifications', completed: false, expanded: false },
+    { id: 'work-history', title: 'Work history', completed: false, expanded: true },
+    { id: 'education', title: 'Education', completed: false, expanded: true },
+    { id: 'languages', title: 'Languages', completed: false, expanded: true },
+    { id: 'certifications', title: 'Certifications', completed: false, expanded: true },
   ])
   const [formData, setFormData] = useState({
     firstName: '',
@@ -72,7 +88,6 @@ export default function TalentProfilePage() {
     phone: '',
     hourlyRate: '',
     availability: 'Open',
-    hoursPerWeek: '',
     portfolioUrl: '',
     linkedInUrl: '',
     githubUrl: '',
@@ -91,6 +106,7 @@ export default function TalentProfilePage() {
   const [profileCompletion, setProfileCompletion] = useState(0)
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [uploadingVideo, setUploadingVideo] = useState(false)
   const [showWorkHistoryModal, setShowWorkHistoryModal] = useState(false)
   const [showEducationModal, setShowEducationModal] = useState(false)
   const [showLanguageModal, setShowLanguageModal] = useState(false)
@@ -144,11 +160,11 @@ export default function TalentProfilePage() {
   const fetchData = useCallback(async () => {
     try {
       console.log('[Profile] Fetching profile data...')
-      const [profileRes, skillsRes, experienceRes] = await Promise.all([
-        fetch('/api/user/profile', {
+      const [skillsRes, userProfileRes, experienceRes] = await Promise.all([
+        fetch('/api/skills', {
           credentials: 'include',
         }),
-        fetch('/api/skills', {
+        fetch('/api/user/profile', {
           credentials: 'include',
         }),
         fetch('/api/user/profile/experience', {
@@ -156,69 +172,30 @@ export default function TalentProfilePage() {
         }),
       ])
 
-      const profileData = await profileRes.json()
       const skillsData = await skillsRes.json()
-      const experienceData = await experienceRes.json()
+      const userProfileData = await userProfileRes.json()
+      const experienceJson = await experienceRes.json()
 
-      console.log('[Profile] 🔍 Raw API Response:', {
-        profileData: profileData,
-        experienceData: experienceData,
+      console.log('[Profile] Raw API Response:', {
+        userProfileData,
       })
 
-      if (profileData.success && profileData.data) {
-        const p = profileData.data
+      const userProfile = userProfileData?.success ? userProfileData.data : null
+      const experienceData = experienceJson?.success ? experienceJson.data : null
+
+      if (userProfile) {
+        const p = userProfile
         
-        console.log('[Profile] 📊 All fields from API:', {
+        console.log('[Profile] Raw data from API:', p)
+        
+        // Use firstName and lastName directly from API (already split from full_name)
+        const firstName = p.firstName || ''
+        const lastName = p.lastName || ''
+        
+        console.log('[Profile] Name fields:', {
           fullName: p.fullName,
-          headline: p.headline,
-          jobTitle: p.jobTitle,
-          bio: p.bio,
-          location: p.location,
-          phone: p.phone,
-          country: p.country,
-          timezone: p.timezone,
-          portfolioUrl: p.portfolioUrl,
-          linkedInUrl: p.linkedInUrl,
-          githubUrl: p.githubUrl,
-          introVideoUrl: p.introVideoUrl,
-          videoIntroUrl: p.videoIntroUrl,
-          avatarUrl: p.avatarUrl,
-          skills: p.skills,
-        })
-        
-        // Map data from Supabase format to component format
-        const fullName = p.fullName || ''
-        // Split fullName into firstName and lastName
-        // If fullName is empty, try to get from firstName/lastName if available
-        let firstName = ''
-        let lastName = ''
-        
-        if (fullName) {
-          const nameParts = fullName.trim().split(/\s+/)
-          firstName = nameParts[0] || ''
-          lastName = nameParts.slice(1).join(' ') || ''
-        } else if (p.firstName || p.lastName) {
-          // Fallback: if fullName is empty but firstName/lastName exist
-          firstName = p.firstName || ''
-          lastName = p.lastName || ''
-        }
-        
-        console.log('[Profile] 🔄 Processing data:', {
-          fullName,
           firstName,
           lastName,
-          headline: p.headline,
-          jobTitle: p.jobTitle,
-          bio: p.bio,
-          location: p.location,
-          phone: p.phone,
-          country: p.country,
-          timezone: p.timezone,
-          introVideoUrl: p.introVideoUrl,
-          videoIntroUrl: p.videoIntroUrl,
-          hourlyRate: p.hourlyRate,
-          availability: p.availability,
-          hoursPerWeek: p.hoursPerWeek,
         })
         
         const formDataToSet = {
@@ -230,7 +207,6 @@ export default function TalentProfilePage() {
           phone: p.phone || '',
           hourlyRate: p.hourlyRate ? String(p.hourlyRate) : '',
           availability: p.availability || 'Open',
-          hoursPerWeek: p.hoursPerWeek || '',
           portfolioUrl: p.portfolioUrl || '',
           linkedInUrl: p.linkedInUrl || '',
           githubUrl: p.githubUrl || '',
@@ -240,89 +216,45 @@ export default function TalentProfilePage() {
           timezone: p.timezone || '',
         }
         
-        console.log('[Profile] ✅ Setting FormData:', formDataToSet)
+        console.log('[Profile] Setting FormData:', formDataToSet)
         setFormData(formDataToSet)
         
         setProfile({
-          id: p.id,
+          id: p.id || '',
           firstName: firstName,
           lastName: lastName,
           headline: p.headline || p.jobTitle || '',
           bio: p.bio || '',
           location: p.location || '',
           phone: p.phone || '',
-          hourlyRate: null,
-          availability: null,
+          hourlyRate: p.hourlyRate ?? null,
+          availability: p.availability || null,
           portfolioUrl: p.portfolioUrl || '',
           linkedInUrl: p.linkedInUrl || '',
           githubUrl: p.githubUrl || '',
           videoIntroUrl: p.introVideoUrl || p.videoIntroUrl || '',
-          hoursPerWeek: null,
-          avatarUrl: p.avatarUrl || null,
+          avatarUrl: p.avatarUrl || p.avatar_url || null,
+          country: p.country || null,
+          timezone: p.timezone || null,
           skills: p.skills || [],
-          workHistory: experienceData.success ? (experienceData.data?.workHistory || []) : [],
-          education: experienceData.success ? (experienceData.data?.education || []) : [],
-          languages: experienceData.success ? (experienceData.data?.languages || []) : [],
-          certifications: experienceData.success ? (experienceData.data?.certifications || []) : [],
+          workHistory: experienceData?.workHistory || [],
+          education: experienceData?.education || [],
+          languages: experienceData?.languages || [],
+          certifications: experienceData?.certifications || [],
         })
-        setAvatarUrl(p.avatarUrl || null)
-        
-        setFormData({
-          firstName: firstName || '',
-          lastName: lastName || '',
-          headline: p.headline || p.jobTitle || '',
-          bio: p.bio || '',
-          location: p.location || '',
-          phone: p.phone || '',
-          hourlyRate: p.hourlyRate ? String(p.hourlyRate) : '',
-          availability: p.availability || 'Open',
-          hoursPerWeek: p.hoursPerWeek || '',
-          portfolioUrl: p.portfolioUrl || '',
-          linkedInUrl: p.linkedInUrl || '',
-          githubUrl: p.githubUrl || '',
-          videoIntroUrl: p.introVideoUrl || p.videoIntroUrl || '',
-          skillIds: p.skills?.map((s: Skill) => s.id) || [],
-          country: p.country || '',
-          timezone: p.timezone || '',
-        })
-        
-        console.log('[Profile] ✅ FormData populated with values:', {
-          firstName: firstName || '',
-          lastName: lastName || '',
-          headline: p.headline || p.jobTitle || '',
-          bio: p.bio || '',
-          location: p.location || '',
-          phone: p.phone || '',
-          country: p.country || '',
-          timezone: p.timezone || '',
-          videoIntroUrl: p.introVideoUrl || p.videoIntroUrl || '',
-          portfolioUrl: p.portfolioUrl || '',
-          linkedInUrl: p.linkedInUrl || '',
-          githubUrl: p.githubUrl || '',
-        })
+        setAvatarUrl(p.avatarUrl || p.avatar_url || null)
         
         // Load work history, education, languages, certifications from API
-        if (experienceData.success && experienceData.data) {
-          setWorkHistory(experienceData.data.workHistory || [])
-          setEducation(experienceData.data.education || [])
-          setLanguages(experienceData.data.languages || [])
-          setCertifications(experienceData.data.certifications || [])
-        } else {
-          setWorkHistory([])
-          setEducation([])
-          setLanguages([])
-          setCertifications([])
-        }
+        setWorkHistory(experienceData?.workHistory || [])
+        setEducation(experienceData?.education || [])
+        setLanguages(experienceData?.languages || [])
+        setCertifications(experienceData?.certifications || [])
         
-        // Update profile completion from API
-        // Always use API value if available, otherwise calculate
+        // Use profile completion from API
         const apiCompletion = p.profileCompletion
         console.log('[Profile] Profile completion from API:', {
           raw: apiCompletion,
           type: typeof apiCompletion,
-          isNumber: typeof apiCompletion === 'number',
-          isNull: apiCompletion === null,
-          isUndefined: apiCompletion === undefined
         })
         
         if (apiCompletion !== undefined && apiCompletion !== null && !isNaN(Number(apiCompletion))) {
@@ -330,30 +262,13 @@ export default function TalentProfilePage() {
           console.log('[Profile] Using profileCompletion from API:', completionValue, '%')
           setProfileCompletion(Math.round(completionValue))
         } else {
-          console.log('[Profile] Calculating profileCompletion from data (API value not available or invalid)')
-          updateProfileCompletion({
-            firstName,
-            lastName,
-            headline: p.headline || p.jobTitle,
-            bio: p.bio,
-            location: p.location,
-            phone: p.phone,
-            portfolioUrl: p.portfolioUrl,
-            linkedInUrl: p.linkedInUrl,
-            githubUrl: p.githubUrl,
-            videoIntroUrl: p.introVideoUrl,
-            skills: p.skills || [],
-          })
+          console.log('[Profile] Calculating profileCompletion from data')
+          updateProfileCompletion(p)
         }
         
-        console.log('[Profile] Profile data loaded successfully:', {
-          firstName,
-          lastName,
-          headline: p.headline || p.jobTitle,
-          profileCompletion: p.profileCompletion || 'calculated',
-        })
+        console.log('[Profile] Profile data loaded successfully')
       } else {
-        console.warn('[Profile] No profile data received:', profileData)
+        console.warn('[Profile] No profile data received:', { userProfileData })
       }
 
       if (skillsData.success) {
@@ -364,7 +279,7 @@ export default function TalentProfilePage() {
     } finally {
       setLoadingData(false)
     }
-  }, [updateProfileCompletion])
+  }, [updateProfileCompletion, user?.email])
 
   useEffect(() => {
     if (!loading && (!user || user.role !== 'TALENT')) {
@@ -411,6 +326,35 @@ export default function TalentProfilePage() {
     !formData.skillIds.includes(skill.id)
   )
 
+  const persistExperience = useCallback(async (
+    nextWorkHistory: any[],
+    nextEducation: any[],
+    nextLanguages: any[],
+    nextCertifications: any[],
+  ) => {
+    try {
+      const response = await fetch('/api/user/profile/experience', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          workHistory: nextWorkHistory,
+          education: nextEducation,
+          languages: nextLanguages,
+          certifications: nextCertifications,
+        }),
+      })
+      const data = await response.json()
+      if (!data.success) {
+        console.error('Failed to save experience data:', data.error)
+      }
+    } catch (error) {
+      console.error('Failed to save experience data:', error)
+    }
+  }, [])
+
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -428,15 +372,18 @@ export default function TalentProfilePage() {
 
       const data = await response.json()
 
-      if (data.success) {
+      if (data.success && data.data?.url) {
+        // Update avatar URL immediately in state
         setAvatarUrl(data.data.url)
         if (profile) {
           setProfile({ ...profile, avatarUrl: data.data.url })
         }
-        setMessage({ type: 'success', text: 'Profile picture updated successfully!' })
+        setMessage({ type: 'success', text: 'Profile picture updated!' })
+        
+        // Dispatch event to update navbar
+        window.dispatchEvent(new CustomEvent('profileUpdated'))
+        
         setTimeout(() => setMessage(null), 3000)
-        // Refresh profile data to get updated avatar URL
-        fetchData()
       } else {
         console.error('Avatar upload error:', data.error)
         setMessage({ 
@@ -452,55 +399,75 @@ export default function TalentProfilePage() {
     }
   }
 
+  const handleIntroVideoUpload = async (file: File) => {
+    if (file.size > 100 * 1024 * 1024) {
+      setMessage({ type: 'error', text: 'Video size must be less than 100MB.' })
+      return
+    }
+
+    setUploadingVideo(true)
+    try {
+      const uploadFormData = new FormData()
+      uploadFormData.append('file', file)
+
+      const response = await fetch('/api/user/upload-video', {
+        method: 'POST',
+        credentials: 'include',
+        body: uploadFormData,
+      })
+
+      const data = await response.json()
+      if (data.success && data.data?.url) {
+        setFormData((prev) => ({ ...prev, videoIntroUrl: data.data.url }))
+        if (profile) {
+          setProfile({ ...profile, videoIntroUrl: data.data.url })
+        }
+        setMessage({ type: 'success', text: 'Intro video uploaded. Click Save to apply changes.' })
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Failed to upload video.' })
+      }
+    } catch (error) {
+      console.error('Error uploading intro video:', error)
+      setMessage({ type: 'error', text: 'Failed to upload video.' })
+    } finally {
+      setUploadingVideo(false)
+    }
+  }
+
   const handleSave = async () => {
     setSaving(true)
     setMessage(null)
 
     try {
-      // Save main profile data
-      // Try to get token from localStorage first, fallback to cookie
-      const token = localStorage.getItem('token')
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-      }
-      
-      // Add Authorization header if token exists
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`
-      }
-      
-      const profileResponse = await fetch('/api/profile/candidate', {
+      const trimmedFirstName = formData.firstName.trim()
+      const trimmedLastName = formData.lastName.trim()
+      const profileResponse = await fetch('/api/user/profile/update', {
         method: 'PUT',
-        headers,
-        credentials: 'include', // Include cookies for auth-token
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
         body: JSON.stringify({
-          ...formData,
+          firstName: trimmedFirstName || undefined,
+          lastName: trimmedLastName || undefined,
+          fullName: trimmedFirstName && trimmedLastName ? `${trimmedFirstName} ${trimmedLastName}` : undefined,
+          headline: formData.headline || undefined,
+          bio: formData.bio || undefined,
+          location: formData.location || undefined,
+          phone: formData.phone || undefined,
           hourlyRate: formData.hourlyRate ? parseFloat(formData.hourlyRate) : undefined,
-          skillIds: formData.skillIds.length > 0 ? formData.skillIds : undefined,
+          availability: formData.availability || undefined,
+          portfolioUrl: formData.portfolioUrl.trim() ? formData.portfolioUrl.trim() : undefined,
+          linkedInUrl: formData.linkedInUrl.trim() ? formData.linkedInUrl.trim() : undefined,
+          githubUrl: formData.githubUrl.trim() ? formData.githubUrl.trim() : undefined,
+          videoIntroUrl: formData.videoIntroUrl || undefined,
+          skillIds: formData.skillIds.length > 0 ? formData.skillIds : [],
+          country: formData.country || undefined,
+          timezone: formData.timezone || undefined,
         }),
       })
 
       const profileData = await profileResponse.json()
-      
-      // Also update talent_profiles.intro_video_url if videoIntroUrl exists
-      if (formData.videoIntroUrl && formData.videoIntroUrl.trim() !== '') {
-        try {
-          const updateVideoResponse = await fetch('/api/user/profile/video', {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-              videoIntroUrl: formData.videoIntroUrl.trim(),
-            }),
-          })
-          const updateVideoData = await updateVideoResponse.json()
-          console.log('[Profile] Video URL update result:', updateVideoData)
-        } catch (error) {
-          console.error('[Profile] Error updating video URL:', error)
-        }
-      }
 
       // Save work history, education, languages, certifications
       const experienceResponse = await fetch('/api/user/profile/experience', {
@@ -521,10 +488,7 @@ export default function TalentProfilePage() {
 
       if (profileData.success && experienceData.success) {
         setMessage({ type: 'success', text: 'Profile saved successfully!' })
-        if (profileData.data) {
-          setProfile(profileData.data)
-          updateProfileCompletion(profileData.data)
-        }
+        fetchData()
         setTimeout(() => setMessage(null), 3000)
       } else {
         setMessage({ type: 'error', text: profileData.error || experienceData.error || 'Failed to save profile' })
@@ -539,82 +503,99 @@ export default function TalentProfilePage() {
 
   // Handler functions for modals
   const handleSaveWorkHistory = (work: any) => {
+    let nextWorkHistory = workHistory
     if (editingWorkHistory) {
-      setWorkHistory(prev => prev.map((w, idx) => 
+      nextWorkHistory = workHistory.map((w, idx) =>
         idx === workHistory.indexOf(editingWorkHistory) ? work : w
-      ))
+      )
     } else {
-      setWorkHistory(prev => [...prev, work])
+      nextWorkHistory = [...workHistory, work]
     }
+    setWorkHistory(nextWorkHistory)
+    persistExperience(nextWorkHistory, education, languages, certifications)
     setShowWorkHistoryModal(false)
     setEditingWorkHistory(null)
   }
 
   const handleDeleteWorkHistory = (index: number) => {
-    setWorkHistory(prev => prev.filter((_, idx) => idx !== index))
+    const nextWorkHistory = workHistory.filter((_, idx) => idx !== index)
+    setWorkHistory(nextWorkHistory)
+    persistExperience(nextWorkHistory, education, languages, certifications)
   }
 
   const handleSaveEducation = (edu: any) => {
+    let nextEducation = education
     if (editingEducation) {
-      // Find index of editing education
-      const editIndex = education.findIndex((e, idx) => 
-        e === editingEducation || 
+      const editIndex = education.findIndex((e, idx) =>
+        e === editingEducation ||
         (e.institution === editingEducation.institution && e.degree === editingEducation.degree)
       )
       if (editIndex !== -1) {
-        setEducation(prev => prev.map((e, idx) => idx === editIndex ? edu : e))
+        nextEducation = education.map((e, idx) => idx === editIndex ? edu : e)
       }
     } else {
-      setEducation(prev => [...prev, edu])
+      nextEducation = [...education, edu]
     }
+    setEducation(nextEducation)
+    persistExperience(workHistory, nextEducation, languages, certifications)
     setShowEducationModal(false)
     setEditingEducation(null)
   }
 
   const handleDeleteEducation = (index: number) => {
-    setEducation(prev => prev.filter((_, idx) => idx !== index))
+    const nextEducation = education.filter((_, idx) => idx !== index)
+    setEducation(nextEducation)
+    persistExperience(workHistory, nextEducation, languages, certifications)
   }
 
   const handleSaveLanguage = (lang: any) => {
+    let nextLanguages = languages
     if (editingLanguage) {
-      // Find index of editing language
-      const editIndex = languages.findIndex((l, idx) => 
-        l === editingLanguage || 
+      const editIndex = languages.findIndex((l, idx) =>
+        l === editingLanguage ||
         (l.name === editingLanguage.name && l.proficiency === editingLanguage.proficiency)
       )
       if (editIndex !== -1) {
-        setLanguages(prev => prev.map((l, idx) => idx === editIndex ? lang : l))
+        nextLanguages = languages.map((l, idx) => idx === editIndex ? lang : l)
       }
     } else {
-      setLanguages(prev => [...prev, lang])
+      nextLanguages = [...languages, lang]
     }
+    setLanguages(nextLanguages)
+    persistExperience(workHistory, education, nextLanguages, certifications)
     setShowLanguageModal(false)
     setEditingLanguage(null)
   }
 
   const handleDeleteLanguage = (index: number) => {
-    setLanguages(prev => prev.filter((_, idx) => idx !== index))
+    const nextLanguages = languages.filter((_, idx) => idx !== index)
+    setLanguages(nextLanguages)
+    persistExperience(workHistory, education, nextLanguages, certifications)
   }
 
   const handleSaveCertification = (cert: any) => {
+    let nextCertifications = certifications
     if (editingCertification) {
-      // Find index of editing certification
-      const editIndex = certifications.findIndex((c, idx) => 
-        c === editingCertification || 
+      const editIndex = certifications.findIndex((c, idx) =>
+        c === editingCertification ||
         (c.name === editingCertification.name && c.issuer === editingCertification.issuer)
       )
       if (editIndex !== -1) {
-        setCertifications(prev => prev.map((c, idx) => idx === editIndex ? cert : c))
+        nextCertifications = certifications.map((c, idx) => idx === editIndex ? cert : c)
       }
     } else {
-      setCertifications(prev => [...prev, cert])
+      nextCertifications = [...certifications, cert]
     }
+    setCertifications(nextCertifications)
+    persistExperience(workHistory, education, languages, nextCertifications)
     setShowCertificationModal(false)
     setEditingCertification(null)
   }
 
   const handleDeleteCertification = (index: number) => {
-    setCertifications(prev => prev.filter((_, idx) => idx !== index))
+    const nextCertifications = certifications.filter((_, idx) => idx !== index)
+    setCertifications(nextCertifications)
+    persistExperience(workHistory, education, languages, nextCertifications)
   }
 
   if (loading || loadingData) {
@@ -635,52 +616,53 @@ export default function TalentProfilePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-24 pb-12">
-      {/* Profile Preview Header */}
-      <div className="bg-white border-b rounded-b-2xl overflow-hidden">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                {avatarUrl ? (
-                  <Image
-                    src={avatarUrl}
-                    alt={fullName}
-                    width={80}
-                    height={80}
-                    className="w-20 h-20 rounded-full object-cover border-2 border-purple-200"
-                    unoptimized
-                  />
-                ) : (
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-400 to-brand-purple flex items-center justify-center text-white text-2xl font-bold">
-                    {fullName[0].toUpperCase()}
+      {/* Profile Header styled like public view, matching section rounding */}
+      <div className="container mx-auto px-4">
+        <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <div className="relative h-20 w-20 overflow-hidden rounded-full border-4 border-white bg-gray-100 shadow-sm">
+                    {avatarUrl ? (
+                      <Image
+                        src={avatarUrl}
+                        alt={fullName}
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-2xl font-semibold text-gray-400">
+                        {fullName[0].toUpperCase()}
+                      </div>
+                    )}
                   </div>
-                )}
-                <label className="absolute bottom-0 right-0 bg-brand-purple text-white rounded-full p-1.5 cursor-pointer hover:bg-purple-700 transition-colors">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleAvatarUpload}
-                    disabled={uploadingAvatar}
-                  />
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                </label>
+                  <label className="absolute -bottom-2 -right-2 bg-brand-purple text-white rounded-full p-1.5 cursor-pointer hover:bg-purple-700 transition-colors shadow">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleAvatarUpload}
+                      disabled={uploadingAvatar}
+                    />
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </label>
+                </div>
+                <div>
+                  <h1 className="text-xl font-semibold text-gray-900">{fullName}</h1>
+                  <p className="text-sm text-gray-600">{profile?.headline || 'Complete your profile'}</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold">{fullName}</h1>
-                <p className="text-gray-600">{profile?.headline || 'Complete your profile'}</p>
-                {profile?.location && (
-                  <p className="text-sm text-gray-500">{profile.location}</p>
-                )}
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap gap-3">
               <Link href={`/talent/profile/public${user?.id ? `?id=${user.id}` : ''}`} target="_blank">
-                <Button variant="outline">See public view</Button>
+                <Button variant="outline" className="rounded-full">See public view</Button>
               </Link>
+              <Button className="bg-brand-purple hover:bg-purple-700 rounded-full" onClick={handleSave} disabled={saving}>
+                {saving ? 'Saving...' : 'Save Profile'}
+              </Button>
             </div>
           </div>
         </div>
@@ -724,11 +706,11 @@ export default function TalentProfilePage() {
                           }
                           // Focus on video input after a short delay
                           setTimeout(() => {
-                            const videoInput = document.getElementById('videoIntroUrl')
-                            if (videoInput) {
-                              videoInput.focus()
-                              videoInput.scrollIntoView({ behavior: 'smooth', block: 'center' })
-                            }
+                              const videoInput = document.getElementById('introVideoUpload')
+                              if (videoInput) {
+                                videoInput.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                                ;(videoInput as HTMLInputElement).click()
+                              }
                           }, 300)
                         }
                       }}
@@ -782,10 +764,10 @@ export default function TalentProfilePage() {
                                 toggleSection('overview')
                               }
                               setTimeout(() => {
-                                const videoInput = document.getElementById('videoIntroUrl')
+                                const videoInput = document.getElementById('introVideoUpload')
                                 if (videoInput) {
-                                  videoInput.focus()
                                   videoInput.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                                  ;(videoInput as HTMLInputElement).click()
                                 }
                               }, 300)
                             }
@@ -807,7 +789,7 @@ export default function TalentProfilePage() {
                 <CardTitle className="text-sm">Quick Links</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Link href="/talent/dashboard" className="block text-sm text-gray-600 hover:text-brand-purple">
+                <Link href="/talent" className="block text-sm text-gray-600 hover:text-brand-purple">
                   Dashboard
                 </Link>
                 <Link href="/talent/jobs" className="block text-sm text-gray-600 hover:text-brand-purple">
@@ -917,23 +899,31 @@ export default function TalentProfilePage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="country">Country</Label>
-                      <Input
+                      <Select
                         id="country"
                         name="country"
                         value={formData.country}
-                        onChange={handleChange}
-                        placeholder="United States"
-                      />
+                        onChange={(e) => handleChange(e as any)}
+                      >
+                        <option value="">Select your country</option>
+                        {COUNTRIES.map((country) => (
+                          <option key={country} value={country}>{country}</option>
+                        ))}
+                      </Select>
                     </div>
                     <div>
                       <Label htmlFor="timezone">Timezone</Label>
-                      <Input
+                      <Select
                         id="timezone"
                         name="timezone"
                         value={formData.timezone}
-                        onChange={handleChange}
-                        placeholder="UTC-5"
-                      />
+                        onChange={(e) => handleChange(e as any)}
+                      >
+                        <option value="">Select your timezone</option>
+                        {TIMEZONES.map((timezone) => (
+                          <option key={timezone} value={timezone}>{timezone}</option>
+                        ))}
+                      </Select>
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -987,19 +977,6 @@ export default function TalentProfilePage() {
                     </div>
                   </div>
 
-                  <div>
-                    <Label htmlFor="hoursPerWeek">Hours per week</Label>
-                    <Select
-                      id="hoursPerWeek"
-                      name="hoursPerWeek"
-                      value={formData.hoursPerWeek}
-                      onChange={(e) => handleChange(e as any)}
-                    >
-                      <option value="">Select...</option>
-                      <option value="More than 30 hrs/week">More than 30 hrs/week</option>
-                      <option value="Less than 30 hrs/week">Less than 30 hrs/week</option>
-                    </Select>
-                  </div>
                 </CardContent>
               )}
             </Card>
@@ -1172,39 +1149,30 @@ export default function TalentProfilePage() {
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="videoIntroUrl" className="text-base font-semibold">Video Introduction URL</Label>
-                    <p className="text-xs text-gray-500 mb-2">Paste a YouTube URL or Supabase Storage video URL</p>
-                    <Input
-                      id="videoIntroUrl"
-                      name="videoIntroUrl"
-                      type="url"
-                      value={formData.videoIntroUrl}
-                      onChange={handleChange}
-                      placeholder="https://youtube.com/watch?v=... or https://yourproject.supabase.co/storage/v1/object/public/intro-videos/..."
-                      className="mb-2"
+                    <Label htmlFor="introVideoUpload" className="text-base font-semibold">Video Introduction</Label>
+                    <p className="text-xs text-gray-500 mb-2">Upload your intro video (2-5 minutes, max 100MB).</p>
+                    <input
+                      id="introVideoUpload"
+                      type="file"
+                      accept="video/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) {
+                          void handleIntroVideoUpload(file)
+                        }
+                      }}
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
                     />
-                    <p className="text-xs text-gray-500 mb-3">
-                      <strong>For Supabase Storage videos:</strong> Copy the public URL from Storage → intro-videos bucket. Format: https://yourproject.supabase.co/storage/v1/object/public/intro-videos/{'{user_id}'}/intro-video.mp4
-                    </p>
+                    {uploadingVideo && (
+                      <p className="text-xs text-gray-500 mt-2">Uploading video...</p>
+                    )}
                     {formData.videoIntroUrl && (
                       <div className="mt-3 aspect-video rounded-lg overflow-hidden bg-gray-100 border">
-                        {formData.videoIntroUrl.includes('youtube.com') || formData.videoIntroUrl.includes('youtu.be') ? (
-                          <iframe
-                            src={formData.videoIntroUrl
-                              .replace('watch?v=', 'embed/')
-                              .replace('youtu.be/', 'youtube.com/embed/')
-                              .replace(/&.*$/, '')}
-                            className="w-full h-full"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                          />
-                        ) : (
-                          <video
-                            src={formData.videoIntroUrl}
-                            controls
-                            className="w-full h-full"
-                          />
-                        )}
+                        <video
+                          src={formData.videoIntroUrl}
+                          controls
+                          className="w-full h-full"
+                        />
                       </div>
                     )}
                   </div>
@@ -1501,25 +1469,7 @@ export default function TalentProfilePage() {
               )}
             </Card>
 
-            {/* Save Button */}
-            <div className="flex justify-end gap-4 mb-8">
-              <Button variant="outline" onClick={() => router.back()}>
-                Cancel
-              </Button>
-              <Button onClick={handleSave} disabled={saving} className="bg-brand-purple hover:bg-purple-700">
-                {saving ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Saving...
-                  </>
-                ) : (
-                  'Save Profile'
-                )}
-              </Button>
-            </div>
+            {/* Save Button removed (header button used) */}
           </div>
         </div>
       </div>
@@ -1739,6 +1689,12 @@ function LanguageForm({ language, onSave, onCancel }: { language: any, onSave: (
     proficiency: language?.proficiency || 'Fluent',
   })
 
+  const COMMON_LANGUAGES = [
+    'English', 'Indonesian', 'Mandarin', 'Spanish', 'French', 'German', 
+    'Japanese', 'Korean', 'Arabic', 'Portuguese', 'Russian', 'Italian',
+    'Dutch', 'Thai', 'Vietnamese', 'Hindi', 'Turkish', 'Polish'
+  ]
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     onSave(formData)
@@ -1748,12 +1704,18 @@ function LanguageForm({ language, onSave, onCancel }: { language: any, onSave: (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <Label htmlFor="name">Language</Label>
-        <Input
+        <select
           id="name"
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           required
-        />
+        >
+          <option value="">Select a language</option>
+          {COMMON_LANGUAGES.map((lang) => (
+            <option key={lang} value={lang}>{lang}</option>
+          ))}
+        </select>
       </div>
       <div>
         <Label htmlFor="proficiency">Proficiency</Label>
@@ -1787,6 +1749,24 @@ function CertificationForm({ certification, onSave, onCancel }: { certification:
     credentialUrl: certification?.credentialUrl || '',
   })
 
+  const COMMON_CERTIFICATIONS = [
+    'AWS Certified Solutions Architect',
+    'AWS Certified Developer',
+    'Google Cloud Professional',
+    'Microsoft Azure Administrator',
+    'Certified Kubernetes Administrator (CKA)',
+    'PMP - Project Management Professional',
+    'Scrum Master Certification (CSM)',
+    'CISSP - Certified Information Systems Security Professional',
+    'CompTIA Security+',
+    'Oracle Certified Professional',
+    'Salesforce Certified Administrator',
+    'Google Analytics Certification',
+    'HubSpot Inbound Marketing',
+    'Facebook Blueprint Certification',
+    'Other'
+  ]
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     onSave(formData)
@@ -1796,12 +1776,18 @@ function CertificationForm({ certification, onSave, onCancel }: { certification:
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <Label htmlFor="name">Certification Name</Label>
-        <Input
+        <select
           id="name"
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           required
-        />
+        >
+          <option value="">Select a certification</option>
+          {COMMON_CERTIFICATIONS.map((cert) => (
+            <option key={cert} value={cert}>{cert}</option>
+          ))}
+        </select>
       </div>
       <div>
         <Label htmlFor="issuer">Issuing Organization</Label>
@@ -1848,3 +1834,4 @@ function CertificationForm({ certification, onSave, onCancel }: { certification:
     </form>
   )
 }
+

@@ -1,6 +1,6 @@
-import { NextRequest } from 'next/server'
-import { getAuthUser, successResponse, errorResponse } from '@/lib/api-utils'
+import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server-helper'
+import { getAuthUser } from '@/lib/api-utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -8,70 +8,69 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getAuthUser(request)
     if (!user) {
-      return errorResponse('Unauthorized', 401)
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const adminSupabase = await createAdminClient()
-    const userIdString = String(user.id)
 
-    // Get all talent profiles to see what's in the database
-    const { data: allTalentProfiles, error: allError } = await adminSupabase
-      .from('talent_profiles')
-      .select('id, user_id, headline, status, profile_completion')
-      .limit(100)
-
-    // Get user's profile
-    const { data: profile } = await adminSupabase
+    // Get profile
+    const { data: profile, error: profileError } = await adminSupabase
       .from('profiles')
-      .select('id, full_name, email')
-      .eq('id', userIdString)
+      .select('*, avatar_url')
+      .eq('id', user.id)
       .single()
 
-    // Try to find talent profile with different methods
-    const query1 = await adminSupabase
+    // Get talent profile
+    const { data: talentProfiles, error: talentError } = await adminSupabase
       .from('talent_profiles')
-      .select('*')
-      .eq('user_id', userIdString)
-      .maybeSingle()
-
-    const query2 = await adminSupabase
-      .from('talent_profiles')
-      .select('*')
+      .select('*, avatar_url')
       .eq('user_id', user.id)
-      .maybeSingle()
 
-    // Manual filter
-    let manualMatch = null
-    if (allTalentProfiles) {
-      manualMatch = allTalentProfiles.find((tp: any) => {
-        return String(tp.user_id) === userIdString || String(tp.user_id) === String(user.id)
-      })
+    // Get skills
+    const talentProfileId = talentProfiles?.[0]?.id
+    let skills = []
+    if (talentProfileId) {
+      const { data: skillLinks } = await adminSupabase
+        .from('_CandidateSkills')
+        .select('B')
+        .eq('A', talentProfileId)
+
+      if (skillLinks && skillLinks.length > 0) {
+        const skillIds = skillLinks.map((s: any) => s.B)
+        const { data: skillsData } = await adminSupabase
+          .from('skills')
+          .select('id, name')
+          .in('id', skillIds)
+        skills = skillsData || []
+      }
     }
 
-    return successResponse({
-      user: {
-        id: user.id,
-        idType: typeof user.id,
-        idString: userIdString,
-        email: user.email
-      },
-      profile: profile || null,
-      query1: {
-        found: !!query1.data,
-        error: query1.error?.message || null,
-        data: query1.data || null
-      },
-      query2: {
-        found: !!query2.data,
-        error: query2.error?.message || null,
-        data: query2.data || null
-      },
-      manualMatch: manualMatch || null,
-      allTalentProfiles: allTalentProfiles?.slice(0, 5) || [], // First 5 for debugging
-      allTalentProfilesError: allError?.message || null
+    return NextResponse.json({
+      success: true,
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+        },
+        profile: profile || null,
+        profileError: profileError?.message || null,
+        talentProfiles: talentProfiles || [],
+        talentError: talentError?.message || null,
+        skills: skills,
+        debug: {
+          hasProfile: !!profile,
+          hasTalentProfile: !!talentProfiles?.length,
+          talentProfileCount: talentProfiles?.length || 0,
+          skillCount: skills.length,
+        }
+      }
     })
-  } catch (error: any) {
-    console.error('Debug endpoint error:', error)
-    return errorResponse(error.message || 'Internal server error', 500)
+  } catch (error) {
+    console.error('Debug error:', error)
+    return NextResponse.json({ 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    }, { status: 500 })
   }
 }
