@@ -150,13 +150,14 @@ export function TalentDashboard() {
           setSavedJobs(prev => new Set([...prev, jobId]))
           setStats(prev => ({ ...prev, savedJobs: prev.savedJobs + 1 }))
         }
-        // Refresh data to ensure accuracy
         setTimeout(() => fetchDashboardData(), 500)
       }
     } catch (error) {
       console.error('Error saving job:', error)
     }
   }
+
+  const handleApply = async (jobId: string) => {
     try {
       const response = await fetch('/api/applications', {
         method: 'POST',
