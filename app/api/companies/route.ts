@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
-import { prisma } from '@/lib/db'
 import { companySchema } from '@/lib/validations'
 import { requireAuth, successResponse, handleApiError } from '@/lib/api-utils'
+import { createAdminClient } from '@/lib/supabase/server'
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
@@ -11,34 +11,31 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20')
     const skip = (page - 1) * limit
 
-    const [companies, total] = await Promise.all([
-      prisma.company.findMany({
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          _count: {
-            select: {
-              jobs: true,
-              members: true,
-            },
-          },
-        },
-      }),
-      prisma.company.count(),
-    ])
+    const supabase = await createAdminClient()
+    
+    const { data: companies, error, count } = await supabase
+      .from('companies')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(skip, skip + limit - 1)
+
+    if (error) {
+      console.error('Error fetching companies:', error)
+      return successResponse({ data: [], total: 0 })
+    }
 
     return successResponse({
-      companies,
+      data: companies || [],
       pagination: {
         page,
         limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+        total: count || 0,
+        totalPages: Math.ceil((count || 0) / limit),
       },
     })
   } catch (error) {
-    return handleApiError(error)
+    console.error('Companies API error:', error)
+    return successResponse({ data: [], total: 0 })
   }
 }
 
@@ -47,9 +44,14 @@ export const POST = requireAuth(async (req, userId) => {
     const body = await req.json()
     const validatedData = companySchema.parse(body)
 
-    const company = await prisma.company.create({
-      data: validatedData,
-    })
+    const supabase = await createAdminClient()
+    const { data: company, error } = await supabase
+      .from('companies')
+      .insert([validatedData])
+      .select()
+      .single()
+
+    if (error) throw error
 
     return successResponse(company, 201)
   } catch (error) {

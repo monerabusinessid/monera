@@ -6,125 +6,89 @@ import { Footer } from '@/components/footer'
 export default function HireTalentPage() {
   return (
     <div className="min-h-screen">
-      <section className="relative bg-gradient-to-br from-brand-purple via-purple-900 to-indigo-950 text-white pt-40 sm:pt-36 pb-12 md:pb-16 overflow-hidden -mt-20 sm:-mt-24">
-        {/* Animated Background - Enhanced Stars/Particles */}
-        <div className="absolute inset-0 overflow-hidden -top-20 md:-top-24">
-          {/* Enhanced animated stars/particles */}
-          <div className="absolute inset-0">
-            {[...Array(80)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute rounded-full bg-white animate-twinkle"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  width: `${Math.random() * 4 + 2}px`,
-                  height: `${Math.random() * 4 + 2}px`,
-                  opacity: Math.random() * 0.8 + 0.2,
-                  animationDelay: `${Math.random() * 4}s`,
-                  animationDuration: `${Math.random() * 4 + 2}s`,
-                  boxShadow: '0 0 6px rgba(255, 255, 255, 0.8)',
-                }}
-              />
-            ))}
-          </div>
-          
-          {/* Enhanced Large animated bubbles */}
-          <div className="absolute -bottom-40 -right-40 w-[700px] h-[700px] bg-gradient-to-br from-brand-yellow/40 via-purple-400/30 to-indigo-400/30 rounded-full blur-3xl animate-float-slow opacity-80"></div>
-          <div className="absolute -top-40 -left-40 w-[600px] h-[600px] bg-gradient-to-br from-purple-500/30 via-indigo-500/30 to-brand-yellow/30 rounded-full blur-3xl animate-float-reverse opacity-70"></div>
-          
-          {/* Enhanced Medium floating bubbles */}
-          <div className="absolute top-1/4 right-1/4 w-80 h-80 bg-gradient-to-br from-purple-400/25 to-indigo-400/25 rounded-full blur-2xl animate-float-medium opacity-60"></div>
-          <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-gradient-to-br from-brand-yellow/25 to-purple-400/25 rounded-full blur-2xl animate-float-slow opacity-50"></div>
-          
-          {/* Enhanced Small floating particles */}
-          <div className="absolute top-1/2 left-1/3 w-40 h-40 bg-purple-400/20 rounded-full blur-xl animate-float-fast opacity-70"></div>
-          <div className="absolute bottom-1/3 right-1/3 w-48 h-48 bg-indigo-400/20 rounded-full blur-xl animate-float-medium opacity-60"></div>
-          
-          {/* Additional pulsing glow effects */}
-          <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-brand-yellow/10 rounded-full blur-3xl animate-pulse-slow transform -translate-x-1/2 -translate-y-1/2"></div>
-        </div>
-        
-        <div className="container mx-auto px-4 relative z-10 pt-2">
-          <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-3 md:mb-4 font-headline leading-[1.1] tracking-tight animate-fade-in">
-              Hire Top Talent
-            </h1>
-            <p className="text-lg md:text-xl text-purple-100 mb-6 md:mb-8 leading-relaxed opacity-90 animate-slide-up">
-              Find the perfect <span className="text-brand-yellow font-semibold">talent</span> for your project
+      {/* Hero Section */}
+      <section className="relative bg-gradient-to-br from-brand-purple via-purple-600 to-purple-700 text-white pt-56 md:pt-44 pb-40 -mt-20 md:-mt-24 overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzBoLTJWMGgydjMwem0wIDMwdi0yaC0ydjJoMnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-20"></div>
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 text-white drop-shadow-lg">Hire Top Talent</h1>
+            <p className="text-xl md:text-2xl text-white/90 font-medium leading-relaxed max-w-2xl mx-auto">
+              Find the <span className="text-brand-yellow font-semibold">perfect talent</span> for your project
             </p>
-            <Link href="/register?role=CLIENT">
-              <Button size="lg" className="bg-brand-yellow text-gray-900 hover:bg-yellow-400 font-semibold shadow-lg mb-6">
-                Post a Job - It's Free
-              </Button>
-            </Link>
           </div>
         </div>
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent"></div>
       </section>
 
-      <div className="bg-white rounded-t-3xl -mt-6 sm:-mt-8 relative z-10">
-        <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-          <Card className="border-2 hover:border-brand-yellow transition-colors">
+      <div className="container mx-auto px-4 -mt-20 relative z-20 pb-20">
+        <div className="max-w-6xl mx-auto space-y-16">
+        {/* Stats Section */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-brand-purple/30">
+          <div className="text-center">
+            <div className="text-3xl md:text-4xl font-bold text-brand-purple mb-1">48hrs</div>
+            <div className="text-sm text-gray-600">Get Candidates</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl md:text-4xl font-bold text-brand-purple mb-1">60%</div>
+            <div className="text-sm text-gray-600">Cost Savings</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl md:text-4xl font-bold text-brand-purple mb-1">Top 5%</div>
+            <div className="text-sm text-gray-600">Vetted Talent</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl md:text-4xl font-bold text-brand-purple mb-1">30-Day</div>
+            <div className="text-sm text-gray-600">Guarantee</div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="border-4 border-brand-purple/30 hover:border-brand-purple hover:shadow-2xl transition-all duration-300 rounded-2xl">
             <CardHeader>
-              <div className="text-4xl mb-4">📝</div>
-              <CardTitle className="font-headline">Post Your Job</CardTitle>
+              <CardTitle className="text-2xl font-bold">Post Your Job</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600">
+              <p className="text-gray-600 leading-relaxed">
                 Describe your project and requirements. It only takes a few minutes.
               </p>
             </CardContent>
           </Card>
-          <Card className="border-2 hover:border-brand-yellow transition-colors">
+          <Card className="border-4 border-brand-purple/30 hover:border-brand-purple hover:shadow-2xl transition-all duration-300 rounded-2xl">
             <CardHeader>
-              <div className="text-4xl mb-4">👥</div>
-              <CardTitle className="font-headline">Get Proposals</CardTitle>
+              <CardTitle className="text-2xl font-bold">Get Proposals</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600">
+              <p className="text-gray-600 leading-relaxed">
                 Receive proposals from qualified freelancers ready to work on your project.
               </p>
             </CardContent>
           </Card>
-          <Card className="border-2 hover:border-brand-yellow transition-colors">
+          <Card className="border-4 border-brand-purple/30 hover:border-brand-purple hover:shadow-2xl transition-all duration-300 rounded-2xl">
             <CardHeader>
-              <div className="text-4xl mb-4">✅</div>
-              <CardTitle className="font-headline">Hire & Collaborate</CardTitle>
+              <CardTitle className="text-2xl font-bold">Hire & Collaborate</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600">
+              <p className="text-gray-600 leading-relaxed">
                 Choose the best match and work together through our secure platform.
               </p>
             </CardContent>
           </Card>
         </div>
 
-        <div className="text-center bg-gradient-to-br from-purple-50 to-yellow-50/30 rounded-lg p-8">
-          <h2 className="text-3xl font-bold mb-4 font-headline">Why Hire on Monera?</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mt-8">
-            <div className="text-left">
-              <h3 className="font-semibold text-lg mb-2 text-brand-purple">✓ Verified Professionals</h3>
-              <p className="text-gray-600">All freelancers are verified and have completed profiles.</p>
-            </div>
-            <div className="text-left">
-              <h3 className="font-semibold text-lg mb-2 text-brand-purple">✓ Secure Payments</h3>
-              <p className="text-gray-600">Pay securely through our platform with money-back guarantee.</p>
-            </div>
-            <div className="text-left">
-              <h3 className="font-semibold text-lg mb-2 text-brand-purple">✓ Quality Work</h3>
-              <p className="text-gray-600">Review portfolios and ratings before hiring.</p>
-            </div>
-            <div className="text-left">
-              <h3 className="font-semibold text-lg mb-2 text-brand-purple">✓ 24/7 Support</h3>
-              <p className="text-gray-600">Get help whenever you need it from our support team.</p>
-            </div>
+        {/* CTA Section */}
+        <div className="bg-gradient-to-br from-brand-purple to-purple-600 rounded-3xl p-8 md:p-12 text-white shadow-2xl">
+          <div className="text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Hire Top Talent?</h2>
+            <p className="text-purple-100 mb-6 text-lg">Post your first job for free and start receiving proposals today</p>
+            <Link href="/register?role=CLIENT">
+              <Button size="lg" className="bg-brand-yellow text-gray-900 hover:bg-yellow-400 font-bold shadow-lg px-8 py-6 text-lg">
+                Get Started Now
+              </Button>
+            </Link>
           </div>
         </div>
         </div>
       </div>
-
-      <Footer />
     </div>
   )
 }

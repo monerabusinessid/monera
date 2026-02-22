@@ -251,14 +251,14 @@ export function Navbar() {
 
   const isLoading = loading || authLoading;
   const showFullNavbar = true;
-  const desktopNavToneClass = 'bg-white/80'
+  const desktopNavToneClass = 'bg-white/95'
   const desktopNavPositionClass = 'sticky'
-  const desktopNavLayoutClass = 'top-4 sm:top-6 rounded-2xl mx-3 sm:mx-4'
-  const mobileNavLayoutClass = 'top-4 sm:top-6 left-2 right-2 sm:left-4 sm:right-4 rounded-2xl'
+  const desktopNavLayoutClass = 'top-4 sm:top-6 rounded-xl mx-3 sm:mx-4'
+  const mobileNavLayoutClass = 'top-4 sm:top-6 left-2 right-2 sm:left-4 sm:right-4 rounded-xl'
   const navLinkClass = 'text-gray-900 hover:text-brand-purple'
-  const navMutedLinkClass = 'text-gray-900 hover:text-gray-700'
+  const navMutedLinkClass = 'text-gray-600 hover:text-gray-900'
   const navIconClass = 'text-gray-900'
-  const mobileNavToneClass = 'bg-white/80'
+  const mobileNavToneClass = 'bg-white/95'
   const logoHref = user?.role === 'TALENT'
     ? '/talent'
     : user?.role === 'CLIENT'
@@ -270,7 +270,7 @@ export function Navbar() {
   return (
     <>
       {/* Full Navbar - Shows when scrolling up or at top */}
-      <nav className={`hidden lg:block ${desktopNavToneClass} backdrop-blur-lg ${desktopNavPositionClass} ${desktopNavLayoutClass} z-50 transition-all duration-300 shadow-lg`}>
+      <nav className={`hidden lg:block ${desktopNavToneClass} backdrop-blur-lg ${desktopNavPositionClass} ${desktopNavLayoutClass} z-50 transition-all duration-300 shadow-lg border border-gray-200/50`} role="navigation" aria-label="Main navigation">
         <div className="container mx-auto px-3 sm:px-4">
           <div className="grid grid-cols-[auto,1fr,auto] items-center h-16">
             <div className="flex items-center gap-3">
@@ -292,7 +292,7 @@ export function Navbar() {
             </div>
 
             {/* Menu - Center */}
-            <div className="hidden lg:flex items-center justify-center space-x-6">
+            <div className="hidden lg:flex items-center justify-center space-x-6 ml-20">
               {/* Show menu only when not loading */}
               {!isLoading && (
                 <>
@@ -313,6 +313,13 @@ export function Navbar() {
                         className={`text-base ${navLinkClass} transition-colors font-medium`}
                       >
                         Hire talent
+                      </Link>
+                    )}
+
+                    {/* Blog Link - Show for non-users and admins */}
+                    {(!user || (user.role && ['SUPER_ADMIN', 'QUALITY_ADMIN', 'SUPPORT_ADMIN', 'ANALYST'].includes(user.role))) && (
+                      <Link href="/blog" className={`text-base ${navLinkClass} transition-colors font-medium`}>
+                        Blog
                       </Link>
                     )}
 
@@ -464,12 +471,12 @@ export function Navbar() {
                 </div>
               </div>
             ) : (
-              <div className="hidden sm:flex items-center space-x-4">
-                <Link href="/login" className={`${navMutedLinkClass} font-medium transition-colors`}>
+              <div className="hidden sm:flex items-center space-x-3">
+                <Link href="/login" className={`${navMutedLinkClass} font-medium transition-colors text-sm`}>
                   Log in
                 </Link>
                 <Link href="/register">
-                  <Button size="sm" className="bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-full px-4">
+                  <Button size="sm" className="bg-brand-yellow hover:bg-yellow-400 text-gray-900 font-bold rounded-xl px-6 py-2 shadow-lg hover:scale-105 transition-all">
                     Try for free
                   </Button>
                 </Link>
@@ -481,7 +488,7 @@ export function Navbar() {
       </nav>
 
       {/* Minimal Navbar - Shows when scrolling down */}
-      <nav className={`lg:hidden fixed ${mobileNavToneClass} backdrop-blur-lg ${mobileNavLayoutClass} shadow-lg z-[55] transition-transform duration-300 translate-y-0 opacity-100`}>
+      <nav className={`lg:hidden fixed ${mobileNavToneClass} backdrop-blur-lg ${mobileNavLayoutClass} shadow-lg border border-gray-200/50 z-[55] transition-transform duration-300 translate-y-0 opacity-100`} role="navigation" aria-label="Mobile navigation">
         <div className="container mx-auto px-2 sm:px-4">
           <div className="flex items-center justify-between h-14 relative flex-nowrap">
             {/* Left spacer - untuk balance layout */}
@@ -522,6 +529,10 @@ export function Navbar() {
                       Hire talent
                     </Link>
                   )}
+                  {/* Blog - Show for all */}
+                  <Link href="/blog" className="text-base text-gray-900 hover:text-brand-purple transition-colors font-medium whitespace-nowrap" onClick={() => setShowMobileMenu(false)}>
+                    Blog
+                  </Link>
                   {/* About Us - Show for all */}
                   <Link href="/about-us" className="text-base text-gray-900 hover:text-brand-purple transition-colors font-medium whitespace-nowrap" onClick={() => setShowMobileMenu(false)}>
                     About Us
@@ -535,7 +546,7 @@ export function Navbar() {
               {!user ? (
                 <>
                   <Link href="/register" className="hidden sm:inline-flex">
-                    <Button size="sm" className="bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-full px-4">
+                    <Button size="sm" className="bg-brand-yellow hover:bg-yellow-400 text-gray-900 font-bold rounded-xl px-4 py-2 shadow-md hover:scale-105 transition-all">
                       Try for free
                     </Button>
                   </Link>
@@ -546,7 +557,8 @@ export function Navbar() {
                       setShowMobileMenu(!showMobileMenu)
                     }}
                     className="p-2 rounded-lg hover:bg-gray-100 transition-colors z-50 relative"
-                    aria-label="Menu"
+                    aria-label="Toggle menu"
+                    aria-expanded={showMobileMenu}
                   >
                     <svg className={`w-6 h-6 ${navIconClass}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
@@ -711,6 +723,15 @@ export function Navbar() {
                 </Link>
               )}
               
+              {/* Blog - Show for all */}
+              <Link 
+                href="/blog" 
+                className="block py-2 text-base text-gray-900 hover:text-brand-purple font-medium" 
+                onClick={() => setShowMobileMenu(false)}
+              >
+                Blog
+              </Link>
+              
               {/* About Us - Show for all */}
               <Link 
                 href="/about-us" 
@@ -732,7 +753,7 @@ export function Navbar() {
                     Login
                   </Link>
                   <Link href="/register">
-                    <Button className="w-full bg-gray-900 hover:bg-gray-800 text-white font-medium" onClick={() => setShowMobileMenu(false)}>
+                    <Button className="w-full bg-brand-yellow hover:bg-yellow-400 text-gray-900 font-bold rounded-xl shadow-lg hover:scale-105 transition-all" onClick={() => setShowMobileMenu(false)}>
                       Try for free
                     </Button>
                   </Link>

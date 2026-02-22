@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { Footer } from '@/components/footer'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,219 +14,164 @@ export default function AboutUsPage() {
     message: '',
   })
 
+  const customIcons = {
+    target: (
+      <svg className="w-full h-full" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="#FFC107" strokeWidth="2"/>
+        <circle cx="12" cy="12" r="6" stroke="#FFC107" strokeWidth="2"/>
+        <circle cx="12" cy="12" r="2" fill="#FFC107"/>
+      </svg>
+    ),
+  }
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const subject = `Message from ${formData.name || 'Website visitor'}`
     const body = `Name: ${formData.name}\nEmail: ${formData.email}\n\n${formData.message}`
-    const mailto = `mailto:monerabusiness.id@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+    const mailto = `mailto:business@monera.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
     window.location.href = mailto
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-brand-purple via-purple-900 to-indigo-950 text-white pt-40 sm:pt-36 pb-12 md:pb-16 overflow-hidden -mt-20 sm:-mt-24">
-        {/* Animated Background - Enhanced Stars/Particles */}
-        <div className="absolute inset-0 overflow-hidden -top-20 md:-top-24">
-          {/* Enhanced animated stars/particles */}
-          <div className="absolute inset-0">
-            {[...Array(80)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute rounded-full bg-white animate-twinkle"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  width: `${Math.random() * 4 + 2}px`,
-                  height: `${Math.random() * 4 + 2}px`,
-                  opacity: Math.random() * 0.8 + 0.2,
-                  animationDelay: `${Math.random() * 4}s`,
-                  animationDuration: `${Math.random() * 4 + 2}s`,
-                  boxShadow: '0 0 6px rgba(255, 255, 255, 0.8)',
-                }}
-              />
-            ))}
-          </div>
-          
-          {/* Enhanced Large animated bubbles */}
-          <div className="absolute -bottom-40 -right-40 w-[700px] h-[700px] bg-gradient-to-br from-brand-yellow/40 via-purple-400/30 to-indigo-400/30 rounded-full blur-3xl animate-float-slow opacity-80"></div>
-          <div className="absolute -top-40 -left-40 w-[600px] h-[600px] bg-gradient-to-br from-purple-500/30 via-indigo-500/30 to-brand-yellow/30 rounded-full blur-3xl animate-float-reverse opacity-70"></div>
-          
-          {/* Enhanced Medium floating bubbles */}
-          <div className="absolute top-1/4 right-1/4 w-80 h-80 bg-gradient-to-br from-purple-400/25 to-indigo-400/25 rounded-full blur-2xl animate-float-medium opacity-60"></div>
-          <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-gradient-to-br from-brand-yellow/25 to-purple-400/25 rounded-full blur-2xl animate-float-slow opacity-50"></div>
-          
-          {/* Enhanced Small floating particles */}
-          <div className="absolute top-1/2 left-1/3 w-40 h-40 bg-purple-400/20 rounded-full blur-xl animate-float-fast opacity-70"></div>
-          <div className="absolute bottom-1/3 right-1/3 w-48 h-48 bg-indigo-400/20 rounded-full blur-xl animate-float-medium opacity-60"></div>
-          
-          {/* Additional pulsing glow effects */}
-          <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-brand-yellow/10 rounded-full blur-3xl animate-pulse-slow transform -translate-x-1/2 -translate-y-1/2"></div>
-        </div>
-        
-        <div className="container mx-auto px-4 relative z-10 pt-2">
-          <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-3 md:mb-4 font-headline leading-[1.1] tracking-tight animate-fade-in">
+      <section className="relative bg-gradient-to-br from-brand-purple via-purple-600 to-purple-700 text-white pt-56 md:pt-44 pb-40 -mt-20 md:-mt-24 overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzBoLTJWMGgydjMwem0wIDMwdi0yaC0ydjJoMnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-20"></div>
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 text-white drop-shadow-lg">
               About Monera
             </h1>
-            <p className="text-lg md:text-xl text-purple-100 mb-4 md:mb-6 leading-relaxed opacity-90 animate-slide-up">
-              Connecting <span className="text-brand-yellow font-semibold">talent</span> with opportunity
+            <p className="text-xl md:text-2xl text-white/90 font-medium leading-relaxed max-w-2xl mx-auto">
+              Global Standards. <span className="text-brand-yellow">Indonesian Talent.</span>
             </p>
           </div>
         </div>
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent"></div>
       </section>
 
-      <div className="bg-white rounded-t-3xl -mt-8 relative z-10">
-        <div className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto space-y-12">
-          {/* Mission */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl">Our Mission</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 text-lg">
-                At Monera, we believe that great work happens when talented professionals 
-                connect with the right opportunities. Our mission is to create a platform 
-                that makes this connection seamless, fair, and rewarding for everyone.
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Values */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl">Quality First</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">
-                  We prioritize quality over quantity. Every profile is vetted, every match is meaningful, 
-                  and every connection is valuable.
+      <div className="container mx-auto px-4 -mt-20 relative z-20 pb-20">
+        <div className="max-w-5xl mx-auto space-y-16">
+          
+          {/* Vision */}
+          <div className="bg-gradient-to-br from-brand-purple to-purple-600 rounded-3xl p-8 md:p-12 text-white shadow-2xl">
+            <div className="flex items-start gap-4">
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-9 h-9">{customIcons.target}</div>
+              </div>
+              <div>
+                <h2 className="text-3xl md:text-4xl font-bold mb-4">Our Vision</h2>
+                <p className="text-2xl font-bold text-brand-yellow mb-4">
+                  To make Indonesian talent the global gold standard: competent, dedicated, and trusted.
                 </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl">Transparency</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">
-                  We believe in clear communication, honest feedback, and transparent processes 
-                  that build trust between talent and clients.
+                <p className="text-lg text-white/90 leading-relaxed">
+                  Monera is a strategic partner for global businesses seeking to build high-quality remote teams. 
+                  Unlike traditional freelancer platforms, we provide full-time dedicated talent drawn from the top 5% 
+                  of Indonesia's workforce. We handle the entire process—recruitment, legal compliance, payroll, and 
+                  HR management—so you can focus on growing your business with significantly lower operational costs.
                 </p>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
+          </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl">Innovation</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">
-                  We continuously improve our platform with smart matching algorithms, 
-                  user-friendly tools, and cutting-edge technology.
+          {/* Our Team */}
+          <div>
+            <div className="text-center mb-12">
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900">Meet The Team</h2>
+              <p className="text-xl text-gray-600 mt-4">The people behind Monera</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-8 border-4 border-brand-purple/30 hover:shadow-2xl hover:border-brand-purple transition-all">
+                <h3 className="text-2xl font-bold mb-2">Muh Khaidir Alfikri</h3>
+                <p className="text-brand-purple font-bold mb-4">CEO & Co-Founder</p>
+                <p className="text-gray-700 leading-relaxed">
+                  With a strong background in business strategy and client acquisition, Fikri leads Monera's vision and growth. 
+                  He ensures that every client partnership delivers exceptional value and that our operational engine runs smoothly.
                 </p>
-              </CardContent>
-            </Card>
+              </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl">Community</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">
-                  We foster a supportive community where professionals can grow, learn, 
-                  and succeed together.
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-8 border-4 border-brand-purple/30 hover:shadow-2xl hover:border-brand-purple transition-all">
+                <h3 className="text-2xl font-bold mb-2">Arief Ockta Yoeseva</h3>
+                <p className="text-brand-purple font-bold mb-4">CTO & Co-Founder</p>
+                <p className="text-gray-700 leading-relaxed">
+                  Arief brings deep technical expertise in product development and AI integration. 
+                  He oversees the Monera platform, ensuring secure, reliable, and innovative technology that scales with our clients' needs.
                 </p>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
 
           {/* Contact Section */}
-          <Card className="bg-gradient-to-br from-brand-purple/10 to-purple-50">
-            <CardHeader>
-              <CardTitle className="text-2xl">Contact Us</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                <div>
-                  <h3 className="font-semibold mb-2">
-                    <span className="inline-flex items-center gap-2">
-                      <img src="https://cdn-icons-png.flaticon.com/512/684/684908.png" alt="" className="w-4 h-4" loading="lazy" decoding="async" />
-                      Our Office
-                    </span>
-                  </h3>
-                  <p className="text-gray-600">Jakarta, Indonesia</p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    We're based in Jakarta, Indonesia, connecting talent and companies from around the world.
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold mb-2">
-                    <span className="inline-flex items-center gap-2">
-                      <img src="https://cdn-icons-png.flaticon.com/512/561/561127.png" alt="" className="w-4 h-4" loading="lazy" decoding="async" />
-                      Contact Email
-                    </span>
-                  </h3>
-                  <p className="text-gray-600">
-                    <a href="mailto:monerabusiness.id@gmail.com" className="text-brand-purple hover:underline">
-                      monerabusiness.id@gmail.com
-                    </a>
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold mb-4">Send us a message</h3>
-                  <form className="space-y-4" onSubmit={handleSubmit}>
-                    <div>
-                      <Label htmlFor="name">Name</Label>
-                      <Input
-                        id="name"
-                        placeholder="Your name"
-                        value={formData.name}
-                        onChange={(event) => setFormData((prev) => ({ ...prev, name: event.target.value }))}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="your@email.com"
-                        value={formData.email}
-                        onChange={(event) => setFormData((prev) => ({ ...prev, email: event.target.value }))}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="message">Message</Label>
-                      <Textarea
-                        id="message"
-                        rows={4}
-                        placeholder="Your message..."
-                        value={formData.message}
-                        onChange={(event) => setFormData((prev) => ({ ...prev, message: event.target.value }))}
-                        required
-                      />
-                    </div>
-                    <Button type="submit" className="bg-brand-purple hover:bg-purple-700">
-                      Send Message
-                    </Button>
-                  </form>
-                </div>
+          <div className="bg-gradient-to-br from-brand-purple to-purple-600 rounded-3xl p-8 md:p-12 text-white shadow-2xl">
+            <div className="text-center mb-10">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4">Get In Touch</h2>
+              <p className="text-xl text-purple-100">We'd love to hear from you</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+              <div className="bg-white/10 backdrop-blur rounded-xl p-6 text-center hover:bg-white/20 transition-colors">
+                <h3 className="font-bold mb-2 text-lg">Headquarters</h3>
+                <p className="text-purple-100">Jakarta, Indonesia</p>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+              <div className="bg-white/10 backdrop-blur rounded-xl p-6 text-center hover:bg-white/20 transition-colors">
+                <h3 className="font-bold mb-2 text-lg">Email</h3>
+                <a href="mailto:business@monera.com" className="text-brand-yellow hover:underline font-semibold">
+                  business@monera.com
+                </a>
+              </div>
+              <div className="bg-white/10 backdrop-blur rounded-xl p-6 text-center hover:bg-white/20 transition-colors">
+                <h3 className="font-bold mb-2 text-lg">WhatsApp</h3>
+                <p className="text-purple-100">+62 851-6139-1439</p>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl p-8 max-w-2xl mx-auto">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">Send us a message</h3>
+              <form className="space-y-4" onSubmit={handleSubmit}>
+                <div>
+                  <Label htmlFor="name" className="text-gray-900">Name</Label>
+                  <Input
+                    id="name"
+                    placeholder="Your name"
+                    value={formData.name}
+                    onChange={(event) => setFormData((prev) => ({ ...prev, name: event.target.value }))}
+                    required
+                    className="border-2"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email" className="text-gray-900">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={formData.email}
+                    onChange={(event) => setFormData((prev) => ({ ...prev, email: event.target.value }))}
+                    required
+                    className="border-2"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="message" className="text-gray-900">Message</Label>
+                  <Textarea
+                    id="message"
+                    rows={4}
+                    placeholder="Your message..."
+                    value={formData.message}
+                    onChange={(event) => setFormData((prev) => ({ ...prev, message: event.target.value }))}
+                    required
+                    className="border-2"
+                  />
+                </div>
+                <Button type="submit" className="w-full bg-brand-purple hover:bg-purple-700 text-white font-bold py-6 text-lg">
+                  Send Message
+                </Button>
+              </form>
+            </div>
+          </div>
+
         </div>
       </div>
-
-      <Footer />
     </div>
   )
 }
-

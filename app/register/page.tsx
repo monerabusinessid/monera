@@ -267,12 +267,12 @@ function RegisterForm() {
       <div className="relative z-10 flex min-h-screen items-center justify-center p-4 md:p-6 lg:p-8">
         <div className="glass-panel w-full max-w-[980px] rounded-2xl shadow-2xl overflow-hidden">
           <div className="p-8 md:p-12">
-            <div className="flex items-center gap-3 mb-8">
+            <div className="flex items-center justify-between mb-8">
               <Logo size="sm" />
-            </div>
-            <div className="mb-8 text-center">
-              <h1 className="text-gray-900 text-3xl font-bold leading-tight tracking-tight mb-2">Create your account</h1>
-              <p className="text-gray-500 text-base font-normal">Join Monera and start your tailored onboarding.</p>
+              <div className="absolute left-1/2 -translate-x-1/2 text-center">
+                <h1 className="text-gray-900 text-3xl font-bold leading-tight tracking-tight mb-2">Create your account</h1>
+                <p className="text-gray-500 text-base font-normal">Join Monera and start your tailored onboarding.</p>
+              </div>
             </div>
             <div className="mb-8">
               <p className="text-center text-sm font-medium text-gray-700 mb-4">Choose your role</p>
@@ -523,7 +523,6 @@ function RegisterForm() {
           }
         }
       `}</style>
-      <Footer />
     </div>
   )
 }
@@ -535,3 +534,4 @@ export default function RegisterPage() {
     </Suspense>
   )
 }
+

@@ -3,39 +3,39 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { ConditionalNavbar } from "@/components/conditional-navbar";
 import { BodyRouteStyle } from "@/components/body-route-style";
+import { ConditionalFooter } from "@/components/conditional-footer";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://monera.com'),
   title: {
-    default: "Monera | Hire Vetted Remote Talent",
+    default: "Monera - Hire Top 5% Indonesian Remote Talent | Save 60% on Costs",
     template: "%s | Monera"
   },
-  description: "Monera is a quality-first talent platform connecting businesses with pre-screened remote professionals. Find vetted talent, independent contractors, and remote professionals. AI-powered matching, pre-validated profiles, and smart hiring tools for quality-focused companies.",
+  description: "Build your dedicated remote team with Indonesia's top 5% talent. Full HR & payroll management. 30-day replacement guarantee. Get 3 pre-vetted candidates in 48 hours. Save up to 60% on operational costs.",
   keywords: [
-    "talent marketplace",
-    "remote talent",
-    "vetted talent",
-    "hire talent",
-    "remote professionals",
-    "independent contractors",
-    "talent platform",
-    "pre-screened talent",
-    "quality talent",
-    "remote hiring",
-    "talent marketplace platform",
-    "find talent",
-    "hire remote workers",
-    "freelance platform",
-    "remote work",
-    "talent matching",
-    "AI-powered hiring"
+    "remote team Indonesia",
+    "hire Indonesian talent",
+    "dedicated remote team",
+    "Indonesian developers",
+    "remote staff Indonesia",
+    "offshore team Indonesia",
+    "virtual assistant Indonesia",
+    "remote hiring Indonesia",
+    "Indonesian remote workers",
+    "cost-effective remote team",
+    "managed remote team",
+    "full-time remote talent",
+    "vetted remote professionals",
+    "remote team building"
   ],
+  category: "Business Services",
   authors: [{ name: "Monera" }],
   creator: "Monera",
   publisher: "Monera",
   robots: {
     index: true,
     follow: true,
+    nocache: false,
     googleBot: {
       index: true,
       follow: true,
@@ -44,13 +44,16 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  other: {
+    'google-site-verification': process.env.GOOGLE_SITE_VERIFICATION || '',
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
     url: "/",
     siteName: "Monera",
-    title: "Monera - Premium Talent Marketplace | Hire Vetted Remote Talent",
-    description: "Connect with pre-screened remote professionals and vetted talent. Quality-first hiring platform with AI-powered matching.",
+    title: "Monera - Build Your Dedicated Remote Team | Top 5% Indonesian Talent",
+    description: "Save up to 60% on costs with full-time dedicated Indonesian professionals. Complete HR & payroll management. 30-day replacement guarantee. Get 3 pre-vetted candidates in 48 hours.",
     images: [
       {
         url: "/images/og-image.png",
@@ -62,8 +65,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Monera - Premium Talent Marketplace | Hire Vetted Remote Talent",
-    description: "Connect with pre-screened remote professionals and vetted talent. Quality-first hiring platform with AI-powered matching.",
+    title: "Monera - Build Your Dedicated Remote Team | Top 5% Indonesian Talent",
+    description: "Save up to 60% on costs with full-time dedicated Indonesian professionals. Complete HR & payroll management. 30-day replacement guarantee.",
     images: ["/images/og-image.png"],
     creator: "@monera",
   },
@@ -86,13 +89,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="min-h-screen flex flex-col bg-transparent">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://cdn-icons-png.flaticon.com" />
+      </head>
+      <body className="min-h-screen flex flex-col bg-white">
         <AuthProvider>
           <BodyRouteStyle />
           <ConditionalNavbar />
           <main className="flex-1">
             {children}
           </main>
+          <ConditionalFooter />
         </AuthProvider>
       </body>
     </html>
