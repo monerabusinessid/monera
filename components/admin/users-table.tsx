@@ -52,7 +52,7 @@ export function UsersTable({ users, userType, canDelete }: UsersTableProps) {
 
   const normalizedQuery = searchQuery.trim().toLowerCase()
 
-  const roleOptions = Array.from(new Set(users.map((u) => u.role).filter(Boolean))).sort()
+  const roleOptions = Array.from(new Set(users.map((u) => u.role).filter(Boolean))).sort() as string[]
   const statusOptions = Array.from(new Set(users.map((u) => u.status).filter(Boolean))).sort()
 
   const filteredUsers = users.filter((u) => {
