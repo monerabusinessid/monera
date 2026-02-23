@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
       const userName = user.user_metadata?.full_name || 
                       profile?.first_name || 
                       profile?.full_name || 
-                      user.email.split('@')[0] || 
+                      user.email?.split('@')[0] || 
                       'User'
       
       console.log('[API /auth/forgot-password] Using name for email:', userName)
