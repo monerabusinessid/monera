@@ -33,9 +33,7 @@ export function TalentDashboard() {
   const [savedJobs, setSavedJobs] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    console.log('useEffect triggered, user:', user)
     if (user) {
-      console.log('Calling fetchDashboardData')
       fetchDashboardData()
     }
   }, [user])
@@ -43,7 +41,6 @@ export function TalentDashboard() {
   const fetchDashboardData = async () => {
     try {
       setLoading(true)
-      console.log('User in fetchDashboardData:', user)
       
       const [
         applicationsRes,
@@ -54,9 +51,6 @@ export function TalentDashboard() {
         fetch('/api/jobs?status=PUBLISHED&limit=6', { credentials: 'include' }),
         fetch('/api/saved-jobs', { credentials: 'include' })
       ])
-
-      console.log('savedJobsRes status:', savedJobsRes.status)
-      console.log('savedJobsRes ok:', savedJobsRes.ok)
 
       if (applicationsRes.ok) {
         const applicationsData = await applicationsRes.json()
@@ -77,7 +71,6 @@ export function TalentDashboard() {
 
       if (jobsRes.ok) {
         const jobsData = await jobsRes.json()
-        console.log('Jobs API response:', jobsData)
         if (jobsData.success) {
           setRecommendedJobs(jobsData.jobs || [])
         }
@@ -85,8 +78,6 @@ export function TalentDashboard() {
 
       if (savedJobsRes.ok) {
         const savedData = await savedJobsRes.json()
-        console.log('Saved jobs API response:', savedData)
-        console.log('Count from API:', savedData.data?.count)
         if (savedData.success && savedData.data) {
           setSavedJobs(new Set(savedData.data.jobIds || []))
           setStats(prev => ({
@@ -96,7 +87,6 @@ export function TalentDashboard() {
         }
       }
 
-      // Set default profile completion
       setStats(prev => ({ ...prev, profileCompletion: 75 }))
 
     } catch (error) {
@@ -104,22 +94,6 @@ export function TalentDashboard() {
     } finally {
       setLoading(false)
     }
-  }
-
-  const calculateProfileCompletion = (profile: any): number => {
-    if (!profile) return 0
-    const fields = [
-      profile.firstName,
-      profile.lastName,
-      profile.headline,
-      profile.bio,
-      profile.location,
-      profile.hourlyRate,
-      profile.portfolioUrl,
-      profile.skills?.length > 0,
-    ]
-    const completed = fields.filter(Boolean).length
-    return Math.round((completed / fields.length) * 100)
   }
 
   const handleSave = async (jobId: string) => {
@@ -224,7 +198,7 @@ export function TalentDashboard() {
             Welcome back, {user?.email?.split('@')[0]}!
           </h1>
           <p className="text-gray-600">
-            Here's what's happening with your job search
+            Here&apos;s what&apos;s happening with your job search
           </p>
         </div>
 
