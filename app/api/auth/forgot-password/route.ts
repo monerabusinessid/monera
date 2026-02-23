@@ -113,11 +113,6 @@ export async function POST(request: NextRequest) {
       console.log('[API /auth/forgot-password] Reset email sent successfully to:', validatedData.email)
     } catch (emailError) {
       console.error('[API /auth/forgot-password] Error sending email:', emailError)
-      console.error('[API /auth/forgot-password] Email error details:', {
-        message: emailError.message,
-        code: emailError.code,
-        response: emailError.response
-      })
       // Don't fail the request if email fails - user can still use the link from logs
     }
 

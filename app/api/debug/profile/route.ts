@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
 
     // Get skills
     const talentProfileId = talentProfiles?.[0]?.id
-    let skills = []
+    let skills: any[] = []
     if (talentProfileId) {
       const { data: skillLinks } = await adminSupabase
         .from('_CandidateSkills')

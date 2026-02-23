@@ -272,12 +272,12 @@ export function UsersTable({ users, userType, canDelete }: UsersTableProps) {
                     </div>
                   </td>
                   <td className="bg-white px-4 py-4 shadow-sm">
-                    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${getRoleColor(u.role || '')}`}>
+                    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${getRoleColor(u.role ?? '')}`}>
                       {formatLabel(u.role)}
                     </span>
                   </td>
                   <td className="bg-white px-4 py-4 shadow-sm">
-                    <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${getStatusColor(u.status)}`}>
+                    <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${getStatusColor(u.status ?? null)}`}>
                       <span className="h-1.5 w-1.5 rounded-full bg-current" />
                       {formatLabel(u.status || 'ACTIVE')}
                     </span>
