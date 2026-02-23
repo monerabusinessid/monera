@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/db'
+import { db } from '@/lib/db'
 
 export interface ProfileReadinessResult {
   isReady: boolean
@@ -16,7 +16,7 @@ export interface ProfileReadinessResult {
 }
 
 export async function calculateProfileReadiness(userId: string): Promise<ProfileReadinessResult> {
-  const profile = await prisma.candidateProfile.findUnique({
+  const profile = await db.candidateProfile.findUnique({
     where: { userId },
     include: { skills: true },
   })
@@ -68,7 +68,7 @@ export async function calculateProfileReadiness(userId: string): Promise<Profile
   const isReady = completion >= 80
 
   // Update profile with readiness status
-  await prisma.candidateProfile.update({
+  await db.candidateProfile.update({
     where: { userId },
     data: {
       profileCompletion: completion,
@@ -86,7 +86,7 @@ export async function calculateProfileReadiness(userId: string): Promise<Profile
 }
 
 export async function getBestMatchJobs(userId: string, limit: number = 20) {
-  const profile = await prisma.candidateProfile.findUnique({
+  const profile = await db.candidateProfile.findUnique({
     where: { userId },
     include: { skills: true },
   })
@@ -95,11 +95,11 @@ export async function getBestMatchJobs(userId: string, limit: number = 20) {
     return []
   }
 
-  const profileSkillIds = profile.skills.map(s => s.id)
+  const profileSkillIds = profile.skills.map((s: any) => s.id)
   const profileRate = profile.hourlyRate || 0
 
   // Get all published jobs
-  const jobs = await prisma.job.findMany({
+  const jobs = await db.job.findMany({
     where: {
       status: 'PUBLISHED',
     },
@@ -121,10 +121,10 @@ export async function getBestMatchJobs(userId: string, limit: number = 20) {
   })
 
   // Score and sort jobs
-  const scoredJobs = jobs.map(job => {
+  const scoredJobs = jobs.map((job: any) => {
     // Skill match: 60%
-    const jobSkillIds = job.skills.map(s => s.id)
-    const matchingSkills = profileSkillIds.filter(id => jobSkillIds.includes(id))
+    const jobSkillIds = job.skills.map((s: any) => s.id)
+    const matchingSkills = profileSkillIds.filter((id: any) => jobSkillIds.includes(id))
     const skillMatchScore = job.skills.length > 0 
       ? (matchingSkills.length / Math.max(job.skills.length, profileSkillIds.length)) * 60
       : 0

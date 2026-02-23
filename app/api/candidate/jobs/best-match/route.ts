@@ -1,7 +1,6 @@
 import { NextRequest } from 'next/server'
 import { requireAuth, successResponse, handleApiError } from '@/lib/api-utils'
-import { getBestMatchJobs } from '@/lib/utils/profile-readiness'
-import { prisma } from '@/lib/db'
+import { db } from '@/lib/db'
 export const dynamic = 'force-dynamic'
 export const runtime = 'edge'
 
@@ -10,19 +9,25 @@ export const GET = requireAuth(async (req, userId) => {
     const { searchParams } = new URL(req.url)
     const limit = parseInt(searchParams.get('limit') || '20')
 
-    // Check if profile is ready
-    const profile = await prisma.candidateProfile.findUnique({
-      where: { userId },
+    // Get user profile
+    const user = await db.user.findUnique({
+      where: { id: userId },
     })
 
-    if (!profile || !profile.isProfileReady) {
+    if (!user) {
       return successResponse({
         jobs: [],
-        message: 'Profile not ready. Complete your profile to see best match jobs.',
+        message: 'User not found',
       })
     }
 
-    const jobs = await getBestMatchJobs(userId, limit)
+    // Get all published jobs for now
+    const jobs = await db.job.findMany({
+      where: { status: 'PUBLISHED' },
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+    })
+
     return successResponse({ jobs })
   } catch (error) {
     return handleApiError(error)

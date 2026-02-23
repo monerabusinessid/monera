@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { prisma } from '@/lib/db'
+import { db } from '@/lib/db'
 import { companySchema } from '@/lib/validations'
 import { requireAuth, successResponse, errorResponse, handleApiError, getAuthUser } from '@/lib/api-utils'
 
@@ -11,22 +11,8 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const company = await prisma.company.findUnique({
+    const company = await db.company.findUnique({
       where: { id: params.id },
-      include: {
-        jobs: {
-          where: {
-            status: 'PUBLISHED',
-          },
-          orderBy: { createdAt: 'desc' },
-        },
-        _count: {
-          select: {
-            members: true,
-            jobs: true,
-          },
-        },
-      },
     })
 
     if (!company) {
@@ -53,18 +39,13 @@ export async function PUT(
     const validatedData = companySchema.partial().parse(body)
     const id = params.id
 
-    // Check if user is admin or member of the company
-    const adminRoles = ['SUPER_ADMIN', 'QUALITY_ADMIN']
+    // Check if user is admin
+    const adminRoles = ['SUPER_ADMIN', 'QUALITY_ADMIN', 'CLIENT']
     if (!adminRoles.includes(user.role)) {
-      const recruiterProfile = await prisma.recruiterProfile.findUnique({
-        where: { userId: user.id },
-      })
-      if (recruiterProfile?.companyId !== id) {
-        return errorResponse('Forbidden', 403)
-      }
+      return errorResponse('Forbidden', 403)
     }
 
-    const company = await prisma.company.update({
+    const company = await db.company.update({
       where: { id },
       data: validatedData,
     })
@@ -90,7 +71,7 @@ export async function DELETE(
       return errorResponse('Forbidden', 403)
     }
 
-    await prisma.company.delete({
+    await db.company.delete({
       where: { id: params.id },
     })
 

@@ -45,13 +45,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Hash new password
-    const passwordHash = await await hashPassword(validatedData.password, 10)
+    const passwordHash = await hashPassword(validatedData.password)
 
     // Update password in auth.users
-    const { error: updateError } = await supabase.auth.admin.updateUserById(
-      profile.id,
-      { password: validatedData.password }
-    )
+    const { error: updateError } = await supabase.auth.admin.updateUserById(profile.id, {
+      password: validatedData.password
+    })
 
     if (updateError) {
       console.error('[API /auth/reset-password] Error updating password:', updateError)

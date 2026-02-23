@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import { db } from '@/lib/db'
 import { candidateProfileSchema } from '@/lib/validations'
 import { requireAuth, successResponse, handleApiError } from '@/lib/api-utils'
 import { calculateProfileReadiness } from '@/lib/utils/profile-readiness'
@@ -8,7 +8,7 @@ export const runtime = 'edge'
 
 export const GET = requireAuth(async (req, userId) => {
   try {
-    const profile = await prisma.candidateProfile.findUnique({
+    const profile = await db.candidateProfile.findUnique({
       where: { userId },
       include: {
         skills: true,
@@ -42,7 +42,7 @@ export const POST = requireAuth(async (req, userId) => {
     const validatedData = candidateProfileSchema.parse(body)
 
     // Check if profile exists
-    const existingProfile = await prisma.candidateProfile.findUnique({
+    const existingProfile = await db.candidateProfile.findUnique({
       where: { userId },
     })
 
@@ -55,7 +55,7 @@ export const POST = requireAuth(async (req, userId) => {
 
     const { skillIds, ...profileData } = validatedData
 
-    const profile = await prisma.candidateProfile.create({
+    const profile = await db.candidateProfile.create({
       data: {
         ...profileData,
         userId,
@@ -87,7 +87,7 @@ export const PUT = requireAuth(async (req, userId) => {
 
     const { skillIds, ...profileData } = validatedData
 
-    const profile = await prisma.candidateProfile.upsert({
+    const profile = await db.candidateProfile.upsert({
       where: { userId },
       create: {
         ...profileData,
@@ -119,7 +119,7 @@ export const PUT = requireAuth(async (req, userId) => {
     await calculateProfileReadiness(userId)
 
     // Refetch to get updated readiness status
-    const updatedProfile = await prisma.candidateProfile.findUnique({
+    const updatedProfile = await db.candidateProfile.findUnique({
       where: { userId },
       include: {
         skills: true,

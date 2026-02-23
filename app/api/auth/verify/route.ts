@@ -4,6 +4,7 @@ import { jwtVerify } from 'jose';
 import { db } from '@/lib/db';
 import { isCodeExpired } from '@/lib/verification';
 import { getUserState } from '@/lib/user-state';
+import { generateToken } from '@/lib/auth';
 export const runtime = 'edge'
 
 const verifySchema = z.object({
@@ -67,11 +68,11 @@ export async function POST(request: NextRequest) {
     });
 
     // Generate JWT token
-    const token = await generateToken(
-      { userId: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET as string,
-      { expiresIn: '7d' }
-    );
+    const token = await generateToken({
+      userId: user.id,
+      email: user.email,
+      role: user.role
+    });
 
     // Get user state to determine redirect
     const userState = await getUserState(user.id);

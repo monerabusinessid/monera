@@ -19,7 +19,7 @@ export default async function AdminLayout({
     redirect('/login?redirect=/admin')
   }
 
-  const payload = verifyToken(authToken)
+  const payload = await verifyToken(authToken)
   if (!payload || !payload.role || !isAdmin(payload.role)) {
     redirect('/login?redirect=/admin&error=admin_access_required')
   }

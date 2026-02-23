@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { prisma } from '@/lib/db'
+import { db } from '@/lib/db'
 import { requireRole, successResponse, handleApiError } from '@/lib/api-utils'
 
 export const dynamic = 'force-dynamic'
@@ -19,30 +19,13 @@ export const GET = requireRole(['SUPER_ADMIN', 'QUALITY_ADMIN'], async (req, use
     }
 
     const [jobs, total] = await Promise.all([
-      prisma.job.findMany({
+      db.job.findMany({
         where,
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
-        include: {
-          company: {
-            select: {
-              name: true,
-            },
-          },
-          recruiter: {
-            select: {
-              email: true,
-            },
-          },
-          _count: {
-            select: {
-              applications: true,
-            },
-          },
-        },
       }),
-      prisma.job.count({ where }),
+      db.job.count({ where }),
     ])
 
     return successResponse({

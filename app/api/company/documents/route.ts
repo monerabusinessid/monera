@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     const token = authHeader.substring(7);
     const decoded = await jwtVerify(token, new TextEncoder().encode(process.env.JWT_SECRET!)) as any;
     
-    if (decoded.role !== 'RECRUITER') {
+    if (decoded.role !== 'RECRUITER' && decoded.role !== 'CLIENT') {
       return NextResponse.json(
         { success: false, error: 'Only recruiters can upload documents' },
         { status: 403 }
@@ -35,26 +35,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get user's company
+    // Get user
     const user = await db.user.findUnique({
       where: { id: decoded.userId },
-      include: { recruiterProfile: { include: { company: true } } },
     });
 
-    if (!user?.recruiterProfile?.company) {
+    if (!user) {
       return NextResponse.json(
-        { success: false, error: 'Company not found' },
+        { success: false, error: 'User not found' },
         { status: 404 }
       );
     }
 
-    // For now, we'll just store a placeholder URL
-    // In production, you'd upload to cloud storage
-    const fileUrl = `/uploads/documents/${user.recruiterProfile.company.id}/${file.name}`;
+    // For now, store placeholder - in production upload to Supabase Storage
+    const fileUrl = `/uploads/documents/${user.id}/${file.name}`;
 
     const document = await db.companyDocument.create({
       data: {
-        companyId: user.recruiterProfile.company.id,
+        companyId: user.id,
         documentType,
         fileName: file.name,
         fileUrl,
@@ -89,31 +87,22 @@ export async function GET(request: NextRequest) {
 
     const user = await db.user.findUnique({
       where: { id: decoded.userId },
-      include: { 
-        recruiterProfile: { 
-          include: { 
-            company: { 
-              include: { documents: true } 
-            } 
-          } 
-        } 
-      },
     });
 
-    if (!user?.recruiterProfile) {
+    if (!user) {
       return NextResponse.json(
-        { success: false, error: 'Recruiter profile not found' },
+        { success: false, error: 'User not found' },
         { status: 404 }
       );
     }
 
+    const documents = await db.companyDocument.findMany({
+      where: { companyId: user.id },
+    });
+
     return NextResponse.json({
       success: true,
-      data: {
-        documents: user.recruiterProfile.company?.documents || [],
-        status: user.recruiterProfile.documentsStatus,
-        adminNotes: user.recruiterProfile.adminNotes,
-      },
+      data: { documents },
     });
   } catch (error) {
     console.error('Get documents error:', error);

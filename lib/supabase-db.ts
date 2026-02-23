@@ -219,6 +219,38 @@ export const db = {
       
       if (error) throw error
       return result
+    },
+    update: async ({ where, data }: any) => {
+      const { data: result, error } = await supabase
+        .from('companies')
+        .update(data)
+        .eq(Object.keys(where)[0], Object.values(where)[0])
+        .select()
+        .single()
+      
+      if (error) throw error
+      return result
+    },
+    delete: async ({ where }: any) => {
+      const { error } = await supabase
+        .from('companies')
+        .delete()
+        .eq(Object.keys(where)[0], Object.values(where)[0])
+      
+      if (error) throw error
+      return { success: true }
+    },
+    count: async ({ where }: any = {}) => {
+      let query = supabase.from('companies').select('*', { count: 'exact', head: true })
+      
+      if (where) {
+        Object.entries(where).forEach(([key, value]) => {
+          query = query.eq(key, value as any)
+        })
+      }
+      
+      const { count } = await query
+      return count || 0
     }
   },
   
@@ -236,6 +268,242 @@ export const db = {
     create: async ({ data }: any) => {
       const { data: result, error } = await supabase
         .from('skills')
+        .insert(data)
+        .select()
+        .single()
+      
+      if (error) throw error
+      return result
+    }
+  },
+  
+  talentRequest: {
+    findMany: async ({ where, skip, take }: any = {}) => {
+      let query = supabase.from('talent_requests').select('*')
+      
+      if (where) {
+        Object.entries(where).forEach(([key, value]) => {
+          query = query.eq(key, value)
+        })
+      }
+      
+      if (skip) query = query.range(skip, skip + (take || 10) - 1)
+      if (take) query = query.limit(take)
+      
+      const { data, error } = await query
+      return data || []
+    },
+    findUnique: async ({ where }: any) => {
+      const { data, error } = await supabase
+        .from('talent_requests')
+        .select('*')
+        .eq(Object.keys(where)[0], Object.values(where)[0])
+        .single()
+      
+      if (error) return null
+      return data
+    },
+    update: async ({ where, data }: any) => {
+      const { data: result, error } = await supabase
+        .from('talent_requests')
+        .update(data)
+        .eq(Object.keys(where)[0], Object.values(where)[0])
+        .select()
+        .single()
+      
+      if (error) throw error
+      return result
+    },
+    delete: async ({ where }: any) => {
+      const { error } = await supabase
+        .from('talent_requests')
+        .delete()
+        .eq(Object.keys(where)[0], Object.values(where)[0])
+      
+      if (error) throw error
+      return { success: true }
+    },
+    count: async ({ where }: any = {}) => {
+      let query = supabase.from('talent_requests').select('*', { count: 'exact', head: true })
+      
+      if (where) {
+        Object.entries(where).forEach(([key, value]) => {
+          query = query.eq(key, value as any)
+        })
+      }
+      
+      const { count } = await query
+      return count || 0
+    }
+  },
+  
+  candidateProfile: {
+    findUnique: async ({ where, include }: any) => {
+      const { data, error } = await supabase
+        .from('talent_profiles')
+        .select('*')
+        .eq(Object.keys(where)[0], Object.values(where)[0])
+        .single()
+      
+      if (error) return null
+      return data
+    },
+    create: async ({ data }: any) => {
+      const { data: result, error } = await supabase
+        .from('talent_profiles')
+        .insert(data)
+        .select()
+        .single()
+      
+      if (error) throw error
+      return result
+    },
+    update: async ({ where, data }: any) => {
+      const { data: result, error } = await supabase
+        .from('talent_profiles')
+        .update(data)
+        .eq(Object.keys(where)[0], Object.values(where)[0])
+        .select()
+        .single()
+      
+      if (error) throw error
+      return result
+    },
+    upsert: async ({ where, create, update }: any) => {
+      const existing = await supabase
+        .from('talent_profiles')
+        .select('*')
+        .eq(Object.keys(where)[0], Object.values(where)[0])
+        .single()
+      
+      if (existing.data) {
+        const { data: result, error } = await supabase
+          .from('talent_profiles')
+          .update(update)
+          .eq(Object.keys(where)[0], Object.values(where)[0])
+          .select()
+          .single()
+        
+        if (error) throw error
+        return result
+      } else {
+        const { data: result, error } = await supabase
+          .from('talent_profiles')
+          .insert(create)
+          .select()
+          .single()
+        
+        if (error) throw error
+        return result
+      }
+    },
+    count: async ({ where }: any = {}) => {
+      let query = supabase.from('talent_profiles').select('*', { count: 'exact', head: true })
+      
+      if (where) {
+        Object.entries(where).forEach(([key, value]) => {
+          query = query.eq(key, value as any)
+        })
+      }
+      
+      const { count } = await query
+      return count || 0
+    }
+  },
+  
+  recruiterProfile: {
+    findUnique: async ({ where }: any) => {
+      const { data, error } = await supabase
+        .from('recruiter_profiles')
+        .select('*')
+        .eq(Object.keys(where)[0], Object.values(where)[0])
+        .single()
+      
+      if (error) return null
+      return data
+    },
+    create: async ({ data }: any) => {
+      const { data: result, error } = await supabase
+        .from('recruiter_profiles')
+        .insert(data)
+        .select()
+        .single()
+      
+      if (error) throw error
+      return result
+    },
+    update: async ({ where, data }: any) => {
+      const { data: result, error } = await supabase
+        .from('recruiter_profiles')
+        .update(data)
+        .eq(Object.keys(where)[0], Object.values(where)[0])
+        .select()
+        .single()
+      
+      if (error) throw error
+      return result
+    },
+    upsert: async ({ where, create, update }: any) => {
+      const existing = await supabase
+        .from('recruiter_profiles')
+        .select('*')
+        .eq(Object.keys(where)[0], Object.values(where)[0])
+        .single()
+      
+      if (existing.data) {
+        const { data: result, error } = await supabase
+          .from('recruiter_profiles')
+          .update(update)
+          .eq(Object.keys(where)[0], Object.values(where)[0])
+          .select()
+          .single()
+        
+        if (error) throw error
+        return result
+      } else {
+        const { data: result, error } = await supabase
+          .from('recruiter_profiles')
+          .insert(create)
+          .select()
+          .single()
+        
+        if (error) throw error
+        return result
+      }
+    },
+    count: async ({ where }: any = {}) => {
+      let query = supabase.from('recruiter_profiles').select('*', { count: 'exact', head: true })
+      
+      if (where) {
+        Object.entries(where).forEach(([key, value]) => {
+          query = query.eq(key, value as any)
+        })
+      }
+      
+      const { count } = await query
+      return count || 0
+    }
+  },
+  
+  companyDocument: {
+    findMany: async ({ where, skip, take }: any = {}) => {
+      let query = supabase.from('company_documents').select('*')
+      
+      if (where) {
+        Object.entries(where).forEach(([key, value]) => {
+          query = query.eq(key, value)
+        })
+      }
+      
+      if (skip) query = query.range(skip, skip + (take || 10) - 1)
+      if (take) query = query.limit(take)
+      
+      const { data, error } = await query
+      return data || []
+    },
+    create: async ({ data }: any) => {
+      const { data: result, error } = await supabase
+        .from('company_documents')
         .insert(data)
         .select()
         .single()

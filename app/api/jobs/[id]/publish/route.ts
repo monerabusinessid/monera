@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { prisma } from '@/lib/db'
+import { db } from '@/lib/db'
 import { requireAuth, successResponse, errorResponse, handleApiError, getAuthUser } from '@/lib/api-utils'
 
 export const dynamic = 'force-dynamic'
@@ -17,7 +17,7 @@ export async function POST(
   try {
     const id = params.id
 
-    const job = await prisma.job.findUnique({
+    const job = await db.job.findUnique({
       where: { id },
     })
 
@@ -29,15 +29,11 @@ export async function POST(
       return errorResponse('Forbidden', 403)
     }
 
-    const updatedJob = await prisma.job.update({
+    const updatedJob = await db.job.update({
       where: { id },
       data: {
         status: 'PUBLISHED',
         publishedAt: new Date(),
-      },
-      include: {
-        company: true,
-        skills: true,
       },
     })
 

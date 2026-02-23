@@ -36,13 +36,6 @@ export async function PUT(request: NextRequest) {
   } catch (error) {
     console.error('Documents submit error:', error);
     
-    if (error instanceof jwt.JsonWebTokenError) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid token' },
-        { status: 401 }
-      );
-    }
-
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }

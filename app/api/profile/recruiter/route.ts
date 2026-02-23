@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import { db } from '@/lib/db'
 import { recruiterProfileSchema } from '@/lib/validations'
 import { requireAuth, successResponse, handleApiError } from '@/lib/api-utils'
 export const dynamic = 'force-dynamic'
@@ -7,7 +7,7 @@ export const runtime = 'edge'
 
 export const GET = requireAuth(async (req, userId) => {
   try {
-    const profile = await prisma.recruiterProfile.findUnique({
+    const profile = await db.recruiterProfile.findUnique({
       where: { userId },
       include: {
         company: true,
@@ -36,7 +36,7 @@ export const POST = requireAuth(async (req, userId) => {
     const body = await req.json()
     const validatedData = recruiterProfileSchema.parse(body)
 
-    const existingProfile = await prisma.recruiterProfile.findUnique({
+    const existingProfile = await db.recruiterProfile.findUnique({
       where: { userId },
     })
 
@@ -47,7 +47,7 @@ export const POST = requireAuth(async (req, userId) => {
       )
     }
 
-    const profile = await prisma.recruiterProfile.create({
+    const profile = await db.recruiterProfile.create({
       data: {
         ...validatedData,
         userId,
@@ -68,7 +68,7 @@ export const PUT = requireAuth(async (req, userId) => {
     const body = await req.json()
     const validatedData = recruiterProfileSchema.partial().parse(body)
 
-    const profile = await prisma.recruiterProfile.upsert({
+    const profile = await db.recruiterProfile.upsert({
       where: { userId },
       create: {
         ...validatedData,

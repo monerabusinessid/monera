@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseClient, createAdminClient } from '@/lib/supabase/server-helper'
 import { getAuthUser, successResponse, errorResponse } from '@/lib/api-utils'
 import { z } from 'zod'
-import { prisma } from '@/lib/db'
+import { db } from '@/lib/db'
 export const dynamic = 'force-dynamic'
 export const runtime = 'edge'
 
@@ -334,7 +334,7 @@ export async function POST(request: NextRequest) {
 
     // Best-effort sync to candidate profile (Prisma) for profile overview fields
     try {
-      await prisma.candidateProfile.upsert({
+      await db.candidateProfile.upsert({
         where: { userId: user.id },
         create: {
           userId: user.id,

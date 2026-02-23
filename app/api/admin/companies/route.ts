@@ -31,49 +31,20 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
-    const status = searchParams.get('status') || 'PENDING';
     const skip = (page - 1) * limit;
 
-    // Get companies with pending documents
-    const companies = await db.recruiterProfile.findMany({
-      where: {
-        documentsSubmitted: true,
-        documentsStatus: status as any,
-      },
-      include: {
-        user: true,
-        company: {
-          include: {
-            documents: true,
-          },
-        },
-      },
+    // Get companies
+    const companies = await db.company.findMany({
       skip,
       take: limit,
-      orderBy: { updatedAt: 'desc' },
     });
 
-    const total = await db.recruiterProfile.count({
-      where: {
-        documentsSubmitted: true,
-        documentsStatus: status as any,
-      },
-    });
-
-    const formattedCompanies = companies.map(profile => ({
-      id: profile.company?.id,
-      name: profile.company?.name,
-      email: profile.user.email,
-      documentsStatus: profile.documentsStatus,
-      documentsSubmittedAt: profile.updatedAt,
-      adminNotes: profile.adminNotes,
-      documents: profile.company?.documents || [],
-    }));
+    const total = companies.length;
 
     return NextResponse.json({
       success: true,
       data: {
-        companies: formattedCompanies,
+        companies,
         pagination: {
           page,
           limit,
@@ -83,7 +54,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Get pending companies error:', error);
+    console.error('Get companies error:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }

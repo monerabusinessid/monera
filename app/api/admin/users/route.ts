@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { prisma } from '@/lib/db'
+import { db } from '@/lib/db'
 import { requireRole, successResponse, handleApiError } from '@/lib/api-utils'
 export const dynamic = 'force-dynamic'
 export const runtime = 'edge'
@@ -12,7 +12,7 @@ export const GET = requireRole(['SUPER_ADMIN', 'QUALITY_ADMIN'], async (req, use
     const skip = (page - 1) * limit
 
     const [users, total] = await Promise.all([
-      prisma.user.findMany({
+      db.user.findMany({
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
@@ -35,7 +35,7 @@ export const GET = requireRole(['SUPER_ADMIN', 'QUALITY_ADMIN'], async (req, use
           },
         },
       }),
-      prisma.user.count(),
+      db.user.count(),
     ])
 
     return successResponse({

@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { prisma } from '@/lib/db'
+import { db } from '@/lib/db'
 import { updateTalentRequestSchema } from '@/lib/validations'
 import { requireAuth, successResponse, errorResponse, handleApiError, getAuthUser } from '@/lib/api-utils'
 
@@ -12,7 +12,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const talentRequest = await prisma.talentRequest.findUnique({
+    const talentRequest = await db.talentRequest.findUnique({
       where: { id: params.id },
     })
 
@@ -42,7 +42,7 @@ export async function PUT(
   }
 
   try {
-    const existingRequest = await prisma.talentRequest.findUnique({
+    const existingRequest = await db.talentRequest.findUnique({
       where: { id: params.id },
     })
 
@@ -53,7 +53,7 @@ export async function PUT(
     const body = await request.json()
     const validatedData = updateTalentRequestSchema.parse(body)
 
-    const talentRequest = await prisma.talentRequest.update({
+    const talentRequest = await db.talentRequest.update({
       where: { id: params.id },
       data: validatedData,
     })
@@ -80,7 +80,7 @@ export async function DELETE(
   }
 
   try {
-    const talentRequest = await prisma.talentRequest.findUnique({
+    const talentRequest = await db.talentRequest.findUnique({
       where: { id: params.id },
     })
 
@@ -88,7 +88,7 @@ export async function DELETE(
       return errorResponse('Talent request not found', 404)
     }
 
-    await prisma.talentRequest.delete({
+    await db.talentRequest.delete({
       where: { id: params.id },
     })
 
