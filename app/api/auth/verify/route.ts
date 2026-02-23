@@ -66,12 +66,10 @@ export async function POST(request: NextRequest) {
     });
 
     // Generate JWT token
-    const jwtSecret = process.env.JWT_SECRET as string;
-    const jwtExpires = process.env.JWT_EXPIRES_IN || '7d';
     const token = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
-      jwtSecret,
-      { expiresIn: jwtExpires as string }
+      process.env.JWT_SECRET as string,
+      { expiresIn: '7d' }
     );
 
     // Get user state to determine redirect
