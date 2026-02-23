@@ -57,9 +57,10 @@ export function JobSearchFilters({ onFiltersChange, loading }: JobSearchFiltersP
     // Debounce untuk text inputs (query, location)
     if (key === 'query' || key === 'location') {
       // Clear previous timeout
-      if (window.filterTimeout) clearTimeout(window.filterTimeout)
+      const timeoutId = (window as any).filterTimeout
+      if (timeoutId) clearTimeout(timeoutId)
       // Set new timeout
-      window.filterTimeout = setTimeout(() => {
+      (window as any).filterTimeout = setTimeout(() => {
         onFiltersChange(newFilters)
       }, 500)
     } else {

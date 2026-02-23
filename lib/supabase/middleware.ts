@@ -40,6 +40,9 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl
   
+  // Try to get user from JWT token first (before checking public routes)
+  const jwtUser = await getAuthUser(request)
+  
   // Public routes that don't need authentication
   const publicRoutes = ['/', '/login', '/register', '/auth/callback', '/api/auth/login', '/api/auth/register']
   const isPublicRoute = publicRoutes.some(route => pathname === route || pathname.startsWith('/api/auth/'))
@@ -64,10 +67,6 @@ export async function updateSession(request: NextRequest) {
   const {
     data: { user: supabaseUser },
   } = await supabase.auth.getUser()
-
-  // Also try to get user from JWT token (our custom auth)
-  // This reads from httpOnly cookie 'auth-token'
-  const jwtUser = await getAuthUser(request)
   
   // Logging for debugging session issues
   if (pathname.startsWith('/client') || pathname.startsWith('/auth/callback')) {
