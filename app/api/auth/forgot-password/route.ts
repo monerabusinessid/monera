@@ -65,8 +65,8 @@ export async function POST(request: NextRequest) {
         .from('profiles')
         .insert({
           id: user.id,
-          full_name: user.user_metadata?.full_name || user.email.split('@')[0],
-          first_name: user.user_metadata?.full_name?.split(' ')[0] || user.email.split('@')[0],
+          full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
+          first_name: user.user_metadata?.full_name?.split(' ')[0] || user.email?.split('@')[0] || 'User',
           last_name: user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '',
           role: 'CANDIDATE',
           status: 'ACTIVE',
