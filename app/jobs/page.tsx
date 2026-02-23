@@ -68,7 +68,7 @@ export default function JobsPage() {
       const data = await response.json()
       
       if (data.success) {
-        const appliedJobIds = new Set(data.data.map((app: any) => app.jobId))
+        const appliedJobIds = new Set<string>(data.data.map((app: any) => app.jobId as string))
         setAppliedJobs(appliedJobIds)
       }
     } catch (error) {
