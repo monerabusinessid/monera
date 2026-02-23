@@ -58,9 +58,9 @@ export function JobSearchFilters({ onFiltersChange, loading }: JobSearchFiltersP
     if (key === 'query' || key === 'location') {
       // Clear previous timeout
       const timeoutId = (window as any).filterTimeout
-      if (timeoutId) clearTimeout(timeoutId)
+      if (timeoutId) (window as any).clearTimeout(timeoutId)
       // Set new timeout
-      (window as any).filterTimeout = setTimeout(() => {
+      (window as any).filterTimeout = (window as any).setTimeout(() => {
         onFiltersChange(newFilters)
       }, 500)
     } else {
