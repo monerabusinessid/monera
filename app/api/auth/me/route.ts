@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { createAdminClient } from '@/lib/supabase/server'
 import { getAuthUser, successResponse, errorResponse } from '@/lib/api-utils'
 export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!

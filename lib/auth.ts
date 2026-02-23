@@ -1,5 +1,4 @@
-import bcrypt from 'bcryptjs'
-import jwt, { SignOptions } from 'jsonwebtoken'
+import { SignJWT, jwtVerify } from 'jose'
 import { createClient } from '@supabase/supabase-js'
 
 const JWT_SECRET: string = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
@@ -16,34 +15,42 @@ export interface JWTPayload {
   role: UserRole
 }
 
+// Edge-compatible password hashing using Web Crypto API
 export async function hashPassword(password: string): Promise<string> {
-  return bcrypt.hash(password, 12)
+  const encoder = new TextEncoder()
+  const data = encoder.encode(password)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
-export async function verifyPassword(
-  password: string,
-  hashedPassword: string
-): Promise<boolean> {
-  return bcrypt.compare(password, hashedPassword)
+export async function verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
+  const hash = await hashPassword(password)
+  return hash === hashedPassword
 }
 
-export function generateToken(payload: JWTPayload): string {
-  // @ts-ignore - JWT_EXPIRES_IN is a valid string value for expiresIn
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: JWT_EXPIRES_IN,
-  })
+export async function generateToken(payload: JWTPayload): Promise<string> {
+  const secret = new TextEncoder().encode(JWT_SECRET)
+  const token = await new SignJWT({ ...payload })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('7d')
+    .sign(secret)
+  return token
 }
 
-export function verifyToken(token: string): JWTPayload | null {
+export async function verifyToken(token: string): Promise<JWTPayload | null> {
   try {
-    return jwt.verify(token, JWT_SECRET) as JWTPayload
+    const secret = new TextEncoder().encode(JWT_SECRET)
+    const { payload } = await jwtVerify(token, secret)
+    return payload as unknown as JWTPayload
   } catch (error) {
     return null
   }
 }
 
 export async function getUserFromToken(token: string) {
-  const payload = verifyToken(token)
+  const payload = await verifyToken(token)
   if (!payload) {
     console.log('[getUserFromToken] Token verification failed')
     return null

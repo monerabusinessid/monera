@@ -4,6 +4,7 @@ import { successResponse, errorResponse } from '@/lib/api-utils'
 import { isValidOTPFormat, isCodeExpired } from '@/lib/utils/otp'
 import { createAdminClient } from '@/lib/supabase/server'
 export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
 
 const MAX_VERIFICATION_ATTEMPTS = 3
 
@@ -129,7 +130,7 @@ export async function POST(request: NextRequest) {
 
     // Generate JWT token for auto-login after verification
     const { generateToken } = await import('@/lib/auth')
-    const token = generateToken({
+    const token = await generateToken({
       userId: authUser.id,
       email: authUser.email!,
       role: (updatedProfile?.role || 'TALENT') as 'TALENT' | 'CLIENT',

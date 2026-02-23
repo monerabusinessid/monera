@@ -4,6 +4,7 @@ import { getAuthUser, successResponse, errorResponse } from '@/lib/api-utils'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
 
 const submitProfileSchema = z.object({
   firstName: z.string().min(1),

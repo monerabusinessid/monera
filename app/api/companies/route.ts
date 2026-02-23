@@ -3,6 +3,7 @@ import { companySchema } from '@/lib/validations'
 import { requireAuth, successResponse, handleApiError } from '@/lib/api-utils'
 import { createAdminClient } from '@/lib/supabase/server'
 export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
 
 export async function GET(request: NextRequest) {
   try {

@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import jwt from 'jsonwebtoken';
+import { jwtVerify } from 'jose';
 import { db } from '@/lib/db';
 import { isCodeExpired } from '@/lib/verification';
 import { getUserState } from '@/lib/user-state';
+export const runtime = 'edge'
 
 const verifySchema = z.object({
   email: z.string().email(),
@@ -66,7 +67,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Generate JWT token
-    const token = jwt.sign(
+    const token = await generateToken(
       { userId: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET as string,
       { expiresIn: '7d' }

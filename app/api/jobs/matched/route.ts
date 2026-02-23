@@ -3,6 +3,7 @@ import { getAuthUser, successResponse, errorResponse } from '@/lib/api-utils'
 import { getSupabaseClient, createAdminClient } from '@/lib/supabase/server-helper'
 
 export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
 
 /**
  * GET /api/jobs/matched

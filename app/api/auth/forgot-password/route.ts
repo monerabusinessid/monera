@@ -2,8 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { forgotPasswordSchema } from '@/lib/validations'
 import { successResponse, errorResponse, handleApiError } from '@/lib/api-utils'
-import crypto from 'crypto'
 export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
+
+// Edge-compatible random token generation
+function generateResetToken(): string {
+  const array = new Uint8Array(32)
+  crypto.getRandomValues(array)
+  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('')
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -33,7 +40,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate reset token
-    const resetToken = crypto.randomBytes(32).toString('hex')
+    const resetToken = generateResetToken()
     const resetTokenExpiry = new Date(Date.now() + 3600000) // 1 hour
 
     // Try to find existing profile or create one

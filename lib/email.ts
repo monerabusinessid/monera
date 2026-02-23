@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer'
+import { Resend } from 'resend'
 
 interface EmailOptions {
   to: string
@@ -17,48 +17,31 @@ function escapeHtml(text: string): string {
     .replace(/'/g, '&#039;')
 }
 
-// Email configuration
-const createTransporter = () => {
-  const emailConfig = {
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  }
-
-  // If no SMTP credentials, use a test account (for development)
-  if (!emailConfig.auth.user || !emailConfig.auth.pass) {
-    console.warn('⚠️  SMTP credentials not configured. Using test account.')
-    return nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      secure: false,
-      auth: {
-        user: 'test@ethereal.email',
-        pass: 'test',
-      },
-    })
-  }
-
-  return nodemailer.createTransport(emailConfig)
-}
+// Initialize Resend (edge-compatible)
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function sendEmail(options: EmailOptions) {
   try {
-    const transporter = createTransporter()
-    const info = await transporter.sendMail({
-      from: process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@monera.com',
+    if (!process.env.RESEND_API_KEY) {
+      console.warn('⚠️  RESEND_API_KEY not configured. Email not sent.')
+      return { success: false, error: 'Email service not configured' }
+    }
+
+    const { data, error } = await resend.emails.send({
+      from: process.env.SMTP_FROM || 'Monera <noreply@monera.com>',
       to: options.to,
       subject: options.subject,
-      text: options.text,
       html: options.html,
+      text: options.text,
     })
 
-    console.log('Email sent:', info.messageId)
-    return { success: true, messageId: info.messageId }
+    if (error) {
+      console.error('Error sending email:', error)
+      throw error
+    }
+
+    console.log('Email sent:', data?.id)
+    return { success: true, messageId: data?.id }
   } catch (error) {
     console.error('Error sending email:', error)
     throw error

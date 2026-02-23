@@ -5,6 +5,7 @@ import { generateOTP, getCodeExpirationTime, canResendCode, getResendCooldownSec
 import { sendEmail, emailTemplates } from '@/lib/email'
 import { createAdminClient } from '@/lib/supabase/server'
 export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
 
 const MAX_RESEND_PER_10MIN = 3
 const RESEND_COOLDOWN_SECONDS = 60

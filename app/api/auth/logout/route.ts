@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { successResponse } from '@/lib/api-utils'
 export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
 
 export async function POST(request: NextRequest) {
   const response = successResponse({ message: 'Logged out successfully' })

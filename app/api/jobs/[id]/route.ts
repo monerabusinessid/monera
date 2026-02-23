@@ -5,6 +5,7 @@ import { getSupabaseClient } from '@/lib/supabase/server-helper'
 import { createAdminClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
 
 
 export async function GET(

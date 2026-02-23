@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { getAuthUser, successResponse, handleApiError, errorResponse } from '@/lib/api-utils'
 import { getSupabaseClient } from '@/lib/supabase/server-helper'
 export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
 
 export async function GET(request: NextRequest) {
   try {

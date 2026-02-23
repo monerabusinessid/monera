@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 import { successResponse, errorResponse, handleApiError } from '@/lib/api-utils'
-import bcrypt from 'bcryptjs'
+import { verifyPassword, hashPassword } from '@/lib/auth'
 export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
 
 const resetPasswordSchema = z.object({
   token: z.string(),
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Hash new password
-    const passwordHash = await bcrypt.hash(validatedData.password, 10)
+    const passwordHash = await await hashPassword(validatedData.password, 10)
 
     // Update password in auth.users
     const { error: updateError } = await supabase.auth.admin.updateUserById(

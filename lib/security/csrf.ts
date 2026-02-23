@@ -1,11 +1,17 @@
 import { cookies } from 'next/headers'
-import { randomBytes } from 'crypto'
 
 const CSRF_TOKEN_NAME = 'csrf-token'
 const CSRF_TOKEN_EXPIRY = 60 * 60 * 1000 // 1 hour
 
+// Edge-compatible random token generation
+function generateRandomToken(): string {
+  const array = new Uint8Array(32)
+  crypto.getRandomValues(array)
+  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('')
+}
+
 export async function generateCSRFToken(): Promise<string> {
-  const token = randomBytes(32).toString('hex')
+  const token = generateRandomToken()
   const cookieStore = await cookies()
   
   cookieStore.set(CSRF_TOKEN_NAME, token, {

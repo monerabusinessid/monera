@@ -1,7 +1,7 @@
-import crypto from 'crypto';
-
+// Edge-compatible verification utilities
 export function generateVerificationCode(): string {
-  return crypto.randomInt(100000, 999999).toString();
+  // Use Math.random for edge compatibility
+  return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
 export function isCodeExpired(expiresAt: Date): boolean {

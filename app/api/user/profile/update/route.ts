@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/server-helper'
 import { getAuthUser, successResponse, errorResponse } from '@/lib/api-utils'
 import { z } from 'zod'
 export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
 
 const updateProfileSchema = z.object({
   firstName: z.string().min(1).optional(),

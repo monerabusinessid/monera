@@ -3,6 +3,7 @@ import { getAuthUser, successResponse, handleApiError, errorResponse } from '@/l
 import { getSupabaseClient } from '@/lib/supabase/server-helper'
 
 export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
 
 
 export async function PUT(

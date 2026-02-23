@@ -5,6 +5,7 @@ import { generateOTP, getCodeExpirationTime } from '@/lib/utils/otp'
 import { sendEmail, emailTemplates } from '@/lib/email'
 import { createAdminClient } from '@/lib/supabase/server'
 export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
 
 export async function POST(request: NextRequest) {
   try {

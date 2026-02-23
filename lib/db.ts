@@ -1,12 +1,3 @@
-import { PrismaClient } from '@prisma/client'
-
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined
-}
-
-const prisma = globalForPrisma.prisma ?? new PrismaClient()
-
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
-
-export { prisma, prisma as db }
-export default prisma
+// Supabase-based database client (edge-compatible)
+export { db, supabase as prisma, supabase } from './supabase-db'
+export { db as default } from './supabase-db'

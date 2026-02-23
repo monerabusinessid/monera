@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server-helper'
 import { getAuthUser } from '@/lib/api-utils'
 export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
 
 export async function PUT(req: NextRequest) {
   try {

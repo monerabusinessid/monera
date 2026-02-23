@@ -3,6 +3,7 @@ import { getAuthUser, successResponse, handleApiError, errorResponse } from '@/l
 import { getSupabaseClient } from '@/lib/supabase/server-helper'
 import { z } from 'zod'
 export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
 
 const createMessageSchema = z.object({
   conversationId: z.string().optional(),

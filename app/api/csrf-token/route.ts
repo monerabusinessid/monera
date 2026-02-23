@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { generateCSRFToken } from '@/lib/security/csrf'
 import { successResponse } from '@/lib/api-utils'
 export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
 
 export async function GET(request: NextRequest) {
   try {

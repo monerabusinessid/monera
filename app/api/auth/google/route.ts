@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { generateToken } from '@/lib/auth'
 export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
 
 export async function GET(request: NextRequest) {
   try {
@@ -371,7 +372,7 @@ export async function GET(request: NextRequest) {
     console.log('[Google OAuth] Profile verified after', verifyRetries + 1, 'attempt(s):', { id: verifyProfile.id, role: verifyProfile.role })
 
     // Generate JWT token
-    const token = generateToken({
+    const token = await generateToken({
       userId: userId,
       email: userInfo.email,
       role: role as any,

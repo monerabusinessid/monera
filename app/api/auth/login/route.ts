@@ -4,6 +4,7 @@ import { loginSchema } from '@/lib/validations'
 import { successResponse, errorResponse, handleApiError } from '@/lib/api-utils'
 import { generateToken } from '@/lib/auth'
 import { validateCSRFTokenFromRequest } from '@/lib/security/csrf'
+export const runtime = 'edge'
 export const dynamic = 'force-dynamic'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -110,7 +111,7 @@ export async function POST(request: NextRequest) {
       }, { status: 403 })
     }
 
-    const token = generateToken({
+    const token = await generateToken({
       userId: authData.user.id,
       email: authData.user.email!,
       role: profile.role,
