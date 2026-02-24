@@ -1190,7 +1190,7 @@ export default function HomePage() {
               const isCategoryIconUrl = typeof category.icon === 'string' && (category.icon.startsWith('http') || category.icon.startsWith('/'))
               
               // Get icon based on category name
-              let categoryIconSrc = customIcons.user
+              let categoryIconSrc: string | JSX.Element = customIcons.user
               if (isCategoryIconUrl) {
                 categoryIconSrc = category.icon
               } else if (category.name.toLowerCase().includes('developer') || category.name.toLowerCase().includes('programmer')) {
@@ -1219,10 +1219,10 @@ export default function HomePage() {
               >
                 <Card className={`text-center hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:border-brand-purple hover:bg-gradient-to-br hover:from-purple-50 hover:to-yellow-50/50 hover:-translate-y-3 hover:scale-105 rounded-2xl bg-white h-full flex flex-col`}>
                   <CardContent className="p-6 flex flex-col items-center justify-center flex-1">
-                    {isCategoryIconUrl ? (
-                      <img src={categoryIconSrc as string} alt={`${category.name} icon`} className="w-10 h-10 mb-3 group-hover:scale-110 transition-transform duration-300" loading="lazy" decoding="async" />
+                    {typeof categoryIconSrc === 'string' ? (
+                      <img src={categoryIconSrc} alt={`${category.name} icon`} className="w-10 h-10 mb-3 group-hover:scale-110 transition-transform duration-300" loading="lazy" decoding="async" />
                     ) : (
-                      <div className="w-10 h-10 mb-3 group-hover:scale-110 transition-transform duration-300">{categoryIconSrc as any}</div>
+                      <div className="w-10 h-10 mb-3 group-hover:scale-110 transition-transform duration-300">{categoryIconSrc}</div>
                     )}
                     <h3 className="font-bold text-base text-gray-800 group-hover:text-brand-purple transition-colors duration-300 mb-1">
                       {category.name}
