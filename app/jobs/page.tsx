@@ -181,12 +181,15 @@ export default function JobsPage() {
         <>
           <div className="fixed inset-0 bg-black/50 z-50" onClick={() => setSelectedJob(null)} />
           <div 
-            className="fixed bottom-0 md:right-0 md:top-0 left-0 right-0 md:left-auto h-[90vh] md:h-full w-full md:w-[800px] bg-white shadow-2xl z-50 md:overflow-y-auto rounded-t-3xl md:rounded-none animate-slide-up md:animate-none flex flex-col"
+            className="fixed bottom-0 md:right-0 md:top-0 left-0 right-0 md:left-auto h-[90vh] md:h-full w-full md:w-[800px] bg-white shadow-2xl z-50 md:overflow-y-auto rounded-t-3xl md:rounded-none flex flex-col transition-transform duration-[400ms] ease-out"
+            style={{
+              transform: selectedJob ? 'translateY(0)' : 'translateY(100%)'
+            }}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
           >
-            <div className="md:hidden w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-3 mb-2"></div>
+            <div className="md:hidden w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-3 mb-2 cursor-pointer" onClick={() => setSelectedJob(null)}></div>
             <div className="sticky top-0 bg-white border-b z-10">
               <div className="flex items-start justify-between gap-3 p-4 md:p-6">
                 <h2 className="text-base md:text-2xl font-bold text-gray-900 flex-1 leading-tight">{selectedJob.title}</h2>
@@ -295,12 +298,15 @@ export default function JobsPage() {
         <>
           <div className="fixed inset-0 bg-black/50 z-50" onClick={() => setShowApplyModal(false)} />
           <div 
-            className="fixed bottom-0 md:right-0 md:top-0 left-0 right-0 md:left-auto h-[85vh] md:h-full w-full md:w-[500px] bg-white shadow-2xl z-50 transform transition-transform duration-300 rounded-t-3xl md:rounded-none"
+            className="fixed bottom-0 md:right-0 md:top-0 left-0 right-0 md:left-auto h-[85vh] md:h-full w-full md:w-[500px] bg-white shadow-2xl z-50 rounded-t-3xl md:rounded-none transition-transform duration-[400ms] ease-out"
+            style={{
+              transform: showApplyModal ? 'translateY(0)' : 'translateY(100%)'
+            }}
             onTouchStart={handleApplyTouchStart}
             onTouchMove={handleApplyTouchMove}
             onTouchEnd={handleApplyTouchEnd}
           >
-            <div className="md:hidden w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-3 mb-2"></div>
+            <div className="md:hidden w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-3 mb-2 cursor-pointer" onClick={() => setShowApplyModal(false)}></div>
             <div className="flex flex-col h-full">
               <div className="flex items-center justify-between p-4 md:p-6 border-b">
                 <h2 className="text-lg md:text-2xl font-bold text-gray-900">Apply for Job</h2>

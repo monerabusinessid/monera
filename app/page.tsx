@@ -152,7 +152,79 @@ export default function HomePage() {
           </linearGradient>
         </defs>
       </svg>
-    )
+    ),
+    video: (
+      <svg className="w-full h-full" viewBox="0 0 24 24" fill="none">
+        <rect x="2" y="5" width="14" height="14" rx="2" fill="url(#gradientVideo)" opacity="0.3"/>
+        <path d="M16 8.5l5-3v13l-5-3" fill="url(#gradientVideo)"/>
+        <defs>
+          <linearGradient id="gradientVideo" x1="0" y1="0" x2="24" y2="24">
+            <stop offset="0%" stopColor="#6F03CD"/>
+            <stop offset="100%" stopColor="#FFC107"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    ),
+    writer: (
+      <svg className="w-full h-full" viewBox="0 0 24 24" fill="none">
+        <path d="M4 20h16M4 16h12M4 12h16M4 8h12" stroke="url(#gradientWriter)" strokeWidth="2.5" strokeLinecap="round"/>
+        <defs>
+          <linearGradient id="gradientWriter" x1="0" y1="0" x2="24" y2="24">
+            <stop offset="0%" stopColor="#FFC107"/>
+            <stop offset="100%" stopColor="#6F03CD"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    ),
+    support: (
+      <svg className="w-full h-full" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="url(#gradientSupport)" strokeWidth="2"/>
+        <path d="M9 9c0-1.5 1-3 3-3s3 1.5 3 3c0 2-3 2-3 4m0 3v.5" stroke="url(#gradientSupport)" strokeWidth="2" strokeLinecap="round"/>
+        <defs>
+          <linearGradient id="gradientSupport" x1="0" y1="0" x2="24" y2="24">
+            <stop offset="0%" stopColor="#6F03CD"/>
+            <stop offset="100%" stopColor="#FFC107"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    ),
+    marketing: (
+      <svg className="w-full h-full" viewBox="0 0 24 24" fill="none">
+        <path d="M5 8l4-4 4 4" stroke="url(#gradientMarketing)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M9 4v8c0 3 2 5 5 5h5" stroke="url(#gradientMarketing)" strokeWidth="2" strokeLinecap="round"/>
+        <circle cx="19" cy="17" r="3" fill="url(#gradientMarketing)"/>
+        <defs>
+          <linearGradient id="gradientMarketing" x1="0" y1="0" x2="24" y2="24">
+            <stop offset="0%" stopColor="#FFC107"/>
+            <stop offset="100%" stopColor="#6F03CD"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    ),
+    qa: (
+      <svg className="w-full h-full" viewBox="0 0 24 24" fill="none">
+        <path d="M9 11l3 3 8-8" stroke="url(#gradientQA)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M20 12v6a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h9" stroke="url(#gradientQA)" strokeWidth="2" strokeLinecap="round"/>
+        <defs>
+          <linearGradient id="gradientQA" x1="0" y1="0" x2="24" y2="24">
+            <stop offset="0%" stopColor="#6F03CD"/>
+            <stop offset="100%" stopColor="#FFC107"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    ),
+    finance: (
+      <svg className="w-full h-full" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="url(#gradientFinance)" strokeWidth="2"/>
+        <path d="M12 6v12M15 9h-4.5a1.5 1.5 0 000 3h3a1.5 1.5 0 010 3H9" stroke="url(#gradientFinance)" strokeWidth="2" strokeLinecap="round"/>
+        <defs>
+          <linearGradient id="gradientFinance" x1="0" y1="0" x2="24" y2="24">
+            <stop offset="0%" stopColor="#FFC107"/>
+            <stop offset="100%" stopColor="#6F03CD"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    ),
   }
   const howItWorksIcons = {
     profile: customIcons.user,
@@ -183,6 +255,13 @@ export default function HomePage() {
   useEffect(() => {
     if (headerSettings.hero_image_url) {
       console.log('Header image URL updated:', headerSettings.hero_image_url)
+      // Preload hero image
+      const link = document.createElement('link')
+      link.rel = 'preload'
+      link.as = 'image'
+      link.href = headerSettings.hero_image_url
+      link.fetchPriority = 'high'
+      document.head.appendChild(link)
     }
   }, [headerSettings.hero_image_url])
   
@@ -456,8 +535,51 @@ export default function HomePage() {
     },
   ]
   const categoryIconMap: Record<string, any> = {
-    Developers: customIcons.code,
-    Designers: customIcons.design,
+    'Developers': customIcons.code,
+    'Web Developer': customIcons.code,
+    'Software Developer': customIcons.code,
+    'Full Stack Developer': customIcons.code,
+    'Frontend Developer': customIcons.code,
+    'Backend Developer': customIcons.code,
+    'Mobile Developer': customIcons.code,
+    
+    'Designers': customIcons.design,
+    'Graphic Designer': customIcons.design,
+    'UI/UX Designer': customIcons.design,
+    'Product Designer': customIcons.design,
+    'Web Designer': customIcons.design,
+    
+    'Video Editor': customIcons.video,
+    'Content Creator': customIcons.video,
+    'Animator': customIcons.video,
+    
+    'Social Media Manager': customIcons.marketing,
+    'Digital Marketer': customIcons.marketing,
+    'Marketing Manager': customIcons.marketing,
+    'SEO Specialist': customIcons.marketing,
+    
+    'Content Writer': customIcons.writer,
+    'Copywriter': customIcons.writer,
+    'Technical Writer': customIcons.writer,
+    'Blog Writer': customIcons.writer,
+    
+    'Customer Support': customIcons.support,
+    'Customer Service': customIcons.support,
+    'Support Representative': customIcons.support,
+    'CSR': customIcons.support,
+    
+    'Executive Assistant': customIcons.office,
+    'Virtual Assistant': customIcons.office,
+    'Admin': customIcons.office,
+    'Data Entry': customIcons.office,
+    
+    'QA Engineer': customIcons.qa,
+    'Quality Assurance': customIcons.qa,
+    'Tester': customIcons.qa,
+    
+    'Accountant': customIcons.finance,
+    'Bookkeeper': customIcons.finance,
+    'Finance': customIcons.finance,
   }
 
   // clientTestimonials, talentTestimonials, trustedCompanies now come from database via state
@@ -579,13 +701,14 @@ export default function HomePage() {
       {/* Hero Section */}
       <section
         ref={heroRef}
-        className="relative min-h-[100svh] text-white -mt-20 md:-mt-24 pt-56 md:pt-44 pb-12 sm:pb-16 md:pb-20 overflow-hidden flex items-center"
+        className="relative min-h-[100svh] text-white -mt-20 md:-mt-24 pt-32 md:pt-44 pb-12 sm:pb-16 md:pb-20 overflow-hidden flex items-center"
         style={{
           background: headerSettings.hero_image_url
             ? `linear-gradient(135deg, rgba(111, 3, 205, 0.95) 0%, rgba(60, 16, 120, 0.85) 50%, rgba(20, 14, 60, 0.15) 85%), url('${headerSettings.hero_image_url}')`
             : 'linear-gradient(135deg, #6f03cd 0%, #5a02a8 50%, #4a0288 100%)',
           backgroundSize: 'cover',
-          backgroundPosition: '75% center'
+          backgroundPosition: '75% center',
+          willChange: 'auto'
         }}
         aria-label="Hero section"
       >
@@ -603,7 +726,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 items-center max-w-7xl mx-auto">
             {/* Left Side - Headline & Buttons */}
             <div className="text-left scroll-reveal-left">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-3 md:mb-4 font-headline leading-[1.1] tracking-tight animate-fade-in text-white">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-3 md:mb-4 font-headline leading-[1.1] tracking-tight animate-slide-left text-white">
                 {headerSettings.hero_title && headerSettings.hero_title.trim() !== '' ? headerSettings.hero_title : 'Hire Top 5% Indonesian Remote Talent'}
                 {headerSettings.hero_subtitle && headerSettings.hero_subtitle.trim() !== '' ? (
                   <>
@@ -621,12 +744,12 @@ export default function HomePage() {
                   </>
                 )}
               </h1>
-              <p className="text-base sm:text-lg md:text-xl text-purple-100 mb-6 md:mb-8 leading-relaxed max-w-2xl opacity-90 animate-slide-up">
+              <p className="text-base sm:text-lg md:text-xl text-purple-100 mb-6 md:mb-8 leading-relaxed max-w-2xl opacity-90 animate-slide-left" style={{ animationDelay: '0.2s' }}>
                 {headerSettings.hero_description && headerSettings.hero_description.trim() !== '' 
                   ? headerSettings.hero_description 
                   : 'Build your dedicated remote team with pre-vetted Indonesian professionals. Complete HR & payroll management. 30-day replacement guarantee.'}
               </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center mb-6 sm:mb-8 md:mb-10">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center mb-6 sm:mb-8 md:mb-10 animate-slide-left" style={{ animationDelay: '0.4s' }}>
               {isCalendarExternal ? (
                 <a href={calendarUrl} target="_blank" rel="noopener noreferrer" className="group w-full sm:w-auto">
                   <Button size="lg" className="w-full sm:w-auto bg-brand-yellow text-gray-900 hover:bg-yellow-400 font-bold text-sm sm:text-base md:text-lg px-6 sm:px-8 md:px-10 py-4 sm:py-5 md:py-6 shadow-2xl hover:shadow-yellow-500/40 hover:scale-105 active:scale-95 transition-all duration-300 rounded-2xl">
@@ -667,7 +790,7 @@ export default function HomePage() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 max-w-6xl mx-auto">
-            <Card className="border border-gray-200 hover:shadow-2xl transition-all duration-300 rounded-2xl">
+            <Card className="border border-gray-200 hover:shadow-2xl transition-all duration-300 rounded-2xl animate-scale-in" style={{ animationDelay: '0.1s' }}>
               <CardHeader>
                 <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
                   <div className="w-9 h-9">{customIcons.office}</div>
@@ -698,7 +821,7 @@ export default function HomePage() {
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-brand-purple hover:shadow-2xl transition-all duration-300 rounded-2xl bg-gradient-to-br from-purple-50 to-yellow-50/30">
+            <Card className="border-2 border-brand-purple hover:shadow-2xl transition-all duration-300 rounded-2xl bg-gradient-to-br from-purple-50 to-yellow-50/30 animate-scale-in" style={{ animationDelay: '0.2s' }}>
               <CardHeader>
                 <div className="w-16 h-16 bg-brand-purple rounded-full flex items-center justify-center mb-4">
                   <div className="w-9 h-9">{customIcons.design}</div>
@@ -730,7 +853,7 @@ export default function HomePage() {
               </CardContent>
             </Card>
 
-            <Card className="border border-gray-200 hover:shadow-2xl transition-all duration-300 rounded-2xl">
+            <Card className="border border-gray-200 hover:shadow-2xl transition-all duration-300 rounded-2xl animate-scale-in" style={{ animationDelay: '0.3s' }}>
               <CardHeader>
                 <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
                   <div className="w-9 h-9">{customIcons.code}</div>
@@ -793,7 +916,7 @@ export default function HomePage() {
           
           <div className="max-w-5xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
-              <Card className="border border-gray-200 rounded-2xl bg-white">
+              <Card className="border border-gray-200 rounded-2xl bg-white animate-slide-up" style={{ animationDelay: '0.1s' }}>
                 <CardHeader>
                   <div className="text-center">
                     <div className="inline-block px-3 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full mb-3">LOCAL HIRE</div>
@@ -822,7 +945,7 @@ export default function HomePage() {
                 </CardContent>
               </Card>
 
-              <Card className="border border-gray-200 rounded-2xl bg-white">
+              <Card className="border border-gray-200 rounded-2xl bg-white animate-slide-up" style={{ animationDelay: '0.2s' }}>
                 <CardHeader>
                   <div className="text-center">
                     <div className="inline-block px-3 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded-full mb-3">FREELANCE PLATFORMS</div>
@@ -851,7 +974,7 @@ export default function HomePage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-2 border-brand-purple rounded-2xl bg-gradient-to-br from-purple-50 to-yellow-50/30 shadow-xl">
+              <Card className="border-2 border-brand-purple rounded-2xl bg-gradient-to-br from-purple-50 to-yellow-50/30 shadow-xl animate-slide-up" style={{ animationDelay: '0.3s' }}>
                 <CardHeader>
                   <div className="text-center">
                     <div className="inline-block px-3 py-1 bg-brand-yellow text-gray-900 text-xs font-bold rounded-full mb-3">BEST VALUE</div>
@@ -1009,7 +1132,7 @@ export default function HomePage() {
                 const isAvatarImage = testimonial.avatar && (testimonial.avatar.startsWith('http') || testimonial.avatar.startsWith('/'))
                 const avatarInitial = (testimonial.name || 'U')[0].toUpperCase()
                 return (
-                  <Card key={idx} className={`border border-gray-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-3 bg-white rounded-2xl shadow-lg scroll-reveal-scale stagger-${idx + 1}`}>
+                  <Card key={idx} className={`border border-gray-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-3 bg-white rounded-2xl shadow-lg scroll-reveal-scale stagger-${idx + 1} animate-slide-up`} style={{ animationDelay: `${idx * 0.15}s` }}>
                     <CardHeader className="pb-4">
                       <div className="flex items-center gap-4 mb-3">
                         {isAvatarImage ? (
@@ -1051,28 +1174,50 @@ export default function HomePage() {
 
 
       {/* Available Roles Section */}
-      <section ref={categoriesRef} className="py-12 sm:py-16 md:py-20" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #fafafa 100%)' }}>
+      <section ref={categoriesRef} className="py-12 sm:py-16 md:py-20 overflow-hidden" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #fafafa 100%)' }}>
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 scroll-reveal">
-            <div className="inline-block px-4 py-2 bg-purple-50 rounded-full mb-4">
+            <div className="inline-block px-4 py-2 bg-purple-50 rounded-full mb-4 animate-fade-in">
               <span className="text-sm font-semibold text-brand-purple">AVAILABLE ROLES</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 font-headline">Hire Across All Skill Categories</h2>
-            <p className="text-lg text-gray-600">From operations to tech - find the perfect fit for your team</p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 font-headline animate-slide-up" style={{ animationDelay: '0.1s' }}>Hire Across All Skill Categories</h2>
+            <p className="text-lg text-gray-600 animate-slide-up" style={{ animationDelay: '0.2s' }}>From operations to tech - find the perfect fit for your team</p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 max-w-6xl mx-auto">
-            {talentCategories.map((category, idx) => {
+          <div className="overflow-x-hidden relative py-4">
+            <div className="flex gap-3 sm:gap-4 animate-scroll-left" style={{ width: 'max-content' }}>
+              {[...talentCategories, ...talentCategories].map((category, idx) => {
               const staggerClass = `stagger-${(idx % 6) + 1}`
               const isCategoryIconUrl = typeof category.icon === 'string' && (category.icon.startsWith('http') || category.icon.startsWith('/'))
-              const categoryIconSrc = isCategoryIconUrl
-                ? category.icon
-                : (categoryIconMap[category.name] || customIcons.user)
+              
+              // Get icon based on category name
+              let categoryIconSrc = customIcons.user
+              if (isCategoryIconUrl) {
+                categoryIconSrc = category.icon
+              } else if (category.name.toLowerCase().includes('developer') || category.name.toLowerCase().includes('programmer')) {
+                categoryIconSrc = customIcons.code
+              } else if (category.name.toLowerCase().includes('designer') || category.name.toLowerCase().includes('design')) {
+                categoryIconSrc = customIcons.design
+              } else if (category.name.toLowerCase().includes('video') || category.name.toLowerCase().includes('editor')) {
+                categoryIconSrc = customIcons.video
+              } else if (category.name.toLowerCase().includes('writer') || category.name.toLowerCase().includes('content')) {
+                categoryIconSrc = customIcons.writer
+              } else if (category.name.toLowerCase().includes('marketing') || category.name.toLowerCase().includes('social')) {
+                categoryIconSrc = customIcons.marketing
+              } else if (category.name.toLowerCase().includes('support') || category.name.toLowerCase().includes('customer')) {
+                categoryIconSrc = customIcons.support
+              } else if (category.name.toLowerCase().includes('data') || category.name.toLowerCase().includes('analyst')) {
+                categoryIconSrc = customIcons.brain
+              } else if (category.name.toLowerCase().includes('project') || category.name.toLowerCase().includes('manager')) {
+                categoryIconSrc = customIcons.target
+              } else if (categoryIconMap[category.name]) {
+                categoryIconSrc = categoryIconMap[category.name]
+              }
               return (
               <div
-                key={category.name}
-                className="group"
+                key={`${category.name}-${idx}`}
+                className="group flex-shrink-0 w-[160px]"
               >
-                <Card className={`text-center hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:border-brand-purple hover:bg-gradient-to-br hover:from-purple-50 hover:to-yellow-50/50 hover:-translate-y-3 hover:scale-105 scroll-reveal-scale ${staggerClass} rounded-2xl bg-white h-full flex flex-col`}>
+                <Card className={`text-center hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:border-brand-purple hover:bg-gradient-to-br hover:from-purple-50 hover:to-yellow-50/50 hover:-translate-y-3 hover:scale-105 rounded-2xl bg-white h-full flex flex-col`}>
                   <CardContent className="p-6 flex flex-col items-center justify-center flex-1">
                     {isCategoryIconUrl ? (
                       <img src={categoryIconSrc as string} alt={`${category.name} icon`} className="w-10 h-10 mb-3 group-hover:scale-110 transition-transform duration-300" loading="lazy" decoding="async" />
@@ -1088,6 +1233,7 @@ export default function HomePage() {
               </div>
               )
             })}
+            </div>
           </div>
         </div>
       </section>
@@ -1187,7 +1333,7 @@ export default function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-              <div className="scroll-reveal-scale stagger-1 bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-300 hover:scale-105 hover:-translate-y-2">
+              <div className="scroll-reveal-scale stagger-1 bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-300 hover:scale-105 hover:-translate-y-2 animate-slide-up" style={{ animationDelay: '0.1s' }}>
                 <div className="flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-6 backdrop-blur-sm">
                   <span className="text-3xl font-bold text-white">1</span>
                 </div>
@@ -1196,7 +1342,7 @@ export default function HomePage() {
                 <p className="text-purple-100 leading-relaxed">Book a free consultation. Share your requirements, budget, and team goals.</p>
               </div>
 
-              <div className="scroll-reveal-scale stagger-2 bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-300 hover:scale-105 hover:-translate-y-2">
+              <div className="scroll-reveal-scale stagger-2 bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-300 hover:scale-105 hover:-translate-y-2 animate-slide-up" style={{ animationDelay: '0.2s' }}>
                 <div className="flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-6 backdrop-blur-sm">
                   <span className="text-3xl font-bold text-white">2</span>
                 </div>
@@ -1205,7 +1351,7 @@ export default function HomePage() {
                 <p className="text-purple-100 leading-relaxed">Get 3 qualified candidates within 48 hours. Interview and choose the best fit.</p>
               </div>
 
-              <div className="scroll-reveal-scale stagger-3 bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-300 hover:scale-105 hover:-translate-y-2">
+              <div className="scroll-reveal-scale stagger-3 bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-300 hover:scale-105 hover:-translate-y-2 animate-slide-up" style={{ animationDelay: '0.3s' }}>
                 <div className="flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-6 backdrop-blur-sm">
                   <span className="text-3xl font-bold text-white">3</span>
                 </div>
@@ -1214,7 +1360,7 @@ export default function HomePage() {
                 <p className="text-purple-100 leading-relaxed">We handle contracts, equipment, and setup. You focus on team integration.</p>
               </div>
 
-              <div className="scroll-reveal-scale stagger-4 bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-300 hover:scale-105 hover:-translate-y-2">
+              <div className="scroll-reveal-scale stagger-4 bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-300 hover:scale-105 hover:-translate-y-2 animate-slide-up" style={{ animationDelay: '0.4s' }}>
                 <div className="flex items-center justify-center w-16 h-16 bg-brand-yellow/80 rounded-full mb-6 backdrop-blur-sm">
                   <span className="text-3xl font-bold text-gray-900">4</span>
                 </div>
@@ -1241,7 +1387,7 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8 max-w-5xl mx-auto">
-            <Card className="border border-gray-200 hover:border-brand-purple hover:shadow-2xl transition-all duration-300 rounded-2xl">
+            <Card className="border border-gray-200 hover:border-brand-purple hover:shadow-2xl transition-all duration-300 rounded-2xl animate-slide-left" style={{ animationDelay: '0.1s' }}>
               <CardHeader>
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
@@ -1274,7 +1420,7 @@ export default function HomePage() {
               </CardContent>
             </Card>
 
-            <Card className="border border-gray-200 hover:border-brand-purple hover:shadow-2xl transition-all duration-300 rounded-2xl">
+            <Card className="border border-gray-200 hover:border-brand-purple hover:shadow-2xl transition-all duration-300 rounded-2xl animate-slide-right" style={{ animationDelay: '0.2s' }}>
               <CardHeader>
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">

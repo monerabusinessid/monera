@@ -50,10 +50,17 @@ export async function sendEmail(options: EmailOptions) {
 
 // Email templates
 export const emailTemplates = {
-  welcome: (name: string) => ({
+  welcome: (name: string) => {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const logoUrl = process.env.NEXT_PUBLIC_EMAIL_LOGO_URL || `${appUrl}/images/logo.png`
+    return {
     subject: 'Welcome to Monera!',
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <img src="${logoUrl}" alt="Monera" style="height: 50px; width: auto;" />
+          <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">Hire Top 5% Indonesian Remote Talent</p>
+        </div>
         <h1>Welcome to Monera, ${name}!</h1>
         <p>Thank you for joining our talent hunting platform. We're excited to have you on board.</p>
         <p>Get started by completing your profile and exploring opportunities.</p>
@@ -61,7 +68,8 @@ export const emailTemplates = {
       </div>
     `,
     text: `Welcome to Monera, ${name}! Thank you for joining our talent hunting platform.`,
-  }),
+  }
+  },
 
   applicationReceived: (candidateName: string, jobTitle: string, companyName: string) => ({
     subject: `Application Received - ${jobTitle}`,
@@ -112,18 +120,46 @@ export const emailTemplates = {
   }),
 
   passwordReset: (name: string, resetToken: string) => {
-    const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const resetUrl = `${appUrl}/reset-password?token=${resetToken}`
+    const logoUrl = process.env.NEXT_PUBLIC_EMAIL_LOGO_URL || `${appUrl}/images/logo.png`
     return {
       subject: 'Password Reset Request',
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1>Password Reset Request</h1>
-          <p>Hi ${name},</p>
-          <p>You requested to reset your password. Click the link below to reset it:</p>
-          <p><a href="${resetUrl}" style="background-color: #0070f3; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Reset Password</a></p>
-          <p>This link will expire in 1 hour.</p>
-          <p>If you didn't request this, please ignore this email.</p>
-          <p>Best regards,<br>The Monera Team</p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <img src="${logoUrl}" alt="Monera" style="height: 50px; width: auto; display: inline-block; margin-bottom: 6px;" />
+            <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">Hire Top 5% Indonesian Remote Talent</p>
+          </div>
+          
+          <div style="background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); padding: 30px; border-radius: 12px; margin-bottom: 30px;">
+            <h2 style="color: #ffffff; margin: 0 0 20px 0; font-size: 24px;">Password Reset Request</h2>
+            <p style="color: #e9d5ff; margin: 0; font-size: 16px; line-height: 1.6;">
+              Hi ${name},<br><br>
+              You requested to reset your password. Click the link below to reset it:
+            </p>
+          </div>
+          
+          <div style="text-align: center; margin-bottom: 30px;">
+            <a href="${resetUrl}" style="background-color: #7c3aed; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px;">
+              Reset Password
+            </a>
+          </div>
+          
+          <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #f59e0b;">
+            <p style="color: #92400e; margin: 0; font-size: 14px; line-height: 1.6;">
+              <strong>⚠️ Note:</strong> This link will expire in 1 hour.
+            </p>
+          </div>
+          
+          <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 30px;">
+            <p style="color: #666; margin: 0 0 10px 0; font-size: 14px; line-height: 1.6;">
+              If you didn't request this, please ignore this email.
+            </p>
+            <p style="color: #999; margin: 0; font-size: 12px;">
+              This is an automated message from Monera. Please do not reply to this email.
+            </p>
+          </div>
         </div>
       `,
       text: `Hi ${name}, Click this link to reset your password: ${resetUrl}`,
@@ -192,14 +228,14 @@ export const emailTemplates = {
   emailVerification: (name: string, code: string, email: string) => {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
     const verifyUrl = `${appUrl}/verify-email?email=${encodeURIComponent(email)}`
-    const logoUrl = `${appUrl}/images/logo.png`
+    const logoUrl = `${appUrl}/favicon.png`
     return {
       subject: 'Verify Your Email - Monera',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
           <div style="text-align: center; margin-bottom: 30px;">
-            <img src="${logoUrl}" alt="Monera" style="height: 40px; width: auto; display: inline-block; margin-bottom: 6px;" />
-            <p style="color: #666; margin: 5px 0 0 0;">Hire vetted remote talent</p>
+            <img src="${logoUrl}" alt="Monera" style="height: 50px; width: auto; display: inline-block; margin-bottom: 6px;" />
+            <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">Hire Top 5% Indonesian Remote Talent</p>
           </div>
           
           <div style="background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); padding: 30px; border-radius: 12px; margin-bottom: 30px;">

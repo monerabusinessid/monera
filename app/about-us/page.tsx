@@ -115,13 +115,15 @@ export default function AboutUsPage() {
               </div>
               <div className="bg-white/10 backdrop-blur rounded-xl p-6 text-center hover:bg-white/20 transition-colors">
                 <h3 className="font-bold mb-2 text-lg">Email</h3>
-                <a href="mailto:business@monera.com" className="text-brand-yellow hover:underline font-semibold">
-                  business@monera.com
+                <a href="mailto:info@monera.work" className="text-brand-yellow hover:underline font-semibold">
+                  info@monera.work
                 </a>
               </div>
               <div className="bg-white/10 backdrop-blur rounded-xl p-6 text-center hover:bg-white/20 transition-colors">
                 <h3 className="font-bold mb-2 text-lg">WhatsApp</h3>
-                <p className="text-purple-100">+62 851-6139-1439</p>
+                <a href="https://wa.me/6285161391439" target="_blank" rel="noopener noreferrer" className="text-brand-yellow hover:underline font-semibold">
+                  +62 851-6139-1439
+                </a>
               </div>
             </div>
 

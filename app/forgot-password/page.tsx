@@ -44,59 +44,70 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h1 className="text-3xl font-bold text-center">Forgot Password</h1>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Enter your email address and we'll send you a link to reset your password.
-          </p>
+    <div className="min-h-screen bg-white">
+      {/* Hero Section */}
+      <section className="relative bg-gradient-to-br from-brand-purple via-purple-600 to-purple-700 text-white pt-56 md:pt-44 pb-40 -mt-20 md:-mt-24 overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzBoLTJWMGgydjMwem0wIDMwdi0yaC0ydjJoMnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-20"></div>
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 text-white drop-shadow-lg">
+              Forgot Password
+            </h1>
+            <p className="text-xl md:text-2xl text-white/90 font-medium leading-relaxed max-w-2xl mx-auto">
+              Enter your email and we'll send you a reset link
+            </p>
+          </div>
         </div>
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent"></div>
+      </section>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Reset Password</CardTitle>
-            <CardDescription>
-              We'll send you a password reset link via email
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <div className="p-3 bg-red-50 text-red-700 rounded-md text-sm">{error}</div>
-              )}
+      <div className="container mx-auto px-4 -mt-20 relative z-20 pb-20">
+        <div className="max-w-md mx-auto">
+          <Card className="shadow-2xl">
+            <CardHeader>
+              <CardTitle>Reset Password</CardTitle>
+              <CardDescription>
+                We'll send you a password reset link via email
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {error && (
+                  <div className="p-3 bg-red-50 text-red-700 rounded-md text-sm">{error}</div>
+                )}
 
-              {success && (
-                <div className="p-3 bg-green-50 text-green-700 rounded-md text-sm">{success}</div>
-              )}
+                {success && (
+                  <div className="p-3 bg-green-50 text-green-700 rounded-md text-sm">{success}</div>
+                )}
 
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  disabled={loading || !!success}
-                />
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    disabled={loading || !!success}
+                  />
+                </div>
+
+                <Button type="submit" className="w-full" disabled={loading || !!success}>
+                  {loading ? 'Sending...' : success ? 'Email Sent' : 'Send Reset Link'}
+                </Button>
+              </form>
+
+              <div className="mt-4 text-center">
+                <Link href="/login" className="text-sm text-brand-purple hover:underline">
+                  Back to Login
+                </Link>
               </div>
-
-              <Button type="submit" className="w-full" disabled={loading || !!success}>
-                {loading ? 'Sending...' : success ? 'Email Sent' : 'Send Reset Link'}
-              </Button>
-            </form>
-
-            <div className="mt-4 text-center">
-              <Link href="/login" className="text-sm text-brand-purple hover:underline">
-                Back to Login
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )

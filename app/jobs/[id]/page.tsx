@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Footer } from '@/components/footer'
+import '@/app/globals.css'
 export const runtime = 'edge'
 
 export const dynamic = 'force-dynamic'
@@ -250,7 +251,7 @@ export default function JobDetailPage() {
 
   return (
     <div className="min-h-screen bg-[#f6f4fb]">
-      <div className="container mx-auto px-4 pt-28 pb-16 max-w-6xl">
+      <div className="container mx-auto px-4 mobile-safe-top-lg pb-16 max-w-6xl animate-slide-up">
         <div className="mb-6 text-sm text-gray-500">
           <Link href="/jobs" className="hover:text-brand-purple">Jobs</Link> / {job.title}
         </div>

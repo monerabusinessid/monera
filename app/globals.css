@@ -73,8 +73,28 @@
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { transform: translateY(20px); }
+  to { transform: translateY(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes scroll-left {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
 }
 
 @keyframes float-slow {
@@ -88,8 +108,27 @@
 }
 
 .animate-slide-up { 
-  animation: slideUp 0.7s ease-out forwards; 
+  animation: slideUp 0.6s ease-out forwards; 
+  will-change: transform;
+}
+
+.animate-slide-left {
+  animation: slideInLeft 0.7s ease-out forwards;
   will-change: opacity, transform;
+}
+
+.animate-slide-right {
+  animation: slideInRight 0.7s ease-out forwards;
+  will-change: opacity, transform;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.6s ease-out forwards;
+  will-change: opacity, transform;
+}
+
+.animate-scroll-left {
+  animation: scroll-left 30s linear infinite;
 }
 
 .animate-float-slow { 
@@ -141,6 +180,23 @@
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* Mobile Safe Area - Prevent content from being hidden by navbar */
+@media (max-width: 1023px) {
+  .mobile-safe-top {
+    padding-top: 6rem; /* 96px - safe distance from mobile navbar */
+  }
+  .mobile-safe-top-lg {
+    padding-top: 7rem; /* 112px - extra safe for modals/popups */
+  }
+}
+
+@media (min-width: 1024px) {
+  .mobile-safe-top,
+  .mobile-safe-top-lg {
+    padding-top: 7rem; /* 112px - desktop default */
+  }
+}
 
 /* Blog Article Styles */
 .prose h2 {
