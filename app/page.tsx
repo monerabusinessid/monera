@@ -1222,7 +1222,7 @@ export default function HomePage() {
                     {isCategoryIconUrl ? (
                       <img src={categoryIconSrc as string} alt={`${category.name} icon`} className="w-10 h-10 mb-3 group-hover:scale-110 transition-transform duration-300" loading="lazy" decoding="async" />
                     ) : (
-                      <div className="w-10 h-10 mb-3 group-hover:scale-110 transition-transform duration-300">{categoryIconSrc}</div>
+                      <div className="w-10 h-10 mb-3 group-hover:scale-110 transition-transform duration-300">{categoryIconSrc as any}</div>
                     )}
                     <h3 className="font-bold text-base text-gray-800 group-hover:text-brand-purple transition-colors duration-300 mb-1">
                       {category.name}
