@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/auth-context'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+export const runtime = 'edge'
 
 interface Job {
   id: string

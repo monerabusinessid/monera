@@ -1,6 +1,7 @@
 import { requireAdmin } from '@/lib/admin/rbac-server'
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+export const runtime = 'edge'
 
 export default async function SettingsPage() {
   try {

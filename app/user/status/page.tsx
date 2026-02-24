@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { getStatusMessage } from '@/lib/talent-status'
 import Link from 'next/link'
+export const runtime = 'edge'
 
 interface ProfileStatus {
   status: string

@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+export const runtime = 'edge'
 
 export default function LandingPageAdmin() {
   const [activeTab, setActiveTab] = useState<'testimonials' | 'companies' | 'talent-categories' | 'faqs' | 'header'>('header')

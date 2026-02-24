@@ -1,6 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { JobsTable } from '@/components/admin/jobs-table'
 import { CreateJobButton } from '@/components/admin/create-job-button'
+export const runtime = 'edge'
 
 export default async function JobsPage() {
   // Use admin client to bypass RLS and ensure we can read all jobs

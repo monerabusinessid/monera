@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import Link from 'next/link'
+export const runtime = 'edge'
 
 export default function ProfilePage() {
   const router = useRouter()

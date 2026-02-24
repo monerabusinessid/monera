@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { TalentRequestsTable } from '@/components/admin/talent-requests-table'
+export const runtime = 'edge'
 
 export default async function AdminTalentRequestsPage() {
   const { createAdminClient } = await import('@/lib/supabase/server')

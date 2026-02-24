@@ -1,5 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { ApplicationsTable } from '@/components/admin/applications-table'
+export const runtime = 'edge'
 
 export default async function AdminApplicationsPage() {
   const { createAdminClient } = await import('@/lib/supabase/server')

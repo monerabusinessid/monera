@@ -3,6 +3,7 @@ import { requireAdmin } from '@/lib/admin/rbac-server'
 import { getAdminCapabilities } from '@/lib/admin/rbac'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { redirect } from 'next/navigation'
+export const runtime = 'edge'
 
 export default async function TestRolesPage() {
   try {

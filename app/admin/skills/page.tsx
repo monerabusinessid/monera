@@ -1,6 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { SkillsTable } from '@/components/admin/skills-table'
 import { CreateSkillButton } from '@/components/admin/create-skill-button'
+export const runtime = 'edge'
 
 export default async function SkillsPage() {
   const { createAdminClient } = await import('@/lib/supabase/server')

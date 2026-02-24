@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { UsersTable } from '@/components/admin/users-table'
 import { CreateUserButton } from '@/components/admin/create-user-button'
+export const runtime = 'edge'
 
 export default async function AdminUsersPage() {
   try {

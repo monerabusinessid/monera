@@ -1,5 +1,6 @@
 import { getSupabaseClient } from '@/lib/supabase/server-helper'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+export const runtime = 'edge'
 
 export default async function AnalyticsPage() {
   const supabase = await getSupabaseClient()

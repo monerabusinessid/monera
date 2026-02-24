@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Footer } from '@/components/footer'
+export const runtime = 'edge'
 
 export default function BlogDetailPage() {
   const params = useParams()

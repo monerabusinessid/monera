@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { AuditLogsTable } from '@/components/admin/audit-logs-table'
+export const runtime = 'edge'
 
 export default async function AuditLogsPage() {
   const { createAdminClient } = await import('@/lib/supabase/server')

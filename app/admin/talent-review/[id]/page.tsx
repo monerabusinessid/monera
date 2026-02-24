@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { createAdminClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import TalentDetailActions from '@/components/admin/talent-detail-actions'
+export const runtime = 'edge'
 
 export default async function TalentDetailPage({ params }: { params: { id: string } }) {
   const adminSupabase = await createAdminClient()

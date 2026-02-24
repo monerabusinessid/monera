@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+export const runtime = 'edge'
 
 export default async function AdminDashboard() {
   // Use admin client to bypass RLS for accurate counts

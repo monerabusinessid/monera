@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+export const runtime = 'edge'
 
 export default function WeeklyReportsPage() {
   const [data, setData] = useState<any>(null)
